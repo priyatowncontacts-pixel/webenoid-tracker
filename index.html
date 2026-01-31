@@ -12,7 +12,7 @@
         nav { height: 50px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; flex-shrink: 0; }
         .logo { font-weight: 800; color: var(--brand); font-size: 18px; letter-spacing: -0.5px; }
         .logo span { color: var(--text); }
-        .logout-btn { background: #fff; color: #ef4444; border: 1px solid #fee2e2; padding: 4px 10px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 12px; }
+        .logout-btn { background: #fff; color: #ef4444; border: 1px solid #fee2e2; padding: 4px 10px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 11px; }
 
         .wrapper { display: flex; flex: 1; overflow: hidden; }
         aside { width: 280px; background: var(--panel); border-right: 1px solid var(--border); padding: 16px; overflow-y: auto; }
@@ -21,19 +21,17 @@
         h3 { font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--text-light); margin-bottom: 8px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
         .card { background: var(--panel); border-radius: var(--radius); border: 1px solid var(--border); padding: 15px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); margin-bottom: 16px; }
         
-        input, select, textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; font-family: inherit; font-size: 12px; margin-bottom: 8px; outline: none; }
+        input, select, textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; font-family: inherit; font-size: 12px; margin-bottom: 8px; outline: none; box-sizing: border-box; }
         button { width: 100%; background: var(--brand); color: white; border: none; padding: 10px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px; }
 
-        /* RE-FIXED BULK SECTION */
-        .bulk-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 8px; }
-        .bulk-grid select { margin-bottom: 0; }
+        /* THE GRID FIX FOR THE BULK SECTION */
+        .bulk-grid { display: flex; gap: 10px; margin-bottom: 10px; width: 100%; }
+        .bulk-grid select { flex: 1; margin-bottom: 0; }
 
-        /* TABS */
         .tab-bar { display: flex; gap: 5px; margin-bottom: 12px; }
         .tab { padding: 6px 16px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; border: 1px solid var(--border); background: #f1f5f9; color: var(--text-light); }
         .tab.active { background: var(--brand); color: white; border-color: var(--brand); }
 
-        /* TABLE */
         table { width: 100%; border-collapse: collapse; min-width: 1000px; table-layout: fixed; }
         th { text-align: left; padding: 8px; font-size: 10px; text-transform: uppercase; color: var(--text-light); border-bottom: 1px solid var(--border); background: #fcfcfd; }
         td { padding: 6px 8px; border-bottom: 1px solid var(--border); font-size: 12px; word-break: break-word; vertical-align: middle; }
@@ -43,8 +41,8 @@
         .col-assign { width: 120px; }
         .col-status { width: 95px; }
 
-        .Queue { background: #e0e7ff; color: #3730a3; padding: 2px 6px; border-radius: 4px; font-weight: 700; border:none; font-size:10px; cursor: pointer; }
-        .Fixed { background: #dcfce7; color: #166534; padding: 2px 6px; border-radius: 4px; font-weight: 700; border:none; font-size:10px; cursor: pointer; }
+        .Queue { background: #e0e7ff; color: #3730a3; padding: 2px 6px; border-radius: 4px; font-weight: 700; border:none; font-size:10px; }
+        .Fixed { background: #dcfce7; color: #166534; padding: 2px 6px; border-radius: 4px; font-weight: 700; border:none; font-size:10px; }
 
         .grid-input { font-size: 11px; padding: 2px; border: 1px solid transparent; background: transparent; width: 100%; }
         #notify { position: fixed; top: 15px; left: 50%; transform: translateX(-50%); background: #0f172a; color: white; padding: 8px 24px; border-radius: 50px; display: none; z-index: 100000; font-weight: 600; font-size: 12px; }
@@ -55,7 +53,7 @@
 <nav>
     <div class="logo">WEBENOID <span>TRACKER</span></div>
     <div style="display: flex; align-items: center; gap: 15px;">
-        <span id="userLabel" style="font-weight: 600; font-size: 12px; color: var(--text-light);"></span>
+        <span id="userLabel" style="font-weight: 600; font-size: 11px; color: var(--text-light);"></span>
         <button class="logout-btn" onclick="logout()">Logout</button>
     </div>
 </nav>
@@ -65,8 +63,8 @@
 <div class="wrapper">
     <aside>
         <h3>Directory</h3>
-        <input id="newDev" placeholder="Add New Developer">
-        <button onclick="addDev()" style="background: #0f172a; margin-bottom: 15px;">Add Member</button>
+        <input id="newDev" placeholder="Developer Name">
+        <button onclick="addDev()" style="background: #0f172a; margin-bottom: 15px;">+ Add Member</button>
 
         <h3>Context</h3>
         <input id="newProj" placeholder="Project Name">
@@ -98,9 +96,9 @@
         </div>
 
         <div class="tab-bar">
-            <div id="tabAll" class="tab active" onclick="setTab('All')">ALL DEFECTS</div>
-            <div id="tabQueue" class="tab" onclick="setTab('Queue')">QUEUE ONLY</div>
-            <div id="tabFixed" class="tab" onclick="setTab('Fixed')">FIXED ONLY</div>
+            <div id="tabAll" class="tab active" onclick="setTab('All')">ALL</div>
+            <div id="tabQueue" class="tab" onclick="setTab('Queue')">QUEUE</div>
+            <div id="tabFixed" class="tab" onclick="setTab('Fixed')">FIXED</div>
         </div>
 
         <div class="card" style="padding:0; overflow-x:auto">
@@ -108,7 +106,7 @@
                 <thead>
                     <tr>
                         <th class="col-idx">#</th>
-                        <th class="col-details">Defect Details</th>
+                        <th class="col-details">Details</th>
                         <th class="col-assign">Assignee</th>
                         <th class="col-status">Status</th>
                         <th style="width:140px">Started At</th>
