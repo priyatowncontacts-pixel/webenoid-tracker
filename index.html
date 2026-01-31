@@ -3,115 +3,167 @@
 <head>
     <title>Webenoid Tracker</title>
     <style>
-        /* 🔥 THE FIX: Hide everything until login is verified */
-        body { display: none; font-family: sans-serif; margin: 0; flex-direction: column; height: 100vh; }
-        nav { background: white; padding: 15px 25px; display: flex; justify-content: space-between; border-bottom: 1px solid #eee; }
-        .logout { background: #ef4444; color: white; border: none; padding: 5px 15px; border-radius: 6px; cursor: pointer; }
-        .container { display: flex; flex: 1; }
-        aside { width: 250px; border-right: 1px solid #eee; padding: 20px; }
-        main { flex: 1; padding: 20px; background: #f8fafc; }
+        /* 🛡️ Hide body initially to prevent "flicker" or redirect loops */
+        body { display: none; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; flex-direction: column; height: 100vh; background: #f1f5f9; }
+        
+        /* Navigation Styling */
+        nav { background: #0f172a; color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .logout { background: #ef4444; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; transition: background 0.2s; }
+        .logout:hover { background: #dc2626; }
+
+        .container { display: flex; flex: 1; overflow: hidden; }
+
+        /* Sidebar Styling */
+        aside { width: 280px; border-right: 1px solid #e2e8f0; padding: 25px; background: white; display: flex; flex-direction: column; gap: 15px; }
+        h3 { margin: 0; color: #1e293b; font-size: 1.1rem; }
+
+        /* Main Content Area */
+        main { flex: 1; padding: 30px; overflow-y: auto; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 25px; }
+
+        /* Inputs and Buttons */
+        input, select { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; outline: none; transition: border 0.2s; }
+        input:focus { border-color: #2563eb; }
+        button.btn-primary { width: 100%; padding: 12px; background: #2563eb; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: opacity 0.2s; }
+        button.btn-primary:hover { opacity: 0.9; }
+
+        /* Bug List Styling */
+        .bug-item { background: white; padding: 15px 20px; border-radius: 10px; border-left: 5px solid #2563eb; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .bug-info b { display: block; color: #1e293b; margin-bottom: 4px; }
+        .bug-info span { font-size: 0.85rem; color: #64748b; }
+        .status-badge { background: #fef9c3; color: #854d0e; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase; }
     </style>
 </head>
 <body>
 
     <nav>
-        <b>WEBENOID TRACKER</b>
-        <div>
-            <span id="userTag"></span>
+        <div style="font-size: 1.2rem; letter-spacing: 1px;"><b>WEBENOID</b> TRACKER</div>
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <span id="userTag" style="font-weight: 500; color: #cbd5e1;"></span>
             <button class="logout" onclick="logout()">Logout</button>
         </div>
     </nav>
 
     <div class="container">
         <aside>
-            <h3>Projects</h3>
-
+            <h3>Active Project</h3>
             <select id="selProj" onchange="loadBugs()"></select>
-
-            <input id="newP" placeholder="New Project">
-            <button onclick="addP()">Add</button>
+            
+            <div style="margin-top: auto; border-top: 1px solid #f1f5f9; pt: 20px;">
+                <h3>New Project</h3>
+                <input id="newP" placeholder="Enter name...">
+                <button class="btn-primary" style="margin-top: 10px;" onclick="addP()">Create</button>
+            </div>
         </aside>
 
         <main>
-            <input id="bugT" placeholder="Bug Title">
-            <button onclick="addB()">Log Bug</button>
+            <div class="card">
+                <h3 style="margin-bottom: 15px;">Report New Issue</h3>
+                <div style="display: flex; gap: 10px;">
+                    <input id="bugT" placeholder="Describe the bug or task...">
+                    <button class="btn-primary" style="width: 150px;" onclick="addB()">Log Bug</button>
+                </div>
+            </div>
 
-            <div id="list" style="margin-top:20px"></div>
+            <div id="list">
+                </div>
         </main>
     </div>
 
 <script>
-    // 🛡️ SECURITY CHECK  — FIXED REDIRECT
-    const session = localStorage.getItem("webenoid_session");
-    const user = localStorage.getItem("user");
+    // 🛡️ SECURITY & REDIRECT LOGIC
+    const session = localStorage.getItem("webenoid_session"); [cite: 4]
+    const user = localStorage.getItem("user"); [cite: 4]
 
-    if (session !== "active" || !user || user === "null") {
-        localStorage.clear();
-
-        // ✅ FIX: redirect directly to login page (no loop)
-        window.location.replace("/login.html");
-
+    // Verify session and prevent infinite redirect loops
+    if (session !== "active" || !user || user === "null") { [cite: 4]
+        localStorage.clear(); [cite: 4]
+        window.location.replace("/"); [cite: 4]
     } else {
-        document.body.style.display = "flex"; // Show only if valid
-        document.getElementById('userTag').innerText = user;
+        document.body.style.display = "flex"; [cite: 4]
+        document.getElementById('userTag').innerText = `Logged in as: ${user}`; [cite: 4]
+        loadData(); // Start fetching data immediately
     }
 
     function logout() {
-        localStorage.clear();
-        window.location.replace("/login.html");
+        localStorage.clear(); [cite: 4]
+        window.location.replace("/"); [cite: 4]
     }
 
+    // 📡 DATA FUNCTIONS
     async function loadData() {
-        const res = await fetch("/projects");
-        const p = await res.json();
+        try {
+            const res = await fetch("/projects"); [cite: 4]
+            const projects = await res.json(); [cite: 4]
 
-        document.getElementById('selProj').innerHTML =
-            p.map(x => `<option value="${x.name}">${x.name}</option>`).join('');
+            const select = document.getElementById('selProj');
+            select.innerHTML = projects.map(p => `<option value="${p.name}">${p.name}</option>`).join(''); [cite: 4]
 
-        loadBugs();
+            if (projects.length > 0) {
+                loadBugs();
+            } else {
+                document.getElementById('list').innerHTML = "<p>Create a project to get started.</p>";
+            }
+        } catch (err) {
+            console.error("Data fetch failed. Check MongoDB whitelist.", err);
+        }
     }
 
     async function loadBugs() {
-        const res = await fetch("/bugs");
-        const bugs = await res.json();
+        try {
+            const res = await fetch("/bugs"); [cite: 4]
+            const bugs = await res.json(); [cite: 4]
+            const activeProject = document.getElementById('selProj').value; [cite: 4]
 
-        const active = document.getElementById('selProj').value;
-
-        document.getElementById('list').innerHTML =
-            bugs
-            .filter(b => b.project === active)
-            .map(b => `<div>${b.title} - <b>${b.status}</b></div>`)
-            .join('');
+            const filtered = bugs.filter(b => b.project === activeProject); [cite: 4]
+            
+            document.getElementById('list').innerHTML = filtered.length ? filtered.map(b => `
+                <div class="bug-item">
+                    <div class="bug-info">
+                        <b>${b.title}</b>
+                        <span>Assigned to: ${b.assignedTo || 'Unassigned'}</span>
+                    </div>
+                    <span class="status-badge">${b.status || 'Queue'}</span>
+                </div>
+            `).join('') : "<p style='color: #94a3b8;'>No bugs logged for this project yet.</p>";
+        } catch (err) {
+            console.error("Bug load error:", err);
+        }
     }
 
     async function addP() {
-        await fetch("/project", {
-            method:"POST",
-            headers:{"Content-Type":"application/json"},
-            body:JSON.stringify({name:newP.value})
+        const name = document.getElementById('newP').value;
+        if (!name) return alert("Please enter a project name.");
+
+        await fetch("/project", { [cite: 4]
+            method: "POST", [cite: 4]
+            headers: { "Content-Type": "application/json" }, [cite: 4]
+            body: JSON.stringify({ name }) [cite: 4]
         });
 
-        newP.value="";
-        loadData();
+        document.getElementById('newP').value = "";
+        loadData(); [cite: 4]
     }
 
     async function addB() {
-        await fetch("/bugs", {
-            method:"POST",
-            headers:{"Content-Type":"application/json"},
-            body:JSON.stringify([{
-                project: selProj.value,
-                title: bugT.value,
-                assignedTo: user
+        const title = document.getElementById('bugT').value;
+        const project = document.getElementById('selProj').value;
+        if (!title || !project) return alert("Missing info.");
+
+        await fetch("/bugs", { [cite: 4]
+            method: "POST", [cite: 4]
+            headers: { "Content-Type": "application/json" }, [cite: 4]
+            body: JSON.stringify([{ [cite: 4]
+                project: project, [cite: 4]
+                title: title, [cite: 4]
+                assignedTo: user [cite: 4]
             }])
         });
 
-        bugT.value="";
-        loadBugs();
+        document.getElementById('bugT').value = "";
+        loadBugs(); [cite: 4]
     }
-
-    loadData();
 </script>
-
 </body>
 </html>
+
