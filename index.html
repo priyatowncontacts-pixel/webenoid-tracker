@@ -2,35 +2,46 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard | Webenoid</title>
+    <title>Webenoid Tracker | Enterprise</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root { --brand: #2563eb; --bg: #f8fafc; --panel: #ffffff; --text: #0f172a; --border: #e2e8f0; }
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        
+        /* Notification Toast */
+        #notify { position: fixed; top: 20px; right: 20px; background: #0f172a; color: white; padding: 12px 24px; border-radius: 8px; display: none; z-index: 9999; box-shadow: 0 10px 15px rgba(0,0,0,0.1); }
+        
         nav { height: 60px; background: #fff; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 30px; flex-shrink: 0; }
         .wrapper { display: flex; flex: 1; overflow: hidden; }
-        aside { width: 300px; background: #fff; border-right: 1px solid var(--border); padding: 20px; overflow-y: auto; }
+        aside { width: 320px; background: #fff; border-right: 1px solid var(--border); padding: 20px; overflow-y: auto; }
         main { flex: 1; padding: 20px; overflow-y: auto; }
-        .card { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        h3 { font-size: 11px; text-transform: uppercase; color: #64748b; margin: 20px 0 10px 0; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
-        table { width: 100%; border-collapse: collapse; min-width: 1100px; }
-        th { text-align: left; padding: 12px; font-size: 11px; color: #64748b; border-bottom: 1px solid var(--border); }
+        
+        .card { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+        h3 { font-size: 11px; text-transform: uppercase; color: #64748b; margin-top: 20px; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
+        
+        table { width: 100%; border-collapse: collapse; min-width: 1200px; }
+        th { text-align: left; padding: 12px; font-size: 11px; color: #64748b; background: #fcfdfe; border-bottom: 1px solid var(--border); }
         td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 13px; }
-        input, select, textarea { width: 100%; padding: 8px; margin-bottom: 10px; border-radius: 6px; border: 1px solid var(--border); font-family: inherit; }
-        .grid-input { border: 1px solid transparent; background: transparent; width: 100%; cursor: pointer; }
+        
+        input, select, textarea { width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid var(--border); box-sizing: border-box; }
+        button { background: var(--brand); color: #fff; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: 600; width: 100%; transition: 0.2s; }
+        button:hover { opacity: 0.9; }
+        
+        .grid-input { border: 1px solid transparent; background: transparent; padding: 4px; cursor: pointer; }
         .grid-input:hover { border-color: var(--border); background: #f9fafb; }
-        button { background: var(--brand); color: #fff; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: 600; width: 100%; }
-        .Queue { background: #e0e7ff; color: #3730a3; font-weight: 700; border-radius: 4px; padding: 4px; border:none; }
-        .Fixed { background: #dcfce7; color: #166534; font-weight: 700; border-radius: 4px; padding: 4px; border:none; }
+        .Queue { background: #e0e7ff; color: #3730a3; font-weight: 700; border-radius: 6px; padding: 4px 8px; border: none; }
+        .Fixed { background: #dcfce7; color: #166534; font-weight: 700; border-radius: 6px; padding: 4px 8px; border: none; }
     </style>
 </head>
 <body>
 
+<div id="notify"></div>
+
 <nav>
-    <div style="font-weight:800; color:var(--brand); font-size: 20px;">WEBENOID TRACKER</div>
-    <div style="display:flex; align-items:center; gap:15px;">
-        <span id="userLabel" style="font-size:13px; color:#64748b"></span>
-        <button onclick="logout()" style="background:#fee2e2; color:#ef4444; width: auto; padding: 5px 15px;">Logout</button>
+    <div style="font-weight:800; color:var(--brand); font-size: 22px;">WEBENOID <span style="color:var(--text)">TRACKER</span></div>
+    <div style="display:flex; align-items:center; gap:20px;">
+        <span id="userLabel" style="font-weight:600; font-size:14px;"></span>
+        <button onclick="logout()" style="width:auto; background:#fee2e2; color:#ef4444; padding:6px 15px;">Logout</button>
     </div>
 </nav>
 
@@ -40,7 +51,7 @@
         <input id="newDev" placeholder="New Team Member">
         <button onclick="addDev()">Add Member</button>
 
-        <h3>Projects</h3>
+        <h3>Context Management</h3>
         <input id="newProj" placeholder="Project Name">
         <button onclick="addProj()">Create Project</button>
         <select id="selProj" onchange="loadTasks()"></select>
@@ -50,28 +61,30 @@
         <h3>Quick Entry</h3>
         <select id="qProj" onchange="loadQTasks()"></select>
         <select id="qTask"></select>
-        <input id="qTitle" placeholder="Defect Title">
+        <input id="qTitle" placeholder="Bug Title">
+        <textarea id="qDesc" placeholder="Bug Description" rows="2"></textarea>
         <select id="qAssign"></select>
         <button onclick="submitSingle()" style="background:#0f172a">Log Defect</button>
     </aside>
 
     <main>
         <div class="card">
-            <h3>Bulk Log (Paste: Title | Date)</h3>
-            <textarea id="bPaste" rows="3" placeholder="Bug Title | 2026-02-15"></textarea>
-            <button onclick="submitBulk()" style="width:auto; padding: 10px 30px;">🚀 Process Batch</button>
+            <h3>Bulk Batch Processor</h3>
+            <textarea id="bPaste" rows="3" placeholder="Title | Date (Optional)"></textarea>
+            <button onclick="submitBulk()" style="width:auto; padding: 10px 40px;">🚀 Process Batch</button>
         </div>
 
         <div class="card" style="padding:0; overflow-x:auto">
             <table>
                 <thead>
                     <tr>
+                        <th>#</th>
                         <th>Defect Details</th>
                         <th>Assignee</th>
                         <th>Started At</th>
                         <th>Target Fix</th>
                         <th>Status</th>
-                        <th>Work Done</th>
+                        <th>Progress</th>
                     </tr>
                 </thead>
                 <tbody id="bugList"></tbody>
@@ -83,20 +96,28 @@
 <script>
 const API = "https://webenoid-tracker.onrender.com";
 
-// --- AUTH ---
+// --- HELPERS ---
+function notify(msg) {
+    const n = document.getElementById('notify');
+    n.innerText = msg; n.style.display = "block";
+    setTimeout(() => n.style.display = "none", 3000);
+}
+
 if(localStorage.getItem("webenoid_session") !== "active") window.location.href = "/";
-document.getElementById('userLabel').innerText = `Admin: ${localStorage.getItem("user")}`;
+document.getElementById('userLabel').innerText = localStorage.getItem("user");
+
 function logout() { localStorage.clear(); window.location.href = "/"; }
 
 // --- TEAM ---
 let team = JSON.parse(localStorage.getItem("team_list")) || ["Assignee"];
 function updateDrops() {
     const qAssign = document.getElementById('qAssign');
-    qAssign.innerHTML = ""; team.forEach(t => qAssign.innerHTML += `<option value="${t}">${t}</option>`);
+    qAssign.innerHTML = ""; 
+    team.forEach(t => qAssign.innerHTML += `<option value="${t}">${t}</option>`);
 }
 function addDev() {
     const n = document.getElementById('newDev').value.trim();
-    if(n){ team.push(n); localStorage.setItem("team_list", JSON.stringify(team)); updateDrops(); document.getElementById('newDev').value=""; }
+    if(n){ team.push(n); localStorage.setItem("team_list", JSON.stringify(team)); updateDrops(); document.getElementById('newDev').value=""; notify("Member Added!"); }
 }
 
 // --- DATA ---
@@ -105,10 +126,15 @@ async function loadBugs() {
     const bugs = await res.json();
     const body = document.getElementById('bugList');
     body.innerHTML = "";
-    bugs.forEach(b => {
+    bugs.forEach((b, i) => {
         body.innerHTML += `
         <tr>
-            <td><strong>${b.title}</strong><br><small>${b.project} / ${b.task}</small></td>
+            <td>${i+1}</td>
+            <td>
+                <strong style="font-size:14px">${b.title}</strong><br>
+                <small style="color:#64748b">${b.project} / ${b.task}</small><br>
+                <p style="margin:5px 0 0 0; font-size:12px; color:#475569">${b.desc || ''}</p>
+            </td>
             <td><strong>${b.assignedTo || '---'}</strong></td>
             <td><input type="datetime-local" class="grid-input" value="${b.startedAt||''}" onchange="patch('${b._id}','startedAt',this.value)"></td>
             <td><input type="date" class="grid-input" value="${b.targetDate||''}" onchange="patch('${b._id}','targetDate',this.value)"></td>
@@ -120,7 +146,7 @@ async function loadBugs() {
             </td>
             <td>
                 <input type="range" min="0" max="100" value="${b.completion||0}" onchange="patch('${b._id}','completion',this.value)" oninput="document.getElementById('p-${b._id}').innerText=this.value+'%'">
-                <span id="p-${b._id}" style="font-weight:700">${b.completion||0}%</span>
+                <span id="p-${b._id}" style="font-weight:700; font-size:11px">${b.completion||0}%</span>
             </td>
         </tr>`;
     });
@@ -129,13 +155,21 @@ async function loadBugs() {
 async function patch(id, field, value) {
     const b = {}; b[field] = value;
     await fetch(`${API}/bug/${id}`, {method:"PUT", headers:{'Content-Type':'application/json'}, body:JSON.stringify(b)});
+    notify("Update Saved");
     if(field === 'status') loadBugs();
 }
 
 async function submitSingle() {
-    const data = [{ project: qProj.value, task: qTask.value, title: qTitle.value, assignedTo: qAssign.value, status: "Queue" }];
+    const data = [{ 
+        project: qProj.value, 
+        task: qTask.value, 
+        title: qTitle.value, 
+        desc: qDesc.value,
+        assignedTo: qAssign.value, 
+        status: "Queue" 
+    }];
     await fetch(API+"/bugs", {method:"POST", headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)});
-    qTitle.value = ""; loadBugs();
+    qTitle.value = ""; qDesc.value = ""; notify("Defect Logged!"); loadBugs();
 }
 
 async function submitBulk() {
@@ -145,21 +179,29 @@ async function submitBulk() {
         return { project: qProj.value, task: qTask.value, title: p[0].trim(), targetDate: p[1]?.trim() || "", assignedTo: qAssign.value, status: "Queue" };
     });
     await fetch(API+"/bugs", {method:"POST", headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)});
-    bPaste.value = ""; loadBugs();
+    bPaste.value = ""; notify("Batch Processed!"); loadBugs();
 }
 
-async function addProj() { await fetch(API+"/project", {method:"POST", headers:{'Content-Type':'application/json'}, body:JSON.stringify({name:newProj.value})}); loadData(); }
-async function addTask() { await fetch(API+"/task", {method:"POST", headers:{'Content-Type':'application/json'}, body:JSON.stringify({project:selProj.value, name:newTask.value})}); loadData(); }
+async function addProj() { await fetch(API+"/project", {method:"POST", headers:{'Content-Type':'application/json'}, body:JSON.stringify({name:newProj.value})}); notify("Project Created"); loadData(); }
+async function addTask() { await fetch(API+"/task", {method:"POST", headers:{'Content-Type':'application/json'}, body:JSON.stringify({project:selProj.value, name:newTask.value})}); notify("Task Linked"); loadData(); }
 
 async function loadData() {
     const p = await (await fetch(API+"/projects")).json();
-    [selProj, qProj].forEach(s => { s.innerHTML = ""; p.forEach(x => s.innerHTML += `<option value="${x.name}">${x.name}</option>`); });
+    [selProj, qProj].forEach(s => { 
+        s.innerHTML = ""; 
+        p.forEach(x => s.innerHTML += `<option value="${x.name}">${x.name}</option>`); 
+    });
     loadTasks(); loadQTasks();
 }
-async function loadTasks() { await fetch(API+"/tasks/"+selProj.value); }
+
+async function loadTasks() { 
+    const t = await (await fetch(API+"/tasks/"+selProj.value)).json();
+}
+
 async function loadQTasks() {
     const t = await (await fetch(API+"/tasks/"+qProj.value)).json();
-    qTask.innerHTML = ""; t.forEach(x => qTask.innerHTML += `<option value="${x.name}">${x.name}</option>`);
+    qTask.innerHTML = ""; 
+    t.forEach(x => qTask.innerHTML += `<option value="${x.name}">${x.name}</option>`);
 }
 
 loadData(); loadBugs(); updateDrops();
