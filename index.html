@@ -9,6 +9,7 @@
         :root { --brand: #2563eb; --bg: #f8fafc; --panel: #ffffff; --text: #0f172a; --text-light: #64748b; --border: #e2e8f0; --radius: 12px; }
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
+        /* COMPACT HEADER */
         nav { height: 50px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; flex-shrink: 0; }
         .logo { font-weight: 800; color: var(--brand); font-size: 18px; letter-spacing: -0.5px; }
         .logo span { color: var(--text); }
@@ -24,6 +25,15 @@
         input, select, textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; font-family: inherit; font-size: 12px; margin-bottom: 8px; outline: none; }
         button { width: 100%; background: var(--brand); color: white; border: none; padding: 10px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px; }
 
+        /* FIXED BULK SECTION LAYOUT */
+        .bulk-controls { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+        .bulk-controls select { margin-bottom: 0; }
+
+        /* STATUS TABS */
+        .tab-bar { display: flex; gap: 5px; margin-bottom: 12px; }
+        .tab { padding: 6px 16px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; border: 1px solid var(--border); background: #f1f5f9; color: var(--text-light); }
+        .tab.active { background: var(--brand); color: white; border-color: var(--brand); }
+
         /* COMPACT TABLE */
         table { width: 100%; border-collapse: collapse; min-width: 1000px; table-layout: fixed; }
         th { text-align: left; padding: 8px; font-size: 10px; text-transform: uppercase; color: var(--text-light); border-bottom: 1px solid var(--border); background: #fcfcfd; }
@@ -35,11 +45,6 @@
         .col-status { width: 95px; }
         .col-date { width: 140px; }
         .col-progress { width: 130px; }
-
-        /* TAB STYLES */
-        .tab-bar { display: flex; gap: 5px; margin-bottom: 12px; }
-        .tab { padding: 6px 16px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; border: 1px solid var(--border); background: #f1f5f9; color: var(--text-light); }
-        .tab.active { background: var(--brand); color: white; border-color: var(--brand); }
 
         .Queue { background: #e0e7ff; color: #3730a3; padding: 2px 6px; border-radius: 4px; font-weight: 700; border:none; font-size:10px; cursor: pointer; }
         .Fixed { background: #dcfce7; color: #166534; padding: 2px 6px; border-radius: 4px; font-weight: 700; border:none; font-size:10px; cursor: pointer; }
@@ -89,7 +94,7 @@
     <main>
         <div class="card">
             <h3>Bulk Copy-Paste</h3>
-            <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+            <div class="bulk-controls">
                 <select id="bProj" onchange="loadBTasks()"></select>
                 <select id="bTask"></select>
                 <select id="bAssign"></select>
@@ -124,13 +129,12 @@
 </div>
 
 <script>
-// API Config
 const API = "https://webenoid-tracker.onrender.com";
 let currentTab = "All";
 
+// Auth logic
 if (localStorage.getItem("webenoid_session") !== "active") window.location.href = "login.html";
 document.getElementById('userLabel').innerText = `Admin: ${localStorage.getItem("user")}`;
-
 function logout() { localStorage.clear(); window.location.href = "login.html"; }
 
 function notify(msg) {
@@ -139,7 +143,6 @@ function notify(msg) {
     setTimeout(() => n.style.display = "none", 3000);
 }
 
-// Tab Filter Logic
 function setTab(status) {
     currentTab = status;
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -186,12 +189,7 @@ async function loadBugs() {
     try {
         const res = await fetch(API+"/bugs");
         let bugs = await res.json();
-        
-        // Filter logic for tabs
-        if (currentTab !== "All") {
-            bugs = bugs.filter(b => b.status === currentTab);
-        }
-
+        if (currentTab !== "All") bugs = bugs.filter(b => b.status === currentTab);
         const body = document.getElementById('bugList');
         body.innerHTML = "";
         bugs.forEach((b, i) => {
@@ -221,13 +219,11 @@ async function loadBugs() {
 
 async function addProj() { await fetch(API+"/project", {method:"POST", headers:{'Content-Type':'application/json'}, body:JSON.stringify({name:newProj.value})}); newProj.value=""; notify("Project Added"); loadData(); }
 async function addTask() { await fetch(API+"/task", {method:"POST", headers:{'Content-Type':'application/json'}, body:JSON.stringify({project:selProj.value, name:newTask.value})}); newTask.value=""; notify("Task Linked"); loadData(); }
-
 async function loadData() {
     const p = await (await fetch(API+"/projects")).json();
     [selProj, qProj, bProj].forEach(s => { s.innerHTML = ""; p.forEach(x => s.innerHTML += `<option value="${x.name}">${x.name}</option>`); });
     loadQTasks(); loadBTasks();
 }
-
 async function loadQTasks() { const t = await (await fetch(API+"/tasks/"+qProj.value)).json(); qTask.innerHTML = ""; t.forEach(x => qTask.innerHTML += `<option value="${x.name}">${x.name}</option>`); }
 async function loadBTasks() { const t = await (await fetch(API+"/tasks/"+bProj.value)).json(); bTask.innerHTML = ""; t.forEach(x => bTask.innerHTML += `<option value="${x.name}">${x.name}</option>`); }
 
