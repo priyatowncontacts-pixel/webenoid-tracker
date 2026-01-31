@@ -13,50 +13,33 @@
         .logo span { color: var(--text); }
         p { color: #64748b; font-size: 14px; margin-bottom: 32px; }
         input { width: 100%; padding: 12px; margin-bottom: 16px; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; box-sizing: border-box; outline: none; }
-        input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
-        button { width: 100%; background: var(--brand); color: white; border: none; padding: 14px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; }
-        button:hover { background: #1d4ed8; }
+        button { width: 100%; background: var(--brand); color: white; border: none; padding: 14px; border-radius: 8px; font-weight: 600; cursor: pointer; }
         #errMsg { color: #ef4444; font-size: 13px; margin-top: 16px; display: none; }
     </style>
 </head>
 <body>
-
 <div class="login-card">
     <div class="logo">WEBENOID <span>TRACKER</span></div>
     <p>Enterprise Bug Management System</p>
-    
     <input type="text" id="username" placeholder="Username">
     <input type="password" id="password" placeholder="Password">
     <button onclick="handleLogin()">Sign In</button>
-    
-    <div id="errMsg">Invalid credentials. Please try again.</div>
+    <div id="errMsg">Invalid credentials.</div>
 </div>
 
 <script>
-    // --- UPDATED RENDER API URL ---
-    const API = "https://webenoid-tracker.onrender.com";
-
     async function handleLogin() {
         const u = document.getElementById('username').value;
         const p = document.getElementById('password').value;
-        const err = document.getElementById('errMsg');
-
-        // Note: For now, we are using the hardcoded credentials you set.
-        // In a production app, you would fetch these from a "Users" collection.
         if (u === "Webenoid" && p === "Webenoid123") {
             localStorage.setItem("webenoid_session", "active");
             localStorage.setItem("user", u);
-            window.location.href = "index.html"; // Redirect to dashboard
+            // This matches the app.get("/dashboard") in your server.js
+            window.location.href = "/dashboard"; 
         } else {
-            err.style.display = "block";
+            document.getElementById('errMsg').style.display = "block";
         }
     }
-
-    // Press "Enter" to login
-    document.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') handleLogin();
-    });
 </script>
-
 </body>
 </html>
