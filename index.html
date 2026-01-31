@@ -7,6 +7,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root { --brand: #2563eb; --bg: #f8fafc; --panel: #ffffff; --text: #0f172a; --text-light: #64748b; --border: #e2e8f0; --radius: 12px; }
+        
+        /* Global reset to prevent overflow */
+        * { box-sizing: border-box; }
+        
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
         nav { height: 50px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; flex-shrink: 0; }
@@ -19,27 +23,33 @@
         main { flex: 1; padding: 16px 24px; overflow-y: auto; }
 
         h3 { font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--text-light); margin-bottom: 8px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
-        .card { background: var(--panel); border-radius: var(--radius); border: 1px solid var(--border); padding: 15px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); margin-bottom: 16px; }
+        .card { background: var(--panel); border-radius: var(--radius); border: 1px solid var(--border); padding: 15px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); margin-bottom: 16px; width: 100%; }
         
-        input, select, textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; font-family: inherit; font-size: 12px; margin-bottom: 8px; outline: none; box-sizing: border-box; }
+        input, select, textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; font-family: inherit; font-size: 12px; margin-bottom: 8px; outline: none; display: block; }
         button { width: 100%; background: var(--brand); color: white; border: none; padding: 10px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px; }
 
-        /* THE GRID FIX FOR THE BULK SECTION */
+        /* FIXED BULK SECTION ALIGNMENT */
+        .bulk-container { display: flex; flex-direction: column; width: 100%; }
         .bulk-grid { display: flex; gap: 10px; margin-bottom: 10px; width: 100%; }
         .bulk-grid select { flex: 1; margin-bottom: 0; }
+        textarea#bPaste { width: 100%; resize: none; margin-bottom: 10px; }
 
         .tab-bar { display: flex; gap: 5px; margin-bottom: 12px; }
         .tab { padding: 6px 16px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; border: 1px solid var(--border); background: #f1f5f9; color: var(--text-light); }
         .tab.active { background: var(--brand); color: white; border-color: var(--brand); }
 
+        /* TABLE STYLING */
+        .table-container { width: 100%; overflow-x: auto; border-radius: 8px; }
         table { width: 100%; border-collapse: collapse; min-width: 1000px; table-layout: fixed; }
-        th { text-align: left; padding: 8px; font-size: 10px; text-transform: uppercase; color: var(--text-light); border-bottom: 1px solid var(--border); background: #fcfcfd; }
-        td { padding: 6px 8px; border-bottom: 1px solid var(--border); font-size: 12px; word-break: break-word; vertical-align: middle; }
+        th { text-align: left; padding: 10px; font-size: 10px; text-transform: uppercase; color: var(--text-light); border-bottom: 1px solid var(--border); background: #fcfcfd; }
+        td { padding: 8px 10px; border-bottom: 1px solid var(--border); font-size: 12px; word-break: break-word; vertical-align: middle; }
         
-        .col-idx { width: 35px; text-align: center; }
-        .col-details { width: 350px; }
-        .col-assign { width: 120px; }
-        .col-status { width: 95px; }
+        .col-idx { width: 40px; text-align: center; }
+        .col-details { width: 30%; }
+        .col-assign { width: 12%; }
+        .col-status { width: 100px; }
+        .col-date { width: 150px; }
+        .col-progress { width: 120px; }
 
         .Queue { background: #e0e7ff; color: #3730a3; padding: 2px 6px; border-radius: 4px; font-weight: 700; border:none; font-size:10px; }
         .Fixed { background: #dcfce7; color: #166534; padding: 2px 6px; border-radius: 4px; font-weight: 700; border:none; font-size:10px; }
@@ -69,7 +79,7 @@
         <h3>Context</h3>
         <input id="newProj" placeholder="Project Name">
         <button onclick="addProj()">Create Project</button>
-        <select id="selProj" onchange="loadTasks()"></select>
+        <select id="selProj" onchange="loadTasks()" style="margin-top:5px;"></select>
         <input id="newTask" placeholder="Task Name">
         <button onclick="addTask()">Link Task</button>
 
@@ -86,13 +96,15 @@
     <main>
         <div class="card">
             <h3>Bulk Copy-Paste</h3>
-            <div class="bulk-grid">
-                <select id="bProj" onchange="loadBTasks()"></select>
-                <select id="bTask"></select>
-                <select id="bAssign"></select>
+            <div class="bulk-container">
+                <div class="bulk-grid">
+                    <select id="bProj" onchange="loadBTasks()"></select>
+                    <select id="bTask"></select>
+                    <select id="bAssign"></select>
+                </div>
+                <textarea id="bPaste" rows="2" placeholder="Title | Target Date (YYYY-MM-DD)"></textarea>
+                <button onclick="submitBulk()" style="width: auto; padding: 8px 25px; align-self: flex-start;">🚀 Process Batch</button>
             </div>
-            <textarea id="bPaste" rows="2" placeholder="Title | Target Date (YYYY-MM-DD)"></textarea>
-            <button onclick="submitBulk()" style="width: auto; padding: 8px 25px;">🚀 Process Batch</button>
         </div>
 
         <div class="tab-bar">
@@ -101,21 +113,23 @@
             <div id="tabFixed" class="tab" onclick="setTab('Fixed')">FIXED</div>
         </div>
 
-        <div class="card" style="padding:0; overflow-x:auto">
-            <table>
-                <thead>
-                    <tr>
-                        <th class="col-idx">#</th>
-                        <th class="col-details">Details</th>
-                        <th class="col-assign">Assignee</th>
-                        <th class="col-status">Status</th>
-                        <th style="width:140px">Started At</th>
-                        <th style="width:140px">Target Fix</th>
-                        <th style="width:130px">Progress</th>
-                    </tr>
-                </thead>
-                <tbody id="bugList"></tbody>
-            </table>
+        <div class="card" style="padding:0;">
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="col-idx">#</th>
+                            <th class="col-details">Details</th>
+                            <th class="col-assign">Assignee</th>
+                            <th class="col-status">Status</th>
+                            <th class="col-date">Started At</th>
+                            <th class="col-date">Target Fix</th>
+                            <th class="col-progress">Progress</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bugList"></tbody>
+                </table>
+            </div>
         </div>
     </main>
 </div>
@@ -183,15 +197,15 @@ async function loadBugs() {
             <td class="col-idx">${i+1}</td>
             <td class="col-details"><strong>${b.title}</strong><br><small style="font-size:10px">${b.project} / ${b.task}</small></td>
             <td class="col-assign"><strong>${b.assignedTo}</strong></td>
-            <td>
+            <td class="col-status">
                 <select class="${b.status}" onchange="patch('${b._id}','status',this.value)">
                     <option value="Queue" ${b.status=='Queue'?'selected':''}>Queue</option>
                     <option value="Fixed" ${b.status=='Fixed'?'selected':''}>Fixed</option>
                 </select>
             </td>
-            <td><input type="datetime-local" class="grid-input" value="${b.startedAt||''}" onchange="patch('${b._id}','startedAt',this.value)"></td>
-            <td><input type="date" class="grid-input" value="${b.targetDate||''}" onchange="patch('${b._id}','targetDate',this.value)"></td>
-            <td>
+            <td class="col-date"><input type="datetime-local" class="grid-input" value="${b.startedAt||''}" onchange="patch('${b._id}','startedAt',this.value)"></td>
+            <td class="col-date"><input type="date" class="grid-input" value="${b.targetDate||''}" onchange="patch('${b._id}','targetDate',this.value)"></td>
+            <td class="col-progress">
                 <input type="range" min="0" max="100" value="${b.completion||0}" onchange="patch('${b._id}','completion',this.value)">
                 <span style="font-size:10px; font-weight:700;">${b.completion}%</span>
             </td>
