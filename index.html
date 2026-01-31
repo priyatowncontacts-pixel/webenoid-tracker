@@ -109,12 +109,13 @@
 </div>
 
 <script>
-const API = "http://localhost:3000";
+// --- UPDATED RENDER API URL ---
+const API = "https://webenoid-tracker.onrender.com";
 
 // --- AUTH GUARD ---
 const session = localStorage.getItem("webenoid_session");
 if (!session || session !== "active") window.location.href = "login.html";
-document.getElementById('userLabel').innerText = `Logged in: ${localStorage.getItem("user")}`;
+document.getElementById('userLabel').innerText = `Logged in: ${localStorage.getItem("user") || 'User'}`;
 
 function logout() {
     localStorage.clear();
@@ -131,29 +132,49 @@ function notify(msg) {
 let team = JSON.parse(localStorage.getItem("team_list")) || ["Assignee"];
 function addDev() {
     const name = document.getElementById('newDev').value.trim();
-    if(name) { team.push(name); localStorage.setItem("team_list", JSON.stringify(team)); updateDrops(); notify(`Added ${name}`); }
+    if(name) { team.push(name); localStorage.setItem("team_list", JSON.stringify(team)); updateDrops(); notify(`Added ${name}`); document.getElementById('newDev').value = ""; }
 }
 function updateDrops() {
     [document.getElementById('qAssign'), document.getElementById('bAssign')].forEach(s => {
-        s.innerHTML = ""; team.forEach(t => s.innerHTML += `<option value="${t}">${t}</option>`);
+        if(s) {
+            s.innerHTML = ""; team.forEach(t => s.innerHTML += `<option value="${t}">${t}</option>`);
+        }
     });
 }
 
 // --- BUG MANAGEMENT ---
 async function submitSingle() {
-    const data = [{ project: qProj.value, task: qTask.value, title: qTitle.value, assignedTo: qAssign.value, status: "Queue", completion: 0, startedAt: new Date().toISOString().slice(0,16) }];
+    const data = [{ 
+        project: document.getElementById('qProj').value, 
+        task: document.getElementById('qTask').value, 
+        title: document.getElementById('qTitle').value, 
+        assignedTo: document.getElementById('qAssign').value, 
+        status: "Queue", 
+        completion: 0, 
+        startedAt: new Date().toISOString().slice(0,16) 
+    }];
     await fetch(API+"/bugs", {method:"POST", headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)});
-    qTitle.value = ""; loadBugs(); notify("Defect Created!");
+    document.getElementById('qTitle').value = ""; loadBugs(); notify("Defect Created!");
 }
 
 async function submitBulk() {
-    const lines = bPaste.value.trim().split("\n");
+    const pInput = document.getElementById('bPaste');
+    const lines = pInput.value.trim().split("\n");
     const data = lines.map(l => {
         const p = l.split("|");
-        return { project: bProj.value, task: bTask.value, title: p[0].trim(), assignedTo: bAssign.value, status: "Queue", completion: 0, startedAt: new Date().toISOString().slice(0,16), targetDate: p[1]?.trim() || "" };
+        return { 
+            project: document.getElementById('bProj').value, 
+            task: document.getElementById('bTask').value, 
+            title: p[0].trim(), 
+            assignedTo: document.getElementById('bAssign').value, 
+            status: "Queue", 
+            completion: 0, 
+            startedAt: new Date().toISOString().slice(0,16), 
+            targetDate: p[1]?.trim() || "" 
+        };
     }).filter(x => x.title);
     await fetch(API+"/bugs", {method:"POST", headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)});
-    bPaste.value = ""; loadBugs(); notify(`Batch Logged: ${data.length} bugs`);
+    pInput.value = ""; loadBugs(); notify(`Batch Logged: ${data.length} bugs`);
 }
 
 async function patch(id, field, value) {
@@ -175,8 +196,8 @@ async function loadBugs() {
             <td><strong>${b.assignedTo}</strong></td>
             <td>
                 <select class="${b.status}" onchange="patch('${b._id}','status',this.value)">
-                    <option ${b.status=='Queue'?'selected':''}>Queue</option>
-                    <option ${b.status=='Fixed'?'selected':''}>Fixed</option>
+                    <option value="Queue" ${b.status=='Queue'?'selected':''}>Queue</option>
+                    <option value="Fixed" ${b.status=='Fixed'?'selected':''}>Fixed</option>
                 </select>
             </td>
             <td><input type="datetime-local" class="grid-input" value="${b.startedAt||''}" onchange="patch('${b._id}','startedAt',this.value)"></td>
@@ -192,17 +213,45 @@ async function loadBugs() {
 }
 
 // --- PROJECT HELPERS ---
-async function addProj() { await fetch(API+"/project", {method:"POST", headers:{'Content-Type':'application/json'}, body:JSON.stringify({name:newProj.value})}); newProj.value=""; loadData(); }
-async function addTask() { await fetch(API+"/task", {method:"POST", headers:{'Content-Type':'application/json'}, body:JSON.stringify({project:selProj.value, name:newTask.value})}); newTask.value=""; loadData(); }
+async function addProj() { 
+    const name = document.getElementById('newProj').value;
+    await fetch(API+"/project", {method:"POST", headers:{'Content-Type':'application/json'}, body:JSON.stringify({name})}); 
+    document.getElementById('newProj').value=""; loadData(); 
+}
+async function addTask() { 
+    const p = document.getElementById('selProj').value;
+    const n = document.getElementById('newTask').value;
+    await fetch(API+"/task", {method:"POST", headers:{'Content-Type':'application/json'}, body:JSON.stringify({project:p, name:n})}); 
+    document.getElementById('newTask').value=""; loadData(); 
+}
 async function loadData() {
-    const p = await (await fetch(API+"/projects")).json();
-    [selProj, qProj, bProj].forEach(s => { s.innerHTML = ""; p.forEach(x => s.innerHTML += `<option value="${x.name}">${x.name}</option>`); });
+    const res = await fetch(API+"/projects");
+    const p = await res.json();
+    [document.getElementById('selProj'), document.getElementById('qProj'), document.getElementById('bProj')].forEach(s => { 
+        s.innerHTML = ""; p.forEach(x => s.innerHTML += `<option value="${x.name}">${x.name}</option>`); 
+    });
     loadTasks(); loadQTasks(); loadBTasks();
 }
-async function loadTasks() { const t = await (await fetch(API+"/tasks/"+selProj.value)).json(); }
-async function loadQTasks() { const t = await (await fetch(API+"/tasks/"+qProj.value)).json(); qTask.innerHTML = ""; t.forEach(x => qTask.innerHTML += `<option value="${x.name}">${x.name}</option>`); }
-async function loadBTasks() { const t = await (await fetch(API+"/tasks/"+bProj.value)).json(); bTask.innerHTML = ""; t.forEach(x => bTask.innerHTML += `<option value="${x.name}">${x.name}</option>`); }
+async function loadTasks() { 
+    const val = document.getElementById('selProj').value;
+    if(val) await fetch(API+"/tasks/"+val); 
+}
+async function loadQTasks() { 
+    const val = document.getElementById('qProj').value;
+    if(!val) return;
+    const t = await (await fetch(API+"/tasks/"+val)).json(); 
+    const qTask = document.getElementById('qTask');
+    qTask.innerHTML = ""; t.forEach(x => qTask.innerHTML += `<option value="${x.name}">${x.name}</option>`); 
+}
+async function loadBTasks() { 
+    const val = document.getElementById('bProj').value;
+    if(!val) return;
+    const t = await (await fetch(API+"/tasks/"+val)).json(); 
+    const bTask = document.getElementById('bTask');
+    bTask.innerHTML = ""; t.forEach(x => bTask.innerHTML += `<option value="${x.name}">${x.name}</option>`); 
+}
 
+// Init
 loadData(); loadBugs(); updateDrops();
 </script>
 </body>
