@@ -33,7 +33,7 @@ async function notifyDiscord(title, status, project, dev) {
     const webhook = process.env.DISCORD_WEBHOOK_URL;
     if (!webhook) return;
 
-    let color = 3447003; // Blue (Queue)
+    let color = 3447003; 
     let icon = "📥";
     if (status === "Review") { color = 16776960; icon = "🔍"; }
     if (status === "Fixed") { color = 3066993; icon = "✅"; }
@@ -47,11 +47,10 @@ async function notifyDiscord(title, status, project, dev) {
                 { name: "Assignee", value: dev, inline: true },
                 { name: "Defect", value: title, inline: false }
             ],
-            footer: { text: "Webenoid Bug Tracking System" },
             timestamp: new Date()
         }]
     };
-    try { await axios.post(webhook, payload); } catch (err) { console.log("Discord error:", err.message); }
+    try { await axios.post(webhook, payload); } catch (err) { console.log("Discord error"); }
 }
 
 // API ROUTES
@@ -77,9 +76,12 @@ app.put("/bug/:id", async (req, res) => {
     res.json({success:true}); 
 });
 
-// ROUTING
+// CLEAN ROUTING
 app.get("/", (req, res) => res.sendFile(path.join(__dirname, "login.html")));
 app.get("/dashboard", (req, res) => res.sendFile(path.join(__dirname, "index.html")));
+
+// Catch-all to prevent "null" or 404 errors on refresh
+app.get("*", (req, res) => res.redirect("/"));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 Engine Live on ${PORT}`));
