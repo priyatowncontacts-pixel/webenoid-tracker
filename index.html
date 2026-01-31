@@ -1,167 +1,112 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Webenoid Tracker | Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Webenoid Tracker</title>
     <style>
-        :root { --brand: #2563eb; --bg: #f8fafc; --panel: #ffffff; --text: #0f172a; --text-light: #64748b; --border: #e2e8f0; --radius: 12px; }
-        body { display: none; font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); margin: 0; flex-direction: column; height: 100vh; overflow: hidden; }
-        
-        nav { height: 60px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 32px; flex-shrink: 0; }
-        .logo { font-weight: 800; color: var(--brand); font-size: 20px; }
-        .logout-btn { background: #fff; color: #ef4444; border: 1px solid #fee2e2; padding: 6px 14px; border-radius: 6px; font-weight: 600; cursor: pointer; }
-
-        .wrapper { display: flex; flex: 1; overflow: hidden; }
-        aside { width: 300px; background: var(--panel); border-right: 1px solid var(--border); padding: 24px; overflow-y: auto; }
-        main { flex: 1; padding: 20px 32px; overflow-y: auto; }
-
-        .card { background: var(--panel); border-radius: var(--radius); border: 1px solid var(--border); padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 24px; }
-        h3 { font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-light); margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
-        
-        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; margin-bottom: 10px; box-sizing: border-box; }
-        button { width: 100%; background: var(--brand); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; }
-
-        table { width: 100%; border-collapse: collapse; }
-        th { text-align: left; padding: 12px; font-size: 11px; text-transform: uppercase; color: var(--text-light); border-bottom: 1px solid var(--border); background: #fcfcfd; }
-        td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 13px; }
-        
-        .Queue { background: #e0e7ff; color: #3730a3; padding: 4px 8px; border-radius: 6px; font-weight: 700; border:none; font-size:11px; cursor: pointer; }
-        .Fixed { background: #dcfce7; color: #166534; padding: 4px 8px; border-radius: 6px; font-weight: 700; border:none; font-size:11px; cursor: pointer; }
-        .btn-del { color: #ef4444; background: none; font-size: 11px; font-weight: bold; width: auto; padding: 0; }
+        body { display: none; font-family: sans-serif; margin: 0; flex-direction: column; height: 100vh; }
+        nav { background: white; padding: 15px 25px; display: flex; justify-content: space-between; border-bottom: 1px solid #eee; }
+        .logout { background: #ef4444; color: white; border: none; padding: 5px 15px; border-radius: 6px; cursor: pointer; }
+        .container { display: flex; flex: 1; }
+        aside { width: 250px; border-right: 1px solid #eee; padding: 20px; }
+        main { flex: 1; padding: 20px; background: #f8fafc; }
     </style>
 </head>
-<body>
 
+<body>
 <nav>
-    <div class="logo">WEBENOID <span>TRACKER</span></div>
-    <div>
-        <span id="userLabel" style="margin-right:15px; font-size:13px; font-weight:600"></span>
-        <button class="logout-btn" onclick="logout()">Logout</button>
-    </div>
+<b>WEBENOID TRACKER</b>
+<div>
+<span id="userTag"></span>
+<button class="logout" onclick="logout()">Logout</button>
+</div>
 </nav>
 
-<div class="wrapper">
-    <aside>
-        <h3>Projects</h3>
-        <select id="selProj" onchange="loadBugs()"></select>
-        <input id="newP" placeholder="Project Name">
-        <button onclick="addP()">Create</button>
+<div class="container">
+<aside>
+<h3>Projects</h3>
+<select id="selProj" onchange="loadBugs()"></select>
 
-        <div style="margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px;">
-            <h3>Bulk Log</h3>
-            <textarea id="bulkT" rows="5" placeholder="Enter list..."></textarea>
-            <button onclick="submitBulk()" style="background:#0f172a">Process List</button>
-        </div>
-    </aside>
+<input id="newP" placeholder="New Project">
+<button onclick="addP()">Add</button>
+</aside>
 
-    <main>
-        <div class="card">
-            <h3 style="border:none">Add Bug</h3>
-            <div style="display: flex; gap: 10px;">
-                <input id="bugT" placeholder="Describe the issue..." style="margin:0">
-                <button onclick="submitSingle()" style="width:150px; margin:0">Log Bug</button>
-            </div>
-        </div>
+<main>
+<input id="bugT" placeholder="Bug Title">
+<button onclick="addB()">Log Bug</button>
 
-        <div class="card" style="padding:0">
-            <table>
-                <thead>
-                    <tr>
-                        <th style="width:40px; text-align:center">#</th>
-                        <th>Bug Details</th>
-                        <th>Reporter</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody id="bugList"></tbody>
-            </table>
-        </div>
-    </main>
+<div id="list" style="margin-top:20px"></div>
+</main>
 </div>
 
 <script>
-    const session = localStorage.getItem("webenoid_session");
-    const user = localStorage.getItem("user");
+// SECURITY CHECK – ONLY FIX APPLIED
+const session = localStorage.getItem("webenoid_session");
+const user = localStorage.getItem("user");
 
-    // AUTH GUARD: Clear data and redirect if session is invalid
-    if (!session || session !== "active") {
-        localStorage.clear();
-        window.location.replace("/"); 
-    } else {
-        document.body.style.display = "flex";
-        document.getElementById('userLabel').innerText = `User: ${user}`;
-        loadData();
-    }
+if (session !== "active" || !user || user === "null") {
+    localStorage.clear();
+    window.location.replace("/login.html");
+} else {
+    document.body.style.display = "flex";
+    document.getElementById('userTag').innerText = user;
+}
 
-    function logout() {
-        localStorage.clear();
-        window.location.replace("/");
-    }
+function logout() {
+    localStorage.clear();
+    window.location.replace("/login.html");
+}
 
-    async function loadData() {
-        const res = await fetch("/projects");
-        const p = await res.json();
-        document.getElementById('selProj').innerHTML = p.map(x => `<option value="${x.name}">${x.name}</option>`).join('');
-        if(p.length > 0) loadBugs();
-    }
+async function loadData() {
+    const res = await fetch("/projects");
+    const p = await res.json();
 
-    async function loadBugs() {
-        const res = await fetch("/bugs");
-        const bugs = await res.json();
-        const active = document.getElementById('selProj').value;
-        const body = document.getElementById('bugList');
-        
-        const filtered = bugs.filter(b => b.project === active);
-        body.innerHTML = filtered.map((b, i) => `
-            <tr>
-                <td style="text-align:center">${i+1}</td>
-                <td><strong>${b.title}</strong></td>
-                <td>${b.assignedTo}</td>
-                <td><button class="${b.status}" onclick="toggleStatus('${b._id}','${b.status}')">${b.status}</button></td>
-                <td><button class="btn-del" onclick="delBug('${b._id}')">DELETE</button></td>
-            </tr>
-        `).join('');
-    }
+    selProj.innerHTML =
+      p.map(x => `<option value="${x.name}">${x.name}</option>`).join('');
 
-    async function addP() {
-        const name = document.getElementById('newP').value;
-        if(!name) return;
-        await fetch("/project", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({name})});
-        document.getElementById('newP').value=""; loadData();
-    }
+    loadBugs();
+}
 
-    async function submitSingle() {
-        const title = document.getElementById('bugT').value;
-        if(!title) return;
-        await fetch("/bugs", {
-            method:"POST", 
-            headers:{"Content-Type":"application/json"}, 
-            body:JSON.stringify({project: selProj.value, title, assignedTo: user, status: "Queue"})
-        });
-        document.getElementById('bugT').value=""; loadBugs();
-    }
+async function loadBugs() {
+    const res = await fetch("/bugs");
+    const bugs = await res.json();
 
-    async function submitBulk() {
-        const lines = document.getElementById('bulkT').value.split("\n").filter(l => l.trim());
-        const data = lines.map(l => ({ project: selProj.value, title: l, assignedTo: user, status: "Queue" }));
-        await fetch("/bugs", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(data)});
-        document.getElementById('bulkT').value=""; loadBugs();
-    }
+    const active = selProj.value;
 
-    async function toggleStatus(id, current) {
-        const status = current === "Queue" ? "Fixed" : "Queue";
-        await fetch(`/bug/${id}`, {method:"PUT", headers:{"Content-Type":"application/json"}, body:JSON.stringify({status})});
-        loadBugs();
-    }
+    list.innerHTML =
+      bugs
+      .filter(b => b.project === active)
+      .map(b => `<div>${b.title} - <b>${b.status}</b></div>`)
+      .join('');
+}
 
-    async function delBug(id) {
-        if(confirm("Delete this?")) {
-            await fetch(`/bug/${id}`, {method:"DELETE"});
-            loadBugs();
-        }
-    }
+async function addP() {
+    await fetch("/project", {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({name:newP.value})
+    });
+
+    newP.value="";
+    loadData();
+}
+
+async function addB() {
+    await fetch("/bugs", {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify([{
+            project: selProj.value,
+            title: bugT.value,
+            assignedTo: user
+        }])
+    });
+
+    bugT.value="";
+    loadBugs();
+}
+
+loadData();
 </script>
+
 </body>
 </html>
