@@ -32,12 +32,10 @@ const Bug = mongoose.model("Bug", {
 async function notifyDiscord(title, status, project, dev) {
     const webhook = process.env.DISCORD_WEBHOOK_URL;
     if (!webhook) return;
-
     let color = 3447003; 
     let icon = "📥";
     if (status === "Review") { color = 16776960; icon = "🔍"; }
     if (status === "Fixed") { color = 3066993; icon = "✅"; }
-
     const payload = {
         embeds: [{
             title: `${icon} Webenoid Update: ${status}`,
@@ -54,19 +52,16 @@ async function notifyDiscord(title, status, project, dev) {
 }
 
 // API ROUTES
+app.get("/projects", async (req, res) => res.json(await Project.find()));
 app.post("/project", async (req, res) => { await Project.create(req.body); res.json({success:true}); });
-app.get("/projects", async (req, res) => { res.json(await Project.find()); });
+app.get("/tasks/:project", async (req, res) => res.json(await Task.find({ project: req.params.project })));
 app.post("/task", async (req, res) => { await Task.create(req.body); res.json({success:true}); });
-app.get("/tasks/:project", async (req, res) => { res.json(await Task.find({ project: req.params.project })); });
-
+app.get("/bugs", async (req, res) => res.json(await Bug.find().sort({_id: -1})));
 app.post("/bugs", async (req, res) => { 
     const bugs = await Bug.insertMany(req.body); 
     if (bugs.length > 0) notifyDiscord(bugs[0].title, "Queue", bugs[0].project, bugs[0].assignedTo);
     res.json({success:true}); 
 });
-
-app.get("/bugs", async (req, res) => { res.json(await Bug.find().sort({_id: -1})); });
-
 app.put("/bug/:id", async (req, res) => { 
     const oldBug = await Bug.findById(req.params.id);
     const updated = await Bug.findByIdAndUpdate(req.params.id, req.body, { new: true }); 
@@ -76,12 +71,10 @@ app.put("/bug/:id", async (req, res) => {
     res.json({success:true}); 
 });
 
-// CLEAN ROUTING
+// ROUTING - THE FIX FOR YOUR VIDEOS
 app.get("/", (req, res) => res.sendFile(path.join(__dirname, "login.html")));
 app.get("/dashboard", (req, res) => res.sendFile(path.join(__dirname, "index.html")));
-
-// Catch-all to prevent "null" or 404 errors on refresh
-app.get("*", (req, res) => res.redirect("/"));
+app.get("*", (req, res) => res.redirect("/")); // Force any error back to login
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Engine Live on ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Server running on ${PORT}`));
