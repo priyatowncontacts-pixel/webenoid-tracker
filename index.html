@@ -9,117 +9,97 @@
         :root { --brand: #2563eb; --bg: #f8fafc; --panel: #ffffff; --text: #0f172a; --text-light: #64748b; --border: #e2e8f0; --radius: 12px; }
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
-        /* COMPACT HEADER */
-        nav { height: 50px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; flex-shrink: 0; }
+        nav { height: 48px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; flex-shrink: 0; }
         .logo { font-weight: 800; color: var(--brand); font-size: 18px; letter-spacing: -0.5px; }
         .logo span { color: var(--text); }
-        .logout-btn { background: #fff; color: #ef4444; border: 1px solid #fee2e2; padding: 4px 10px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 12px; }
 
         .wrapper { display: flex; flex: 1; overflow: hidden; }
-        aside { width: 280px; background: var(--panel); border-right: 1px solid var(--border); padding: 16px; overflow-y: auto; }
-        main { flex: 1; padding: 16px 24px; overflow-y: auto; }
+        aside { width: 260px; background: var(--panel); border-right: 1px solid var(--border); padding: 15px; overflow-y: auto; }
+        main { flex: 1; padding: 15px 20px; overflow-y: auto; }
 
-        h3 { font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--text-light); margin-bottom: 8px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
-        .card { background: var(--panel); border-radius: var(--radius); border: 1px solid var(--border); padding: 15px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); margin-bottom: 16px; }
+        .card { background: var(--panel); border-radius: 8px; border: 1px solid var(--border); padding: 12px; margin-bottom: 12px; }
+        h3 { font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--text-light); margin: 0 0 10px 0; }
         
-        input, select, textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; font-family: inherit; font-size: 12px; margin-bottom: 8px; outline: none; }
-        button { width: 100%; background: var(--brand); color: white; border: none; padding: 10px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px; }
-
-        /* FIXED BULK SECTION LAYOUT */
-        .bulk-controls { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 8px; }
-        .bulk-controls select { margin-bottom: 0; }
-
-        /* STATUS TABS */
-        .tab-bar { display: flex; gap: 5px; margin-bottom: 12px; }
-        .tab { padding: 6px 16px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; border: 1px solid var(--border); background: #f1f5f9; color: var(--text-light); }
-        .tab.active { background: var(--brand); color: white; border-color: var(--brand); }
-
-        /* COMPACT TABLE */
-        table { width: 100%; border-collapse: collapse; min-width: 1000px; table-layout: fixed; }
-        th { text-align: left; padding: 8px; font-size: 10px; text-transform: uppercase; color: var(--text-light); border-bottom: 1px solid var(--border); background: #fcfcfd; }
-        td { padding: 6px 8px; border-bottom: 1px solid var(--border); font-size: 12px; word-break: break-word; vertical-align: middle; }
+        input, select, textarea { width: 100%; padding: 7px 10px; border: 1px solid var(--border); border-radius: 6px; font-family: inherit; font-size: 12px; margin-bottom: 8px; outline: none; background: #fff; }
         
-        .col-idx { width: 35px; text-align: center; }
-        .col-details { width: 350px; }
-        .col-assign { width: 120px; }
-        .col-status { width: 95px; }
-        .col-date { width: 140px; }
-        .col-progress { width: 130px; }
+        /* FIXED BULK UI SECTION */
+        .bulk-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .bulk-grid select { margin-bottom: 0; height: 34px; }
+        textarea#bPaste { margin-bottom: 10px; min-height: 60px; border: 1px solid var(--border); }
+        .btn-action { width: auto; min-width: 140px; background: var(--brand); color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 12px; }
 
-        .Queue { background: #e0e7ff; color: #3730a3; padding: 2px 6px; border-radius: 4px; font-weight: 700; border:none; font-size:10px; cursor: pointer; }
-        .Fixed { background: #dcfce7; color: #166534; padding: 2px 6px; border-radius: 4px; font-weight: 700; border:none; font-size:10px; cursor: pointer; }
+        /* TABS */
+        .tab-bar { display: flex; gap: 4px; margin-bottom: 10px; }
+        .tab { padding: 5px 12px; border-radius: 5px; font-size: 10px; font-weight: 700; cursor: pointer; background: #e2e8f0; color: var(--text-light); border: 1px solid transparent; }
+        .tab.active { background: var(--brand); color: white; }
 
-        .progress-container { display: flex; align-items: center; gap: 6px; }
-        input[type="range"] { margin: 0; cursor: pointer; height: 4px; accent-color: var(--brand); width: 60px; }
-        .grid-input { font-size: 11px; padding: 2px; border: 1px solid transparent; background: transparent; width: 100%; }
+        /* ULTRA COMPACT TABLE */
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        th { text-align: left; padding: 6px 10px; font-size: 10px; text-transform: uppercase; color: var(--text-light); background: #fcfcfd; border-bottom: 1px solid var(--border); }
+        td { padding: 5px 10px; border-bottom: 1px solid var(--border); font-size: 12px; vertical-align: middle; word-wrap: break-word; }
 
-        #notify { position: fixed; top: 15px; left: 50%; transform: translateX(-50%); background: #0f172a; color: white; padding: 8px 24px; border-radius: 50px; display: none; z-index: 100000; font-weight: 600; font-size: 12px; box-shadow: 0 10px 15px rgba(0,0,0,0.2); }
+        .col-idx { width: 30px; }
+        .col-title { width: 40%; }
+        .col-assign { width: 15%; }
+        .col-status { width: 100px; }
+
+        .Queue { background: #e0e7ff; color: #3730a3; padding: 2px 5px; border-radius: 4px; font-size: 10px; font-weight: 700; border: none; }
+        .Fixed { background: #dcfce7; color: #166534; padding: 2px 5px; border-radius: 4px; font-size: 10px; font-weight: 700; border: none; }
+
+        #notify { position: fixed; top: 15px; left: 50%; transform: translateX(-50%); background: #0f172a; color: white; padding: 6px 20px; border-radius: 20px; display: none; z-index: 100; font-size: 12px; }
     </style>
 </head>
 <body>
 
 <nav>
     <div class="logo">WEBENOID <span>TRACKER</span></div>
-    <div style="display: flex; align-items: center; gap: 15px;">
-        <span id="userLabel" style="font-weight: 600; font-size: 12px; color: var(--text-light);"></span>
-        <button class="logout-btn" onclick="logout()">Logout</button>
-    </div>
+    <div id="userLabel" style="font-size: 11px; font-weight: 600;"></div>
 </nav>
 
 <div id="notify"></div>
 
 <div class="wrapper">
     <aside>
-        <h3>Directory</h3>
-        <input id="newDev" placeholder="New Developer">
-        <button onclick="addDev()" style="background: #0f172a; margin-bottom: 15px;">Add Member</button>
+        <h3>Settings</h3>
+        <input id="newDev" placeholder="Developer Name">
+        <button class="btn-action" onclick="addDev()" style="width:100%; margin-bottom:15px;">+ Member</button>
 
         <h3>Context</h3>
         <input id="newProj" placeholder="Project Name">
-        <button onclick="addProj()">Create Project</button>
+        <button class="btn-action" onclick="addProj()" style="width:100%; margin-bottom:8px;">Add Project</button>
         <select id="selProj" onchange="loadTasks()"></select>
         <input id="newTask" placeholder="Task Name">
-        <button onclick="addTask()">Link Task</button>
-
-        <div style="margin-top: 20px; border-top: 1px solid var(--border); padding-top: 15px;">
-            <h3>Quick Entry</h3>
-            <select id="qProj" onchange="loadQTasks()"></select>
-            <select id="qTask"></select>
-            <input id="qTitle" placeholder="Defect Title">
-            <select id="qAssign"></select>
-            <button onclick="submitSingle()">Create Bug</button>
-        </div>
+        <button class="btn-action" onclick="addTask()" style="width:100%;">Link Task</button>
     </aside>
 
     <main>
         <div class="card">
             <h3>Bulk Copy-Paste</h3>
-            <div class="bulk-controls">
+            <div class="bulk-grid">
                 <select id="bProj" onchange="loadBTasks()"></select>
                 <select id="bTask"></select>
                 <select id="bAssign"></select>
             </div>
-            <textarea id="bPaste" rows="2" placeholder="Title | Target Date (YYYY-MM-DD)"></textarea>
-            <button onclick="submitBulk()" style="width: auto; padding: 8px 25px;">🚀 Process Batch</button>
+            <textarea id="bPaste" placeholder="Defect Title | Target Date (YYYY-MM-DD)"></textarea>
+            <button class="btn-action" onclick="submitBulk()">🚀 Process Batch</button>
         </div>
 
         <div class="tab-bar">
-            <div id="tabAll" class="tab active" onclick="setTab('All')">ALL DEFECTS</div>
-            <div id="tabQueue" class="tab" onclick="setTab('Queue')">QUEUE ONLY</div>
-            <div id="tabFixed" class="tab" onclick="setTab('Fixed')">FIXED ONLY</div>
+            <div id="tabAll" class="tab active" onclick="setTab('All')">ALL</div>
+            <div id="tabQueue" class="tab" onclick="setTab('Queue')">QUEUE</div>
+            <div id="tabFixed" class="tab" onclick="setTab('Fixed')">FIXED</div>
         </div>
 
-        <div class="card" style="padding:0; overflow-x:auto">
+        <div class="card" style="padding:0; overflow-x:auto;">
             <table>
                 <thead>
                     <tr>
                         <th class="col-idx">#</th>
-                        <th class="col-details">Defect Details</th>
+                        <th class="col-title">Details</th>
                         <th class="col-assign">Assignee</th>
                         <th class="col-status">Status</th>
-                        <th class="col-date">Started At</th>
-                        <th class="col-date">Target Fix</th>
-                        <th class="col-progress">Work Done</th>
+                        <th>Target Fix</th>
+                        <th style="width:100px;">Done</th>
                     </tr>
                 </thead>
                 <tbody id="bugList"></tbody>
@@ -132,99 +112,80 @@
 const API = "https://webenoid-tracker.onrender.com";
 let currentTab = "All";
 
-// Auth logic
 if (localStorage.getItem("webenoid_session") !== "active") window.location.href = "login.html";
 document.getElementById('userLabel').innerText = `Admin: ${localStorage.getItem("user")}`;
-function logout() { localStorage.clear(); window.location.href = "login.html"; }
 
-function notify(msg) {
-    const n = document.getElementById('notify');
-    n.innerText = msg; n.style.display = "block";
-    setTimeout(() => n.style.display = "none", 3000);
-}
+function notify(m) { const n = document.getElementById('notify'); n.innerText = m; n.style.display="block"; setTimeout(()=>n.style.display="none", 2000); }
 
-function setTab(status) {
-    currentTab = status;
+function setTab(s) {
+    currentTab = s;
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.getElementById('tab' + status).classList.add('active');
+    document.getElementById('tab' + s).classList.add('active');
     loadBugs();
 }
 
 let team = JSON.parse(localStorage.getItem("team_list")) || ["Assignee"];
-function addDev() {
-    const name = document.getElementById('newDev').value.trim();
-    if(name) { team.push(name); localStorage.setItem("team_list", JSON.stringify(team)); updateDrops(); notify("✅ Member Added"); }
-}
-
 function updateDrops() {
-    [document.getElementById('qAssign'), document.getElementById('bAssign')].forEach(s => {
-        if(s) { s.innerHTML = ""; team.forEach(t => s.innerHTML += `<option value="${t}">${t}</option>`); }
+    [document.getElementById('bAssign')].forEach(s => {
+        s.innerHTML = ""; team.forEach(t => s.innerHTML += `<option value="${t}">${t}</option>`);
     });
 }
 
-async function submitSingle() {
-    const data = [{ project: qProj.value, task: qTask.value, title: qTitle.value, assignedTo: qAssign.value, status: "Queue", completion: 0, startedAt: new Date().toISOString().slice(0,16) }];
-    await fetch(API+"/bugs", {method:"POST", headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)});
-    qTitle.value = ""; loadBugs(); notify("🎯 Bug Logged");
+function addDev() {
+    const n = document.getElementById('newDev').value;
+    if(n) { team.push(n); localStorage.setItem("team_list", JSON.stringify(team)); updateDrops(); notify("Member Added"); }
 }
 
 async function submitBulk() {
     const lines = bPaste.value.trim().split("\n");
     const data = lines.map(l => {
         const p = l.split("|");
-        return { project: bProj.value, task: bTask.value, title: p[0].trim(), assignedTo: bAssign.value, status: "Queue", completion: 0, startedAt: new Date().toISOString().slice(0,16), targetDate: p[1]?.trim() || "" };
+        return { project: bProj.value, task: bTask.value, title: p[0].trim(), assignedTo: bAssign.value, status: "Queue", completion: 0, targetDate: p[1]?.trim() || "" };
     }).filter(x => x.title);
     await fetch(API+"/bugs", {method:"POST", headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)});
-    bPaste.value = ""; loadBugs(); notify("🚀 Batch Processed");
+    bPaste.value = ""; loadBugs(); notify("Batch Processed");
 }
 
-async function patch(id, field, value) {
-    const b = {}; b[field] = value;
+async function patch(id, f, v) {
+    const b = {}; b[f] = v;
     await fetch(`${API}/bug/${id}`, {method:"PUT", headers:{'Content-Type':'application/json'}, body:JSON.stringify(b)});
-    notify("💾 Saved");
-    if(field === 'status') loadBugs();
+    notify("Saved");
+    if(f === 'status') loadBugs();
 }
 
 async function loadBugs() {
-    try {
-        const res = await fetch(API+"/bugs");
-        let bugs = await res.json();
-        if (currentTab !== "All") bugs = bugs.filter(b => b.status === currentTab);
-        const body = document.getElementById('bugList');
-        body.innerHTML = "";
-        bugs.forEach((b, i) => {
-            body.innerHTML += `
-            <tr>
-                <td class="col-idx">${i+1}</td>
-                <td class="col-details"><strong>${b.title}</strong><br><small style="font-size:10px">${b.project} / ${b.task}</small></td>
-                <td class="col-assign"><strong>${b.assignedTo || '---'}</strong></td>
-                <td class="col-status">
-                    <select class="${b.status}" onchange="patch('${b._id}','status',this.value)">
-                        <option value="Queue" ${b.status=='Queue'?'selected':''}>Queue</option>
-                        <option value="Fixed" ${b.status=='Fixed'?'selected':''}>Fixed</option>
-                    </select>
-                </td>
-                <td class="col-date"><input type="datetime-local" class="grid-input" value="${b.startedAt||''}" onchange="patch('${b._id}','startedAt',this.value)"></td>
-                <td class="col-date"><input type="date" class="grid-input" value="${b.targetDate||''}" onchange="patch('${b._id}','targetDate',this.value)"></td>
-                <td class="col-progress">
-                    <div class="progress-container">
-                        <input type="range" min="0" max="100" value="${b.completion||0}" oninput="document.getElementById('p-${b._id}').innerText=this.value+'%'" onchange="patch('${b._id}','completion',this.value)">
-                        <span id="p-${b._id}" style="font-weight:700; font-size:10px">${b.completion||0}%</span>
-                    </div>
-                </td>
-            </tr>`;
-        });
-    } catch(e) {}
+    const res = await fetch(API+"/bugs");
+    let bugs = await res.json();
+    if (currentTab !== "All") bugs = bugs.filter(b => b.status === currentTab);
+    const body = document.getElementById('bugList');
+    body.innerHTML = "";
+    bugs.forEach((b, i) => {
+        body.innerHTML += `
+        <tr>
+            <td>${i+1}</td>
+            <td><strong>${b.title}</strong><br><small>${b.project} / ${b.task}</small></td>
+            <td>${b.assignedTo}</td>
+            <td>
+                <select class="${b.status}" onchange="patch('${b._id}','status',this.value)">
+                    <option value="Queue" ${b.status=='Queue'?'selected':''}>Queue</option>
+                    <option value="Fixed" ${b.status=='Fixed'?'selected':''}>Fixed</option>
+                </select>
+            </td>
+            <td><input type="date" class="grid-input" value="${b.targetDate||''}" onchange="patch('${b._id}','targetDate',this.value)"></td>
+            <td>
+                <input type="range" min="0" max="100" value="${b.completion||0}" onchange="patch('${b._id}','completion',this.value)">
+            </td>
+        </tr>`;
+    });
 }
 
-async function addProj() { await fetch(API+"/project", {method:"POST", headers:{'Content-Type':'application/json'}, body:JSON.stringify({name:newProj.value})}); newProj.value=""; notify("Project Added"); loadData(); }
-async function addTask() { await fetch(API+"/task", {method:"POST", headers:{'Content-Type':'application/json'}, body:JSON.stringify({project:selProj.value, name:newTask.value})}); newTask.value=""; notify("Task Linked"); loadData(); }
+async function addProj() { await fetch(API+"/project", {method:"POST", headers:{'Content-Type':'application/json'}, body:JSON.stringify({name:newProj.value})}); loadData(); }
+async function addTask() { await fetch(API+"/task", {method:"POST", headers:{'Content-Type':'application/json'}, body:JSON.stringify({project:selProj.value, name:newTask.value})}); loadData(); }
 async function loadData() {
     const p = await (await fetch(API+"/projects")).json();
-    [selProj, qProj, bProj].forEach(s => { s.innerHTML = ""; p.forEach(x => s.innerHTML += `<option value="${x.name}">${x.name}</option>`); });
-    loadQTasks(); loadBTasks();
+    [selProj, bProj].forEach(s => { s.innerHTML = ""; p.forEach(x => s.innerHTML += `<option value="${x.name}">${x.name}</option>`); });
+    loadBTasks();
 }
-async function loadQTasks() { const t = await (await fetch(API+"/tasks/"+qProj.value)).json(); qTask.innerHTML = ""; t.forEach(x => qTask.innerHTML += `<option value="${x.name}">${x.name}</option>`); }
 async function loadBTasks() { const t = await (await fetch(API+"/tasks/"+bProj.value)).json(); bTask.innerHTML = ""; t.forEach(x => bTask.innerHTML += `<option value="${x.name}">${x.name}</option>`); }
 
 loadData(); loadBugs(); updateDrops();
