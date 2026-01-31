@@ -6,54 +6,58 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root { --brand: #2563eb; --bg: #f8fafc; --panel: #ffffff; --text: #0f172a; --border: #e2e8f0; }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); margin: 0; display: flex; flex-direction: column; height: 100vh; }
-        nav { height: 60px; background: #fff; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 30px; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        nav { height: 60px; background: #fff; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 30px; flex-shrink: 0; }
         .wrapper { display: flex; flex: 1; overflow: hidden; }
         aside { width: 300px; background: #fff; border-right: 1px solid var(--border); padding: 20px; overflow-y: auto; }
         main { flex: 1; padding: 20px; overflow-y: auto; }
-        .card { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
-        table { width: 100%; border-collapse: collapse; background: #fff; }
-        th { text-align: left; padding: 12px; font-size: 11px; color: #64748b; border-bottom: 1px solid var(--border); }
+        .card { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        table { width: 100%; border-collapse: collapse; min-width: 1000px; }
+        th { text-align: left; padding: 12px; font-size: 11px; color: #64748b; text-transform: uppercase; border-bottom: 1px solid var(--border); }
         td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 13px; }
-        input, select, textarea { width: 100%; padding: 8px; margin-bottom: 10px; border-radius: 6px; border: 1px solid var(--border); }
-        .grid-input { border: 1px solid transparent; background: transparent; padding: 4px; width: auto; }
+        input, select, textarea { width: 100%; padding: 8px; margin-bottom: 10px; border-radius: 6px; border: 1px solid var(--border); font-family: inherit; }
+        .grid-input { border: 1px solid transparent; background: transparent; width: 100%; cursor: pointer; }
         .grid-input:hover { border-color: var(--border); background: #f9fafb; }
-        button { background: var(--brand); color: #fff; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: 600; width: 100%; }
+        button { background: var(--brand); color: #fff; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .Queue { background: #e0e7ff; color: #3730a3; font-weight: 700; border-radius: 4px; padding: 4px; border:none; }
+        .Fixed { background: #dcfce7; color: #166534; font-weight: 700; border-radius: 4px; padding: 4px; border:none; }
     </style>
 </head>
 <body>
 
 <nav>
-    <div style="font-weight:800; color:var(--brand)">WEBENOID</div>
-    <button onclick="logout()" style="width:auto; background:#fee2e2; color:#ef4444; padding:5px 15px">Logout</button>
+    <div style="font-weight:800; color:var(--brand); font-size: 20px;">WEBENOID</div>
+    <button onclick="logout()" style="background:#fee2e2; color:#ef4444; width: auto;">Logout</button>
 </nav>
 
 <div class="wrapper">
     <aside>
-        <h3>Projects</h3>
+        <h3>Settings</h3>
         <input id="newProj" placeholder="Project Name">
-        <button onclick="addProj()">Add Project</button>
-        <select id="selProj" onchange="loadTasks()"></select>
-        <input id="newTask" placeholder="Task Name">
-        <button onclick="addTask()">Add Task</button>
+        <button onclick="addProj()" style="width:100%">Create Project</button>
         <hr>
-        <h3>Quick Log</h3>
         <select id="qProj" onchange="loadQTasks()"></select>
         <select id="qTask"></select>
-        <input id="qTitle" placeholder="Bug Title">
-        <button onclick="submitBug()">Log Defect</button>
+        <input id="qTitle" placeholder="Defect Title">
+        <button onclick="submitSingle()" style="width:100%">Log Defect</button>
     </aside>
 
     <main>
+        <div class="card">
+            <h3>Bulk Log (Paste: Title | Date)</h3>
+            <textarea id="bPaste" rows="3" placeholder="Bug Title | 2024-12-31"></textarea>
+            <button onclick="submitBulk()" style="padding: 10px 30px;">🚀 Process Batch</button>
+        </div>
+
         <div class="card" style="padding:0; overflow-x:auto">
             <table>
                 <thead>
                     <tr>
-                        <th>Details</th>
+                        <th>Defect Details</th>
                         <th>Started At</th>
                         <th>Target Fix</th>
-                        <th>Work Done</th>
                         <th>Status</th>
+                        <th>Work Done</th>
                     </tr>
                 </thead>
                 <tbody id="bugList"></tbody>
@@ -80,39 +84,49 @@ async function loadBugs() {
             <td><input type="datetime-local" class="grid-input" value="${b.startedAt||''}" onchange="patch('${b._id}','startedAt',this.value)"></td>
             <td><input type="date" class="grid-input" value="${b.targetDate||''}" onchange="patch('${b._id}','targetDate',this.value)"></td>
             <td>
-                <input type="range" min="0" max="100" value="${b.completion||0}" onchange="patch('${b._id}','completion',this.value)">
-                <span>${b.completion || 0}%</span>
+                <select class="${b.status}" onchange="patch('${b._id}','status',this.value)">
+                    <option value="Queue" ${b.status=='Queue'?'selected':''}>Queue</option>
+                    <option value="Fixed" ${b.status=='Fixed'?'selected':''}>Fixed</option>
+                </select>
             </td>
             <td>
-                <select onchange="patch('${b._id}','status',this.value)">
-                    <option ${b.status=='Queue'?'selected':''}>Queue</option>
-                    <option ${b.status=='Fixed'?'selected':''}>Fixed</option>
-                </select>
+                <input type="range" min="0" max="100" value="${b.completion||0}" onchange="patch('${b._id}','completion',this.value)" oninput="document.getElementById('p-${b._id}').innerText=this.value+'%'">
+                <span id="p-${b._id}" style="font-weight:700">${b.completion||0}%</span>
             </td>
         </tr>`;
     });
 }
 
 async function patch(id, field, value) {
-    const body = {}; body[field] = value;
-    await fetch(`${API}/bug/${id}`, { method: "PUT", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-    loadBugs();
+    const b = {}; b[field] = value;
+    await fetch(`${API}/bug/${id}`, {method:"PUT", headers:{'Content-Type':'application/json'}, body:JSON.stringify(b)});
+    if(field === 'status') loadBugs();
+}
+
+async function submitSingle() {
+    const data = [{ project: qProj.value, task: qTask.value, title: qTitle.value, status: "Queue" }];
+    await fetch(API+"/bugs", {method:"POST", headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)});
+    qTitle.value = ""; loadBugs();
+}
+
+async function submitBulk() {
+    const lines = bPaste.value.trim().split("\n");
+    const data = lines.map(l => {
+        const p = l.split("|");
+        return { project: qProj.value, task: qTask.value, title: p[0].trim(), targetDate: p[1]?.trim() || "", status: "Queue" };
+    });
+    await fetch(API+"/bugs", {method:"POST", headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)});
+    bPaste.value = ""; loadBugs();
 }
 
 async function addProj() { await fetch(API+"/project", {method:"POST", headers:{'Content-Type':'application/json'}, body:JSON.stringify({name:newProj.value})}); loadData(); }
-async function addTask() { await fetch(API+"/task", {method:"POST", headers:{'Content-Type':'application/json'}, body:JSON.stringify({project:selProj.value, name:newTask.value})}); loadData(); }
-async function submitBug() {
-    const data = [{ project: qProj.value, task: qTask.value, title: qTitle.value, assignedTo: "Admin" }];
-    await fetch(API+"/bugs", {method:"POST", headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)});
-    loadBugs();
-}
 
 async function loadData() {
     const p = await (await fetch(API+"/projects")).json();
-    [selProj, qProj].forEach(s => { s.innerHTML = ""; p.forEach(x => s.innerHTML += `<option value="${x.name}">${x.name}</option>`); });
-    loadTasks(); loadQTasks();
+    qProj.innerHTML = ""; p.forEach(x => qProj.innerHTML += `<option value="${x.name}">${x.name}</option>`);
+    loadQTasks();
 }
-async function loadTasks() { await fetch(API+"/tasks/"+selProj.value); }
+
 async function loadQTasks() {
     const t = await (await fetch(API+"/tasks/"+qProj.value)).json();
     qTask.innerHTML = ""; t.forEach(x => qTask.innerHTML += `<option value="${x.name}">${x.name}</option>`);
