@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Webenoid Bug Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --brand: #2563eb; --bg: #f8fafc; --text: #0f172a; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .login-card { background: white; padding: 40px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 380px; text-align: center; border: 1px solid #e2e8f0; }
+        .logo { font-weight: 800; color: var(--brand); font-size: 26px; margin-bottom: 10px; letter-spacing: -1px; }
+        .logo span { color: var(--text); }
+        p { color: #64748b; font-size: 14px; margin-bottom: 30px; }
+        input { width: 100%; padding: 14px; margin-bottom: 16px; border: 1px solid #e2e8f0; border-radius: 8px; outline: none; box-sizing: border-box; font-size: 14px; transition: 0.2s; }
+        input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+        button { width: 100%; background: var(--brand); color: white; border: none; padding: 14px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 15px; margin-top: 10px; }
+        #errMsg { color: #ef4444; font-size: 13px; margin-top: 15px; display: none; font-weight: 600; }
+    </style>
+</head>
+<body>
+
+<div class="login-card">
+    <div class="logo">WEBENOID <span>TRACKER</span></div>
+    <p>Secure Enterprise Access</p>
+    
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="handleLogin()">Sign In</button>
+    
+    <div id="errMsg">Invalid Username or Password</div>
+</div>
+
+<script>
+    function handleLogin() {
+        const user = document.getElementById('username').value;
+        const pass = document.getElementById('password').value;
+        const err = document.getElementById('errMsg');
+
+        // Validation logic
+        if (user === "Webenoid" && pass === "Webenoid123") {
+            localStorage.setItem("webenoid_session", "active");
+            localStorage.setItem("user", user);
+            window.location.href = "index.html";
+        } else {
+            err.style.display = "block";
+            setTimeout(() => { err.style.display = "none"; }, 3000);
+        }
+    }
+</script>
+</body>
+</html>
