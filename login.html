@@ -11,7 +11,7 @@
 </head>
 <body>
     <div class="card">
-        <h2>WEBENOID <span>LOGIN</span></h2>
+        <h2 style="color:#2563eb">WEBENOID LOGIN</h2>
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password">
         <select id="role">
@@ -21,19 +21,19 @@
         <button onclick="handleLogin()">Sign In</button>
     </div>
     <script>
-        // Force clear old broken data on load
+        // Force clear old broken session data on the login screen
         localStorage.clear();
 
         function handleLogin() {
-            const u = username.value;
-            const p = password.value;
-            const r = role.value;
+            const u = document.getElementById('username').value;
+            const p = document.getElementById('password').value;
             if(u === "Webenoid" && p === "Webenoid123") {
                 localStorage.setItem("webenoid_session", "active");
                 localStorage.setItem("user", u);
-                localStorage.setItem("role", r);
-                window.location.replace("/dashboard"); //
-            } else { alert("Wrong credentials"); }
+                window.location.replace("/dashboard");
+            } else {
+                alert("Invalid Credentials");
+            }
         }
     </script>
 </body>
