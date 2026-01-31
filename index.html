@@ -2,86 +2,77 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Webenoid Tracker | Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root { --brand: #2563eb; --bg: #f8fafc; --panel: #ffffff; --text: #0f172a; --text-light: #64748b; --border: #e2e8f0; --radius: 12px; }
-        body { display: none; font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); margin: 0; flex-direction: column; height: 100vh; overflow: hidden; }
+        body { display: none; font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); margin: 0; flex-direction: column; height: 100vh; overflow: hidden; }
         
-        /* HEADER */
         nav { height: 60px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 32px; flex-shrink: 0; }
-        .logo { font-weight: 800; color: var(--brand); font-size: 20px; letter-spacing: -0.5px; }
-        .logout-btn { background: #fff; color: #ef4444; border: 1px solid #fee2e2; padding: 6px 14px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s; }
-        .logout-btn:hover { background: #fee2e2; }
+        .logo { font-weight: 800; color: var(--brand); font-size: 20px; }
+        .logout-btn { background: #fff; color: #ef4444; border: 1px solid #fee2e2; padding: 6px 14px; border-radius: 6px; font-weight: 600; cursor: pointer; }
 
         .wrapper { display: flex; flex: 1; overflow: hidden; }
-        aside { width: 320px; background: var(--panel); border-right: 1px solid var(--border); padding: 24px; overflow-y: auto; }
+        aside { width: 300px; background: var(--panel); border-right: 1px solid var(--border); padding: 24px; overflow-y: auto; }
         main { flex: 1; padding: 20px 32px; overflow-y: auto; }
 
-        h3 { font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-light); margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
         .card { background: var(--panel); border-radius: var(--radius); border: 1px solid var(--border); padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 24px; }
+        h3 { font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-light); margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
         
-        input, select, textarea { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; margin-bottom: 10px; box-sizing: border-box; outline: none; }
-        input:focus { border-color: var(--brand); }
-        button { width: 100%; background: var(--brand); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; margin-bottom: 10px; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; margin-bottom: 10px; box-sizing: border-box; }
+        button { width: 100%; background: var(--brand); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; }
 
-        /* TABLE STYLES */
-        table { width: 100%; border-collapse: collapse; min-width: 800px; }
+        table { width: 100%; border-collapse: collapse; }
         th { text-align: left; padding: 12px; font-size: 11px; text-transform: uppercase; color: var(--text-light); border-bottom: 1px solid var(--border); background: #fcfcfd; }
         td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 13px; }
         
-        .Queue { background: #e0e7ff; color: #3730a3; padding: 4px 8px; border-radius: 6px; font-weight: 700; border: none; font-size: 11px; cursor: pointer; }
-        .Fixed { background: #dcfce7; color: #166534; padding: 4px 8px; border-radius: 6px; font-weight: 700; border: none; font-size: 11px; cursor: pointer; }
-        .btn-delete { color: #ef4444; background: none; font-size: 11px; font-weight: bold; width: auto; padding: 0; }
+        .Queue { background: #e0e7ff; color: #3730a3; padding: 4px 8px; border-radius: 6px; font-weight: 700; border:none; font-size:11px; cursor: pointer; }
+        .Fixed { background: #dcfce7; color: #166534; padding: 4px 8px; border-radius: 6px; font-weight: 700; border:none; font-size:11px; cursor: pointer; }
+        .btn-del { color: #ef4444; background: none; font-size: 11px; font-weight: bold; width: auto; padding: 0; }
     </style>
 </head>
 <body>
 
 <nav>
     <div class="logo">WEBENOID <span>TRACKER</span></div>
-    <div style="display: flex; align-items: center; gap: 20px;">
-        <span id="userLabel" style="font-weight: 600; font-size: 13px; color: var(--text-light);"></span>
+    <div>
+        <span id="userLabel" style="margin-right:15px; font-size:13px; font-weight:600"></span>
         <button class="logout-btn" onclick="logout()">Logout</button>
     </div>
 </nav>
 
 <div class="wrapper">
     <aside>
-        <h3>Active Project</h3>
+        <h3>Projects</h3>
         <select id="selProj" onchange="loadBugs()"></select>
-        
-        <div style="margin-top: 20px;">
-            <h3>Project Management</h3>
-            <input id="newP" placeholder="New Project Name">
-            <button onclick="addProj()">Create Project</button>
-        </div>
+        <input id="newP" placeholder="Project Name">
+        <button onclick="addP()">Create</button>
 
         <div style="margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px;">
             <h3>Bulk Log</h3>
-            <textarea id="bPaste" rows="5" placeholder="Enter bug titles&#10;One per line..."></textarea>
-            <button onclick="submitBulk()" style="background: #0f172a;">Process List</button>
+            <textarea id="bulkT" rows="5" placeholder="Enter list..."></textarea>
+            <button onclick="submitBulk()" style="background:#0f172a">Process List</button>
         </div>
     </aside>
 
     <main>
         <div class="card">
-            <h3 style="border:none">Add New Defect</h3>
+            <h3 style="border:none">Add Bug</h3>
             <div style="display: flex; gap: 10px;">
                 <input id="bugT" placeholder="Describe the issue..." style="margin:0">
-                <button onclick="submitSingle()" style="width: 150px; margin:0">Log Bug</button>
+                <button onclick="submitSingle()" style="width:150px; margin:0">Log Bug</button>
             </div>
         </div>
 
-        <div class="card" style="padding:0; overflow-x:auto">
+        <div class="card" style="padding:0">
             <table>
                 <thead>
                     <tr>
-                        <th style="width:50px; text-align:center">#</th>
-                        <th>Bug Description</th>
+                        <th style="width:40px; text-align:center">#</th>
+                        <th>Bug Details</th>
                         <th>Reporter</th>
-                        <th style="width:120px">Status</th>
-                        <th style="width:80px">Action</th>
+                        <th>Status</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody id="bugList"></tbody>
@@ -91,16 +82,16 @@
 </div>
 
 <script>
-    // --- AUTH GUARD ---
     const session = localStorage.getItem("webenoid_session");
     const user = localStorage.getItem("user");
 
+    // AUTH GUARD: Clear data and redirect if session is invalid
     if (!session || session !== "active") {
         localStorage.clear();
-        window.location.replace("/"); // Redirect to server root (login.html)
+        window.location.replace("/"); 
     } else {
         document.body.style.display = "flex";
-        document.getElementById('userLabel').innerText = `Logged in: ${user}`;
+        document.getElementById('userLabel').innerText = `User: ${user}`;
         loadData();
     }
 
@@ -109,13 +100,11 @@
         window.location.replace("/");
     }
 
-    // --- DATA MANAGEMENT ---
     async function loadData() {
         const res = await fetch("/projects");
-        const projects = await res.json();
-        const sel = document.getElementById('selProj');
-        sel.innerHTML = projects.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
-        if (projects.length > 0) loadBugs();
+        const p = await res.json();
+        document.getElementById('selProj').innerHTML = p.map(x => `<option value="${x.name}">${x.name}</option>`).join('');
+        if(p.length > 0) loadBugs();
     }
 
     async function loadBugs() {
@@ -127,71 +116,51 @@
         const filtered = bugs.filter(b => b.project === active);
         body.innerHTML = filtered.map((b, i) => `
             <tr>
-                <td style="text-align:center; color: #94a3b8;">${i+1}</td>
+                <td style="text-align:center">${i+1}</td>
                 <td><strong>${b.title}</strong></td>
-                <td>${b.assignedTo || 'System'}</td>
-                <td>
-                    <button class="${b.status || 'Queue'}" onclick="updateStatus('${b._id}', '${b.status}')">
-                        ${b.status || 'Queue'}
-                    </button>
-                </td>
-                <td><button class="btn-delete" onclick="deleteBug('${b._id}')">DELETE</button></td>
+                <td>${b.assignedTo}</td>
+                <td><button class="${b.status}" onclick="toggleStatus('${b._id}','${b.status}')">${b.status}</button></td>
+                <td><button class="btn-del" onclick="delBug('${b._id}')">DELETE</button></td>
             </tr>
         `).join('');
     }
 
-    async function addProj() {
+    async function addP() {
         const name = document.getElementById('newP').value;
         if(!name) return;
-        await fetch("/project", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({name}) });
-        document.getElementById('newP').value = "";
-        loadData();
+        await fetch("/project", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({name})});
+        document.getElementById('newP').value=""; loadData();
     }
 
     async function submitSingle() {
         const title = document.getElementById('bugT').value;
-        const project = document.getElementById('selProj').value;
-        if(!title || !project) return;
+        if(!title) return;
         await fetch("/bugs", {
-            method: "POST",
-            headers: {"Content-Type":"application/json"},
-            body: JSON.stringify([{ project, title, assignedTo: user, status: "Queue" }])
+            method:"POST", 
+            headers:{"Content-Type":"application/json"}, 
+            body:JSON.stringify({project: selProj.value, title, assignedTo: user, status: "Queue"})
         });
-        document.getElementById('bugT').value = "";
-        loadBugs();
+        document.getElementById('bugT').value=""; loadBugs();
     }
 
     async function submitBulk() {
-        const text = document.getElementById('bPaste').value;
-        const project = document.getElementById('selProj').value;
-        if(!text || !project) return;
-        
-        const data = text.split("\n").filter(l => l.trim()).map(l => ({
-            project,
-            title: l.trim(),
-            assignedTo: user,
-            status: "Queue"
-        }));
+        const lines = document.getElementById('bulkT').value.split("\n").filter(l => l.trim());
+        const data = lines.map(l => ({ project: selProj.value, title: l, assignedTo: user, status: "Queue" }));
+        await fetch("/bugs", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(data)});
+        document.getElementById('bulkT').value=""; loadBugs();
+    }
 
-        await fetch("/bugs", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify(data) });
-        document.getElementById('bPaste').value = "";
+    async function toggleStatus(id, current) {
+        const status = current === "Queue" ? "Fixed" : "Queue";
+        await fetch(`/bug/${id}`, {method:"PUT", headers:{"Content-Type":"application/json"}, body:JSON.stringify({status})});
         loadBugs();
     }
 
-    async function updateStatus(id, current) {
-        const next = current === "Queue" ? "Fixed" : "Queue";
-        await fetch(`/bug/${id}`, {
-            method: "PUT",
-            headers: {"Content-Type":"application/json"},
-            body: JSON.stringify({ status: next })
-        });
-        loadBugs();
-    }
-
-    async function deleteBug(id) {
-        if(!confirm("Are you sure?")) return;
-        await fetch(`/bug/${id}`, { method: "DELETE" });
-        loadBugs();
+    async function delBug(id) {
+        if(confirm("Delete this?")) {
+            await fetch(`/bug/${id}`, {method:"DELETE"});
+            loadBugs();
+        }
     }
 </script>
 </body>
