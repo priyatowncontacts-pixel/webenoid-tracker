@@ -13,6 +13,7 @@
     </style>
 </head>
 <body>
+
     <nav>
         <b>WEBENOID TRACKER</b>
         <div>
@@ -40,13 +41,16 @@
     </div>
 
 <script>
-    // 🛡️ SECURITY CHECK
+    // 🛡️ SECURITY CHECK  — FIXED REDIRECT
     const session = localStorage.getItem("webenoid_session");
     const user = localStorage.getItem("user");
 
     if (session !== "active" || !user || user === "null") {
         localStorage.clear();
-        window.location.replace("/");
+
+        // ✅ FIX: redirect directly to login page (no loop)
+        window.location.replace("/login.html");
+
     } else {
         document.body.style.display = "flex"; // Show only if valid
         document.getElementById('userTag').innerText = user;
@@ -54,7 +58,7 @@
 
     function logout() {
         localStorage.clear();
-        window.location.replace("/");
+        window.location.replace("/login.html");
     }
 
     async function loadData() {
