@@ -5,53 +5,124 @@ const path = require("path");
 require("dotenv").config();
 
 const app = express();
+
 app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname));
 
-// DATABASE CONNECTION
-const mongoURI = process.env.MONGO_URI || "mongodb+srv://Webenoid:Webenoid123@cluster0.syu48mi.mongodb.net/webenoidDB?retryWrites=true&w=majority";
-mongoose.connect(mongoURI).then(() => console.log("✅ MongoDB Connected"));
+// ================= DATABASE =================
+const mongoURI =
+process.env.MONGO_URI ||
+"mongodb+srv://Webenoid:Webenoid123@cluster0.syu48mi.mongodb.net/webenoidDB?retryWrites=true&w=majority";
 
-// MODELS
-const Project = mongoose.model("Project", { name: String });
-const Bug = mongoose.model("Bug", { 
-    project: String, 
-    title: String, 
-    assignedTo: String, 
-    status: { type: String, default: "Queue" } 
+mongoose.connect(mongoURI).then(() =>
+  console.log("✅ MongoDB Connected")
+);
+
+// ================= MODELS =================
+const Project = mongoose.model("Project", {
+  name: String,
 });
 
-// API ENDPOINTS
-app.get("/projects", async (req, res) => res.json(await Project.find()));
-app.post("/project", async (req, res) => { await Project.create(req.body); res.json({success:true}); });
-app.get("/bugs", async (req, res) => res.json(await Bug.find().sort({_id: -1})));
+const Bug = mongoose.model("Bug", {
+  project: String,
+  title: String,
+  assignedTo: String,
 
-// Handles both single and bulk bug additions
-app.post("/bugs", async (req, res) => { 
-    const data = Array.isArray(req.body) ? req.body : [req.body];
-    await Bug.insertMany(data); 
-    res.json({success:true}); 
+  status: {
+    type: String,
+    default: "Open",
+  },
+
+  createdDate: {
+    type: Date,
+    default: Date.now,
+  },
+
+  fixedDate: {
+    type: Date,
+    default: null,
+  },
 });
 
-// Update Status Toggle
-app.put("/bug/:id", async (req, res) => {
-    await Bug.findByIdAndUpdate(req.params.id, { status: req.body.status });
-    res.json({ success: true });
+// ================= PROJECT API =================
+app.get("/projects", async (req, res) => {
+  res.json(await Project.find());
 });
 
-// Delete Record
-app.delete("/bug/:id", async (req, res) => {
-    await Bug.findByIdAndDelete(req.params.id);
-    res.json({ success: true });
+app.post("/project", async (req, res) => {
+  await Project.create(req.body);
+  res.json({ success: true });
 });
 
-// ROUTING: Aligning paths to prevent 304/Redirect loops
-app.get("/", (req, res) => res.sendFile(path.join(__dirname, "login.html")));
-app.get("/dashboard", (req, res) => res.sendFile(path.join(__dirname, "index.html")));
+// ================= BUG API =================
+app.get("/bugs", async (req, res) => {
+  res.json(await Bug.find().sort({ _id: -1 }));
+});
 
-// Catch-all: Redirect unknown paths to login
+app.post("/bugs", async (req, res) => {
+  await Bug.insertMany(req.body);
+  res.json({ success: true });
+});
+
+// BULK
+app.post("/bugs/bulk", async (req, res) => {
+  const text = req.body.text || "";
+
+  const lines = text.split("\n");
+
+  let list = [];
+
+  lines.forEach(line => {
+    if (!line.trim()) return;
+
+    list.push({
+      title: line.replace(/^\d+\.\s*/, ""),
+      status: "Open",
+      createdDate: new Date(),
+    });
+  });
+
+  await Bug.insertMany(list);
+
+  res.json({ success: true });
+});
+
+// STATUS UPDATE
+app.put("/bugs/:id", async (req, res) => {
+  const { status } = req.body;
+
+  const update = { status };
+
+  if (status === "Fixed") {
+    update.fixedDate = new Date();
+  }
+
+  await Bug.findByIdAndUpdate(req.params.id, update);
+
+  res.json({ success: true });
+});
+
+// DELETE
+app.delete("/bugs/:id", async (req, res) => {
+  await Bug.findByIdAndDelete(req.params.id);
+  res.json({ success: true });
+});
+
+// ================= ROUTING =================
+app.get("/", (req, res) =>
+  res.sendFile(path.join(__dirname, "login.html"))
+);
+
+app.get("/dashboard", (req, res) =>
+  res.sendFile(path.join(__dirname, "index.html"))
+);
+
 app.get("*", (req, res) => res.redirect("/"));
 
+// ================= START =================
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Webenoid Engine Live on ${PORT}`));
+
+app.listen(PORT, () =>
+  console.log(`🚀 Engine Live on ${PORT}`)
+);
