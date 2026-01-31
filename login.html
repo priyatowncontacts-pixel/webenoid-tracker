@@ -2,44 +2,32 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | Webenoid Tracker</title>
+    <title>Login | Webenoid</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root { --brand: #2563eb; --bg: #f8fafc; --panel: #ffffff; --text: #0f172a; --border: #e2e8f0; }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        .login-card { background: var(--panel); padding: 40px; border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 400px; text-align: center; }
-        .logo { font-weight: 800; font-size: 24px; color: var(--brand); margin-bottom: 8px; }
-        .logo span { color: var(--text); }
-        p { color: #64748b; font-size: 14px; margin-bottom: 32px; }
-        input { width: 100%; padding: 12px; margin-bottom: 16px; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; box-sizing: border-box; outline: none; }
-        button { width: 100%; background: var(--brand); color: white; border: none; padding: 14px; border-radius: 8px; font-weight: 600; cursor: pointer; }
-        #errMsg { color: #ef4444; font-size: 13px; margin-top: 16px; display: none; }
+        :root { --brand: #2563eb; --bg: #f8fafc; --text: #0f172a; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .login-card { background: #fff; padding: 40px; border-radius: 16px; border: 1px solid #e2e8f0; width: 100%; max-width: 360px; text-align: center; }
+        .logo { font-weight: 800; font-size: 24px; color: var(--brand); margin-bottom: 20px; }
+        input { width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; }
+        button { width: 100%; background: var(--brand); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; }
     </style>
 </head>
 <body>
-<div class="login-card">
-    <div class="logo">WEBENOID <span>TRACKER</span></div>
-    <p>Enterprise Bug Management System</p>
-    <input type="text" id="username" placeholder="Username">
-    <input type="password" id="password" placeholder="Password">
-    <button onclick="handleLogin()">Sign In</button>
-    <div id="errMsg">Invalid credentials.</div>
-</div>
-
-<script>
-    async function handleLogin() {
-        const u = document.getElementById('username').value;
-        const p = document.getElementById('password').value;
-        if (u === "Webenoid" && p === "Webenoid123") {
-            localStorage.setItem("webenoid_session", "active");
-            localStorage.setItem("user", u);
-            // This matches the app.get("/dashboard") in your server.js
-            window.location.href = "/dashboard"; 
-        } else {
-            document.getElementById('errMsg').style.display = "block";
+    <div class="login-card">
+        <div class="logo">WEBENOID <span>TRACKER</span></div>
+        <input type="text" id="u" placeholder="Username">
+        <input type="password" id="p" placeholder="Password">
+        <button onclick="login()">Login</button>
+    </div>
+    <script>
+        function login() {
+            if(u.value === "Webenoid" && p.value === "Webenoid123") {
+                localStorage.setItem("webenoid_session", "active");
+                localStorage.setItem("user", u.value);
+                window.location.href = "/dashboard";
+            } else { alert("Wrong Login!"); }
         }
-    }
-</script>
+    </script>
 </body>
 </html>
