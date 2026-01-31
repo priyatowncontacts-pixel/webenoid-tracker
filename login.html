@@ -9,7 +9,7 @@
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
         .login-card { background: #fff; padding: 40px; border-radius: 16px; border: 1px solid #e2e8f0; width: 100%; max-width: 360px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
         .logo { font-weight: 800; font-size: 24px; color: var(--brand); margin-bottom: 20px; }
-        input, select { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; outline: none; }
+        input, select { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; outline: none; font-family: inherit; }
         button { width: 100%; background: var(--brand); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; }
     </style>
 </head>
@@ -19,8 +19,8 @@
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password">
         <select id="role">
-            <option value="Developer">Developer</option>
-            <option value="Tester">Tester</option>
+            <option value="Developer">Developer (Fixes)</option>
+            <option value="Tester">Tester (Approves)</option>
         </select>
         <button onclick="handleLogin()">Sign In</button>
     </div>
