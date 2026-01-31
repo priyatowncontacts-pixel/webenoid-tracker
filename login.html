@@ -19,8 +19,8 @@
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password">
         <select id="role">
-            <option value="Developer">Developer (Fixes)</option>
-            <option value="Tester">Tester (Approves)</option>
+            <option value="Developer">Developer</option>
+            <option value="Tester">Tester</option>
         </select>
         <button onclick="handleLogin()">Sign In</button>
     </div>
@@ -30,7 +30,7 @@
                 localStorage.setItem("webenoid_session", "active");
                 localStorage.setItem("user", username.value);
                 localStorage.setItem("role", role.value);
-                window.location.href = "/dashboard";
+                window.location.replace("/dashboard");
             } else { alert("Access Denied"); }
         }
     </script>
