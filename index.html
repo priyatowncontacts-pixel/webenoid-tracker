@@ -1,112 +1,189 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Webenoid Tracker</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Webenoid Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { display: none; font-family: sans-serif; margin: 0; flex-direction: column; height: 100vh; }
-        nav { background: white; padding: 15px 25px; display: flex; justify-content: space-between; border-bottom: 1px solid #eee; }
-        .logout { background: #ef4444; color: white; border: none; padding: 5px 15px; border-radius: 6px; cursor: pointer; }
-        .container { display: flex; flex: 1; }
-        aside { width: 250px; border-right: 1px solid #eee; padding: 20px; }
-        main { flex: 1; padding: 20px; background: #f8fafc; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; display: none; }
+        .status-badge { cursor: pointer; transition: all 0.2s; }
+        .status-queue { background: #e0e7ff; color: #4338ca; }
+        .status-fixed { background: #dcfce7; color: #15803d; }
     </style>
 </head>
+<body class="bg-slate-50">
 
-<body>
-<nav>
-<b>WEBENOID TRACKER</b>
-<div>
-<span id="userTag"></span>
-<button class="logout" onclick="logout()">Logout</button>
-</div>
+<nav class="bg-white border-b border-slate-200 px-8 py-4 flex justify-between items-center sticky top-0 z-10">
+    <div class="flex items-center gap-2">
+        <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">W</div>
+        <b class="text-xl tracking-tight text-slate-800 uppercase">Webenoid Tracker</b>
+    </div>
+    <div class="flex items-center gap-4">
+        <span class="text-slate-500 font-medium">User: <span id="userTag" class="text-slate-800 font-bold"></span></span>
+        <button onclick="logout()" class="bg-red-50 text-red-600 hover:bg-red-600 hover:text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors">Logout</button>
+    </div>
 </nav>
 
-<div class="container">
-<aside>
-<h3>Projects</h3>
-<select id="selProj" onchange="loadBugs()"></select>
+<div class="flex min-h-[calc(100vh-73px)]">
+    <aside class="w-72 bg-white border-r border-slate-200 p-6 flex flex-col gap-6">
+        <div>
+            <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Project Filter</label>
+            <select id="selProj" onchange="loadBugs()" class="w-full mt-2 p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500"></select>
+        </div>
 
-<input id="newP" placeholder="New Project">
-<button onclick="addP()">Add</button>
-</aside>
+        <div>
+            <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">New Project</label>
+            <div class="mt-2 flex gap-2">
+                <input id="newP" placeholder="Name..." class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none">
+                <button onclick="addP()" class="bg-blue-600 text-white px-4 rounded-xl hover:bg-blue-700 font-bold">+</button>
+            </div>
+        </div>
 
-<main>
-<input id="bugT" placeholder="Bug Title">
-<button onclick="addB()">Log Bug</button>
+        <button onclick="toggleBulkModal()" class="w-full mt-auto py-3 border-2 border-dashed border-slate-200 text-slate-500 rounded-xl hover:bg-slate-50 font-medium transition">
+            Bulk Import (Paste)
+        </button>
+    </aside>
 
-<div id="list" style="margin-top:20px"></div>
-</main>
+    <main class="flex-1 p-8">
+        <div class="max-w-6xl mx-auto">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-8 flex gap-4">
+                <input id="bugT" placeholder="Describe the new bug..." class="flex-1 p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500">
+                <button onclick="addB()" class="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-700 shadow-lg shadow-blue-200 transition">Log Bug</button>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-slate-50 border-b border-slate-200">
+                        <tr>
+                            <th class="p-4 font-bold text-slate-500 text-sm"># Index</th>
+                            <th class="p-4 font-bold text-slate-500 text-sm">Description</th>
+                            <th class="p-4 font-bold text-slate-500 text-sm">Reporter</th>
+                            <th class="p-4 font-bold text-slate-500 text-sm text-center">Status</th>
+                            <th class="p-4 font-bold text-slate-500 text-sm text-right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="list"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div id="bulkModal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl w-full max-w-lg p-8">
+        <h2 class="text-2xl font-bold text-slate-800 mb-2">Power User: Bulk Import</h2>
+        <p class="text-slate-500 mb-6 text-sm">Paste multiple bugs (one per line) below.</p>
+        <textarea id="bulkText" rows="6" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none mb-4" placeholder="Header is overlapping&#10;Login button unresponsive"></textarea>
+        <div class="flex gap-3">
+            <button onclick="submitBulk()" class="flex-1 bg-blue-600 text-white py-3 rounded-xl font-bold">Import Now</button>
+            <button onclick="toggleBulkModal()" class="flex-1 bg-slate-100 text-slate-600 py-3 rounded-xl font-bold">Cancel</button>
+        </div>
+    </div>
 </div>
 
 <script>
-// SECURITY CHECK – ONLY FIX APPLIED
 const session = localStorage.getItem("webenoid_session");
 const user = localStorage.getItem("user");
 
-if (session !== "active" || !user || user === "null") {
+// Auth Guard
+if (session !== "active" || !user) {
     localStorage.clear();
-    window.location.replace("/login.html");
+    window.location.replace("/");
 } else {
-    document.body.style.display = "flex";
+    document.body.style.display = "block";
     document.getElementById('userTag').innerText = user;
 }
 
 function logout() {
     localStorage.clear();
-    window.location.replace("/login.html");
+    window.location.replace("/");
 }
 
 async function loadData() {
     const res = await fetch("/projects");
     const p = await res.json();
-
-    selProj.innerHTML =
-      p.map(x => `<option value="${x.name}">${x.name}</option>`).join('');
-
+    const sel = document.getElementById('selProj');
+    sel.innerHTML = p.map(x => `<option value="${x.name}">${x.name}</option>`).join('');
     loadBugs();
 }
 
 async function loadBugs() {
     const res = await fetch("/bugs");
     const bugs = await res.json();
+    const active = document.getElementById('selProj').value;
+    const list = document.getElementById('list');
 
-    const active = selProj.value;
-
-    list.innerHTML =
-      bugs
-      .filter(b => b.project === active)
-      .map(b => `<div>${b.title} - <b>${b.status}</b></div>`)
-      .join('');
+    const filtered = bugs.filter(b => b.project === active);
+    
+    list.innerHTML = filtered.map((b, idx) => `
+        <tr class="border-b border-slate-50 hover:bg-slate-50 transition-colors">
+            <td class="p-4 text-slate-400 font-medium">${idx + 1}</td>
+            <td class="p-4 text-slate-800 font-semibold">${b.title}</td>
+            <td class="p-4 text-slate-500 text-sm italic">${b.assignedTo}</td>
+            <td class="p-4 text-center">
+                <span onclick="toggleStatus('${b._id}', '${b.status}')" class="status-badge px-4 py-1.5 rounded-full text-xs font-bold ${b.status === 'Fixed' ? 'status-fixed' : 'status-queue'}">
+                    ${b.status}
+                </span>
+            </td>
+            <td class="p-4 text-right">
+                <button onclick="deleteBug('${b._id}')" class="text-red-400 hover:text-red-600 font-bold transition">Delete</button>
+            </td>
+        </tr>
+    `).join('');
 }
 
 async function addP() {
-    await fetch("/project", {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({name:newP.value})
-    });
-
-    newP.value="";
+    const name = document.getElementById('newP').value;
+    if(!name) return;
+    await fetch("/project", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({name}) });
+    document.getElementById('newP').value="";
     loadData();
 }
 
 async function addB() {
+    const title = document.getElementById('bugT').value;
+    const project = document.getElementById('selProj').value;
+    if(!title || !project) return;
     await fetch("/bugs", {
         method:"POST",
         headers:{"Content-Type":"application/json"},
-        body:JSON.stringify([{
-            project: selProj.value,
-            title: bugT.value,
-            assignedTo: user
-        }])
+        body:JSON.stringify([{ project, title, assignedTo: user }])
     });
+    document.getElementById('bugT').value="";
+    loadBugs();
+}
 
-    bugT.value="";
+async function toggleStatus(id, current) {
+    const status = current === "Fixed" ? "Queue" : "Fixed";
+    await fetch(`/bugs/${id}`, { method: "PUT", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ status }) });
+    loadBugs();
+}
+
+async function deleteBug(id) {
+    if(confirm("Are you sure?")) {
+        await fetch(`/bugs/${id}`, { method: "DELETE" });
+        loadBugs();
+    }
+}
+
+function toggleBulkModal() { document.getElementById('bulkModal').classList.toggle('hidden'); }
+
+async function submitBulk() {
+    const text = document.getElementById('bulkText').value;
+    const project = document.getElementById('selProj').value;
+    await fetch("/bugs/bulk", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ text, project, user })
+    });
+    document.getElementById('bulkText').value = "";
+    toggleBulkModal();
     loadBugs();
 }
 
 loadData();
 </script>
-
 </body>
 </html>
