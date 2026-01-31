@@ -22,13 +22,13 @@ app.post("/project", async (req, res) => { await Project.create(req.body); res.j
 app.get("/bugs", async (req, res) => res.json(await Bug.find().sort({_id: -1})));
 app.post("/bugs", async (req, res) => { await Bug.insertMany(req.body); res.json({success:true}); });
 
-// NEW: UPDATE STATUS
+// UPDATE STATUS
 app.put("/bug/:id", async (req, res) => {
     await Bug.findByIdAndUpdate(req.params.id, { status: req.body.status });
     res.json({ success: true });
 });
 
-// NEW: DELETE BUG
+// DELETE BUG
 app.delete("/bug/:id", async (req, res) => {
     await Bug.findByIdAndDelete(req.params.id);
     res.json({ success: true });
