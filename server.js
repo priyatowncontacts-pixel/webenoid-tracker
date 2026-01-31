@@ -33,24 +33,25 @@ async function notifyDiscord(title, status, project, dev) {
     const webhook = process.env.DISCORD_WEBHOOK_URL;
     if (!webhook) return;
 
-    let color = 3447003; // Blue
+    let color = 3447003; // Blue (Queue)
     let icon = "📥";
     if (status === "Review") { color = 16776960; icon = "🔍"; }
     if (status === "Fixed") { color = 3066993; icon = "✅"; }
 
     const payload = {
         embeds: [{
-            title: `${icon} Bug Update: ${status}`,
+            title: `${icon} Webenoid Update: ${status}`,
             color: color,
             fields: [
                 { name: "Project", value: project, inline: true },
-                { name: "Dev", value: dev, inline: true },
-                { name: "Issue", value: title, inline: false }
+                { name: "Assignee", value: dev, inline: true },
+                { name: "Defect", value: title, inline: false }
             ],
+            footer: { text: "Webenoid Bug Tracking System" },
             timestamp: new Date()
         }]
     };
-    try { await axios.post(webhook, payload); } catch (err) { console.log("Discord error"); }
+    try { await axios.post(webhook, payload); } catch (err) { console.log("Discord error:", err.message); }
 }
 
 // API ROUTES
