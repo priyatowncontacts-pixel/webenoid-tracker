@@ -2,10 +2,13 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const path = require("path");
+const axios = require("axios");
+require("dotenv").config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(express.static(__dirname));
 
 // DATABASE CONNECTION
 const mongoURI = process.env.MONGO_URI || "mongodb+srv://Webenoid:Webenoid123@cluster0.syu48mi.mongodb.net/webenoidDB?retryWrites=true&w=majority";
@@ -25,18 +28,57 @@ const Bug = mongoose.model("Bug", {
   completion: { type: Number, default: 0 }
 });
 
+// DISCORD NOTIFICATION LOGIC
+async function notifyDiscord(title, status, project, dev) {
+    const webhook = process.env.DISCORD_WEBHOOK_URL;
+    if (!webhook) return;
+
+    let color = 3447003; // Blue
+    let icon = "📥";
+    if (status === "Review") { color = 16776960; icon = "🔍"; }
+    if (status === "Fixed") { color = 3066993; icon = "✅"; }
+
+    const payload = {
+        embeds: [{
+            title: `${icon} Bug Update: ${status}`,
+            color: color,
+            fields: [
+                { name: "Project", value: project, inline: true },
+                { name: "Dev", value: dev, inline: true },
+                { name: "Issue", value: title, inline: false }
+            ],
+            timestamp: new Date()
+        }]
+    };
+    try { await axios.post(webhook, payload); } catch (err) { console.log("Discord error"); }
+}
+
 // API ROUTES
 app.post("/project", async (req, res) => { await Project.create(req.body); res.json({success:true}); });
 app.get("/projects", async (req, res) => { res.json(await Project.find()); });
 app.post("/task", async (req, res) => { await Task.create(req.body); res.json({success:true}); });
 app.get("/tasks/:project", async (req, res) => { res.json(await Task.find({ project: req.params.project })); });
-app.post("/bugs", async (req, res) => { await Bug.insertMany(req.body); res.json({success:true}); });
-app.get("/bugs", async (req, res) => { res.json(await Bug.find().sort({_id: -1})); });
-app.put("/bug/:id", async (req, res) => { await Bug.findByIdAndUpdate(req.params.id, req.body); res.json({success:true}); });
 
-// CLEAN ROUTING
+app.post("/bugs", async (req, res) => { 
+    const bugs = await Bug.insertMany(req.body); 
+    if (bugs.length > 0) notifyDiscord(bugs[0].title, "Queue", bugs[0].project, bugs[0].assignedTo);
+    res.json({success:true}); 
+});
+
+app.get("/bugs", async (req, res) => { res.json(await Bug.find().sort({_id: -1})); });
+
+app.put("/bug/:id", async (req, res) => { 
+    const oldBug = await Bug.findById(req.params.id);
+    const updated = await Bug.findByIdAndUpdate(req.params.id, req.body, { new: true }); 
+    if (req.body.status && oldBug.status !== req.body.status) {
+        notifyDiscord(updated.title, updated.status, updated.project, updated.assignedTo);
+    }
+    res.json({success:true}); 
+});
+
+// ROUTING
 app.get("/", (req, res) => res.sendFile(path.join(__dirname, "login.html")));
 app.get("/dashboard", (req, res) => res.sendFile(path.join(__dirname, "index.html")));
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Webenoid Engine Live on Port ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Engine Live on ${PORT}`));
