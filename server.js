@@ -10,51 +10,67 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname));
 
-// ================= DATABASE =================
-const mongoURI = process.env.MONGO_URI || "mongodb+srv://Webenoid:Webenoid123@cluster0.syu48mi.mongodb.net/webenoidDB?retryWrites=true&w=majority";
+// AUTO API ORIGIN SUPPORT (LOCAL + RENDER)
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  next();
+});
 
-mongoose.connect(mongoURI).then(() => console.log("✅ MongoDB Connected"));
+// DATABASE
+const mongoURI =
+process.env.MONGO_URI ||
+"mongodb+srv://Webenoid:Webenoid123@cluster0.syu48mi.mongodb.net/webenoidDB?retryWrites=true&w=majority";
 
-// ================= MODELS =================
+mongoose.connect(mongoURI).then(() =>
+  console.log("✅ MongoDB Connected")
+);
+
+// MODELS
 const Project = mongoose.model("Project", { name: String });
 
 const Bug = mongoose.model("Bug", {
   project: String,
   title: String,
   assignedTo: String,
-  status: { type: String, default: "Queue" },
+  status: { type: String, default: "Open" },
   createdDate: { type: Date, default: Date.now },
   fixedDate: { type: Date, default: null },
 });
 
-// ================= API ROUTES =================
-app.get("/projects", async (req, res) => res.json(await Project.find()));
+// PROJECT API
+app.get("/projects", async (req, res) => {
+  res.json(await Project.find());
+});
 
 app.post("/project", async (req, res) => {
   await Project.create(req.body);
   res.json({ success: true });
 });
 
-app.get("/bugs", async (req, res) => res.json(await Bug.find().sort({ _id: -1 })));
+// BUG API
+app.get("/bugs", async (req, res) => {
+  res.json(await Bug.find().sort({ _id: -1 }));
+});
 
 app.post("/bugs", async (req, res) => {
   await Bug.insertMany(req.body);
   res.json({ success: true });
 });
 
-// Advanced Bulk Import
+// BULK BUG UPLOAD
 app.post("/bugs/bulk", async (req, res) => {
-  const { text, project, user } = req.body;
+  const text = req.body.text || "";
+
   const lines = text.split("\n");
   let list = [];
 
   lines.forEach(line => {
     if (!line.trim()) return;
+
     list.push({
-      title: line.replace(/^\d+\.\s*/, "").trim(),
-      project: project,
-      assignedTo: user,
-      status: "Queue"
+      title: line.replace(/^\d+\.\s*/, ""),
+      status: "Open",
+      createdDate: new Date(),
     });
   });
 
@@ -62,23 +78,44 @@ app.post("/bugs/bulk", async (req, res) => {
   res.json({ success: true });
 });
 
-// Status Toggling
+// STATUS UPDATE
 app.put("/bugs/:id", async (req, res) => {
   const { status } = req.body;
-  const update = { status, fixedDate: status === "Fixed" ? new Date() : null };
+
+  const update = { status };
+
+  if (status === "Fixed") {
+    update.fixedDate = new Date();
+  }
+
   await Bug.findByIdAndUpdate(req.params.id, update);
   res.json({ success: true });
 });
 
+// DELETE BUG
 app.delete("/bugs/:id", async (req, res) => {
   await Bug.findByIdAndDelete(req.params.id);
   res.json({ success: true });
 });
 
-// ================= ROUTING =================
-app.get("/", (req, res) => res.sendFile(path.join(__dirname, "login.html")));
-app.get("/dashboard", (req, res) => res.sendFile(path.join(__dirname, "index.html")));
+// ROUTING TO HTML FILES
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "login.html"));
+});
+
+app.get("/dashboard", (req, res) => {
+  res.sendFile(path.join(__dirname, "index.html"));
+});
+
+// IMPORTANT FOR RENDER DIRECT OPEN
+app.get("/index.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "index.html"));
+});
+
 app.get("*", (req, res) => res.redirect("/"));
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Engine Live on ${PORT}`));
+
+app.listen(PORT, () =>
+  console.log(`🚀 Engine Live on ${PORT}`)
+);
