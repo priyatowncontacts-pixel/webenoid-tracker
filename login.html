@@ -2,36 +2,101 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Login | Webenoid</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Webenoid Tracker</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root { --brand: #2563eb; --bg: #f8fafc; }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        .login-card { background: #fff; padding: 40px; border-radius: 16px; border: 1px solid #e2e8f0; width: 100%; max-width: 360px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
-        .logo { font-weight: 800; font-size: 24px; color: var(--brand); margin-bottom: 20px; }
-        input, select { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; outline: none; font-family: inherit; }
-        button { width: 100%; background: var(--brand); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+        :root { --brand: #2563eb; --bg: #f8fafc; --text: #0f172a; }
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background: var(--bg); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
+            margin: 0; 
+        }
+        .login-card { 
+            background: #ffffff; 
+            padding: 40px; 
+            border-radius: 16px; 
+            border: 1px solid #e2e8f0; 
+            width: 100%; 
+            max-width: 380px; 
+            text-align: center; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05); 
+        }
+        .logo { font-weight: 800; font-size: 24px; color: var(--brand); margin-bottom: 8px; }
+        .logo span { color: var(--text); }
+        p { color: #64748b; font-size: 14px; margin-bottom: 30px; }
+        
+        input, select { 
+            width: 100%; 
+            padding: 12px 16px; 
+            margin-bottom: 15px; 
+            border: 1px solid #e2e8f0; 
+            border-radius: 8px; 
+            box-sizing: border-box; 
+            outline: none; 
+            font-family: inherit; 
+            font-size: 14px;
+        }
+        input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+        
+        button { 
+            width: 100%; 
+            background: var(--brand); 
+            color: white; 
+            border: none; 
+            padding: 14px; 
+            border-radius: 8px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            transition: background 0.2s;
+        }
+        button:hover { background: #1d4ed8; }
     </style>
 </head>
 <body>
+
     <div class="login-card">
         <div class="logo">WEBENOID <span>TRACKER</span></div>
+        <p>Enter your credentials to access the engine.</p>
+        
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password">
+        
         <select id="role">
-            <option value="Developer">Developer</option>
-            <option value="Tester">Tester</option>
+            <option value="Developer">Developer (Submit Fixes)</option>
+            <option value="Tester">Tester (Approve Fixes)</option>
         </select>
+        
         <button onclick="handleLogin()">Sign In</button>
     </div>
+
     <script>
+        // Check if user is already logged in, redirect them to dashboard
+        if (localStorage.getItem("webenoid_session") === "active") {
+            window.location.replace("/dashboard");
+        }
+
         function handleLogin() {
-            if(username.value === "Webenoid" && password.value === "Webenoid123") {
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+            const role = document.getElementById('role').value;
+
+            // Simple validation
+            if (user === "Webenoid" && pass === "Webenoid123") {
+                // Save session data
                 localStorage.setItem("webenoid_session", "active");
-                localStorage.setItem("user", username.value);
-                localStorage.setItem("role", role.value);
+                localStorage.setItem("user", user);
+                localStorage.setItem("role", role);
+                
+                // Redirect to dashboard and clear login from history
                 window.location.replace("/dashboard");
-            } else { alert("Access Denied"); }
+            } else {
+                alert("Invalid Username or Password. Hint: Webenoid / Webenoid123");
+            }
         }
     </script>
 </body>
