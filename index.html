@@ -15,62 +15,99 @@
 <body>
     <nav>
         <b>WEBENOID TRACKER</b>
-        <div><span id="userTag"></span> <button class="logout" onclick="logout()">Logout</button></div>
+        <div>
+            <span id="userTag"></span>
+            <button class="logout" onclick="logout()">Logout</button>
+        </div>
     </nav>
+
     <div class="container">
         <aside>
             <h3>Projects</h3>
+
             <select id="selProj" onchange="loadBugs()"></select>
+
             <input id="newP" placeholder="New Project">
             <button onclick="addP()">Add</button>
         </aside>
+
         <main>
             <input id="bugT" placeholder="Bug Title">
             <button onclick="addB()">Log Bug</button>
+
             <div id="list" style="margin-top:20px"></div>
         </main>
     </div>
 
-    <script>
-        // 🛡️ SECURITY CHECK
-        const session = localStorage.getItem("webenoid_session");
-        const user = localStorage.getItem("user");
+<script>
+    // 🛡️ SECURITY CHECK
+    const session = localStorage.getItem("webenoid_session");
+    const user = localStorage.getItem("user");
 
-        if (session !== "active" || !user || user === "null") {
-            localStorage.clear();
-            window.location.replace("/"); //
-        } else {
-            document.body.style.display = "flex"; // Show only if valid
-            document.getElementById('userTag').innerText = user;
-        }
+    if (session !== "active" || !user || user === "null") {
+        localStorage.clear();
+        window.location.replace("/");
+    } else {
+        document.body.style.display = "flex"; // Show only if valid
+        document.getElementById('userTag').innerText = user;
+    }
 
-        function logout() { localStorage.clear(); window.location.replace("/"); }
+    function logout() {
+        localStorage.clear();
+        window.location.replace("/");
+    }
 
-        async function loadData() {
-            const res = await fetch("/projects");
-            const p = await res.json();
-            document.getElementById('selProj').innerHTML = p.map(x => `<option value="${x.name}">${x.name}</option>`).join('');
-            loadBugs();
-        }
+    async function loadData() {
+        const res = await fetch("/projects");
+        const p = await res.json();
 
-        async function loadBugs() {
-            const res = await fetch("/bugs");
-            const bugs = await res.json();
-            const active = document.getElementById('selProj').value;
-            document.getElementById('list').innerHTML = bugs.filter(b => b.project === active).map(b => `<div>${b.title} - <b>${b.status}</b></div>`).join('');
-        }
+        document.getElementById('selProj').innerHTML =
+            p.map(x => `<option value="${x.name}">${x.name}</option>`).join('');
 
-        async function addP() {
-            await fetch("/project", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({name:newP.value})});
-            newP.value=""; loadData();
-        }
+        loadBugs();
+    }
 
-        async function addB() {
-            await fetch("/bugs", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify([{project:selProj.value, title:bugT.value, assignedTo:user}])});
-            bugT.value=""; loadBugs();
-        }
+    async function loadBugs() {
+        const res = await fetch("/bugs");
+        const bugs = await res.json();
 
+        const active = document.getElementById('selProj').value;
+
+        document.getElementById('list').innerHTML =
+            bugs
+            .filter(b => b.project === active)
+            .map(b => `<div>${b.title} - <b>${b.status}</b></div>`)
+            .join('');
+    }
+
+    async function addP() {
+        await fetch("/project", {
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({name:newP.value})
+        });
+
+        newP.value="";
         loadData();
-    </script>
+    }
+
+    async function addB() {
+        await fetch("/bugs", {
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify([{
+                project: selProj.value,
+                title: bugT.value,
+                assignedTo: user
+            }])
+        });
+
+        bugT.value="";
+        loadBugs();
+    }
+
+    loadData();
+</script>
+
 </body>
 </html>
