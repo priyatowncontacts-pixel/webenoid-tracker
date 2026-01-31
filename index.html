@@ -109,25 +109,23 @@
 </div>
 
 <script>
-// --- CORRECT RENDER API URL ---
+// --- CLOUD API URL ---
 const API = "https://webenoid-tracker.onrender.com";
 
-// --- AUTH GUARD ---
-if (localStorage.getItem("webenoid_session") !== "active") window.location.href = "/";
+// --- AUTH ---
+if (localStorage.getItem("webenoid_session") !== "active") window.location.href = "login.html";
 document.getElementById('userLabel').innerText = `Logged in: ${localStorage.getItem("user")}`;
 
-function logout() {
-    localStorage.clear();
-    window.location.href = "/";
-}
+function logout() { localStorage.clear(); window.location.href = "login.html"; }
 
+// --- REPAIRED NOTIFICATION ---
 function notify(msg) {
     const n = document.getElementById('notify');
     n.innerText = msg; n.style.display = "block";
     setTimeout(() => n.style.display = "none", 3000);
 }
 
-// --- TEAM & DATA ---
+// --- TEAM MANAGEMENT ---
 let team = JSON.parse(localStorage.getItem("team_list")) || ["Assignee"];
 function addDev() {
     const name = document.getElementById('newDev').value.trim();
@@ -192,7 +190,7 @@ async function loadBugs() {
     });
 }
 
-// --- PROJECT HELPERS ---
+// --- DATA HELPERS ---
 async function addProj() { await fetch(API+"/project", {method:"POST", headers:{'Content-Type':'application/json'}, body:JSON.stringify({name:newProj.value})}); newProj.value=""; notify("Project Created"); loadData(); }
 async function addTask() { await fetch(API+"/task", {method:"POST", headers:{'Content-Type':'application/json'}, body:JSON.stringify({project:selProj.value, name:newTask.value})}); newTask.value=""; notify("Task Linked"); loadData(); }
 
