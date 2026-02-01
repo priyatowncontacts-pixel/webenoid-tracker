@@ -39,8 +39,8 @@ if(u==="Webenoid" && p==="Webenoid123"){
 localStorage.setItem("webenoid_session","active");
 localStorage.setItem("user",u);
 
-// ONLY CHANGE HERE
-window.location.href = "/dashboard";
+// FIX
+window.location.replace("/index.html");
 }
 else alert("Wrong credentials");
 }
