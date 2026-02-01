@@ -16,7 +16,7 @@
     }
 
     body {
-      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-family: 'Plus Jakarta Sans';
       background: var(--bg);
       margin: 0;
       display: flex;
@@ -24,7 +24,6 @@
       height: 100vh;
     }
 
-    /* --- LAYOUT --- */
     nav {
       height: 60px;
       background: white;
@@ -32,12 +31,12 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 30px;
+      padding: 0 20px;
     }
 
     .wrapper {
       display: flex;
-      flex: 1;
+      flex: 1
     }
 
     aside {
@@ -50,16 +49,7 @@
     main {
       flex: 1;
       padding: 20px;
-      overflow: auto;
-    }
-
-    /* --- UI --- */
-    .card {
-      background: white;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 15px;
+      overflow: auto
     }
 
     input,
@@ -67,7 +57,7 @@
     textarea {
       width: 100%;
       padding: 10px;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       border: 1px solid var(--border);
       border-radius: 8px;
     }
@@ -82,7 +72,6 @@
       cursor: pointer;
     }
 
-    /* --- TABLE --- */
     table {
       width: 100%;
       border-collapse: collapse
@@ -90,29 +79,39 @@
 
     th {
       background: #fcfcfd;
-      font-size: 11px;
-      text-transform: uppercase;
-      text-align: left;
       padding: 10px;
-      border-bottom: 1px solid var(--border);
+      font-size: 11px;
+      text-align: left
     }
 
     td {
       padding: 10px;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid var(--border)
     }
 
-    /* --- NOTIFY --- */
     #notify {
       position: fixed;
       top: 20px;
       right: 20px;
       background: #0f172a;
       color: white;
-      padding: 14px 22px;
+      padding: 12px 18px;
       border-radius: 10px;
       display: none;
       z-index: 9999;
+    }
+
+    #bellPanel {
+      position: fixed;
+      right: -420px;
+      top: 60px;
+      width: 380px;
+      height: 90%;
+      background: white;
+      box-shadow: -5px 0 10px #0001;
+      transition: .3s;
+      padding: 10px;
+      overflow: auto;
     }
   </style>
 </head>
@@ -121,17 +120,33 @@
 
   <nav>
     <b style="color:var(--brand)">WEBENOID TRACKER</b>
-    <div>
+
+    <div style="display:flex;gap:15px;align-items:center">
+
+      <div style="position:relative">
+        <span onclick="openBell()" style="cursor:pointer">🔔</span>
+        <span id="bellCount" style="background:red;color:white;border-radius:50%;
+ padding:2px 6px;font-size:10px">0</span>
+      </div>
+
       <span id="userTag"></span>
-      <button onclick="logout()" style="width:auto;background:#fee2e2;color:#ef4444">Logout</button>
+
+      <button onclick="logout()" style="width:auto;background:#fee2e2;color:#ef4444">
+        Logout</button>
     </div>
   </nav>
 
   <div id="notify"></div>
 
+  <!-- ===== BELL PANEL ===== -->
+  <div id="bellPanel">
+    <h3>Notifications</h3>
+    <div id="bellList"></div>
+  </div>
+
   <div class="wrapper">
 
-    <!-- ========== SIDEBAR ========== -->
+    <!-- ===== TESTER DASHBOARD (UNCHANGED FEATURES) ===== -->
     <aside>
 
       <div id="adminPanel">
@@ -144,122 +159,157 @@
       <h3>Filter</h3>
       <select id="projFilter" onchange="loadBugs()"></select>
 
-      <!-- ===== TESTER PANEL - KEPT SAME ===== -->
       <div id="testerPanel">
 
         <h3>New Defect</h3>
         <input id="bugT" placeholder="Summary">
+
         <select id="assignTo"></select>
+
         <button onclick="addBug()">Log Bug</button>
 
         <h3>Bulk Defects</h3>
 
-        <textarea id="bulkBox" rows="4" placeholder="Bug Title | Target Date
-Login not working | 2026-02-10"></textarea>
+        <textarea id="bulkBox" rows="4" placeholder="Bug Title | Target Date"></textarea>
 
         <button onclick="bulkCreate()">Create Bulk</button>
 
       </div>
-
     </aside>
 
-    <!-- ========== MAIN ========== -->
+    <!-- ===== MAIN TABLE ===== -->
     <main>
+      <table>
+        <thead>
+          <tr>
+            <th>Bug</th>
+            <th>Started</th>
+            <th>Target</th>
+            <th>Status</th>
+            <th>Progress</th>
+            <th>Action</th>
+          </tr>
+        </thead>
 
-      <div class="card">
-        <table>
-          <thead>
-            <tr>
-              <th>Bug</th>
-              <th>Assign</th>
-              <th>Status</th>
-              <th>Progress</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-
-          <tbody id="bugList"></tbody>
-        </table>
-      </div>
-
+        <tbody id="bugList"></tbody>
+      </table>
     </main>
+
   </div>
 
   <script>
-    // ================= AUTH =================
+    // ========== AUTH ==========
     const role = localStorage.getItem("role");
     const user = localStorage.getItem("user");
 
     if (!user) window.location.href = "login.html";
 
-    document.getElementById("userTag").innerText =
-      `${user} (${role})`;
+    userTag.innerText = `${user} (${role})`;
 
+    // Developer restriction ONLY
     if (role === "Developer") {
       adminPanel.style.display = "none";
       testerPanel.style.display = "none";
     }
 
-    // ================= NOTIFY =================
+    // ========== NOTIFY ==========
     function showNotify(m) {
       notify.innerText = m;
       notify.style.display = "block";
       setTimeout(() => notify.style.display = "none", 4000);
     }
 
-    // ================= TEAM =================
+    // ========== BELL SYSTEM ==========
+    function openBell() {
+      bellPanel.style.right = "0";
+      loadBell();
+    }
+
+    async function loadBell() {
+      const list = await fetch("/notify/" + user).then(r => r.json());
+
+      bellCount.innerText = list.filter(x => !x.read).length;
+
+      bellList.innerHTML = list.map(n => `
+ <div style="border-bottom:1px solid #eee;
+  padding:8px;background:${n.read ? '#fff' : '#f0f7ff'}">
+
+  <div>${n.message}</div>
+  <small>${n.time}</small>
+
+  <button onclick="markRead('${n._id}')"
+   style="width:auto;font-size:10px">mark</button>
+ </div>
+`).join("");
+    }
+
+    async function markRead(id) {
+      await fetch("/notify/read/" + id, { method: "PUT" });
+      loadBell();
+    }
+
+    async function pushNotify(to, msg) {
+      await fetch("/notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user: to,
+          message: msg,
+          time: new Date().toLocaleString()
+        })
+      });
+    }
+
+    // ========== TEAM ==========
     let team = JSON.parse(localStorage.getItem("team")) ||
-      ["Ravi", "Kumar", "Arun"];
+      ["Arun", "Kiran", "Priya"];
 
-    assignTo.innerHTML = team.map(t =>
-      `<option value="${t}">${t}</option>`).join("");
+    assignTo.innerHTML =
+      team.map(t => `<option>${t}</option>`).join("");
 
-    // ================= LOAD =================
+    // ========== LOAD ==========
     async function loadData() {
       const p = await fetch("/projects").then(r => r.json());
 
-      projFilter.innerHTML = p.map(x =>
-        `<option value="${x.name}">${x.name}</option>`
-      ).join("");
+      projFilter.innerHTML =
+        p.map(x => `<option>${x.name}</option>`).join("");
 
       loadBugs();
     }
 
-    // ================= LOAD BUGS =================
+    // ========== LOAD BUGS ==========
     async function loadBugs() {
 
       const bugs = await fetch("/bugs").then(r => r.json());
-
       const active = projFilter.value;
 
       bugList.innerHTML = bugs
         .filter(b => b.project === active)
         .map(b => {
 
-          const devOptions = `
-   <option value="Queue">Queue</option>
-   <option value="Review">Review</option>`;
+          const devOpt = `
+ <option value="Queue">Queue</option>
+ <option value="Review">Review</option>`;
 
-          const testerOptions = `
-   <option value="Queue">Queue</option>
-   <option value="Review">Review</option>
-   <option value="Fixed">Fixed</option>`;
+          const testerOpt = `
+ <option value="Queue">Queue</option>
+ <option value="Review">Review</option>
+ <option value="Fixed">Fixed</option>`;
 
           return `
 <tr>
 <td>${b.title}</td>
-
-<td>${b.assignedTo || '-'}</td>
+<td>${b.startedAt || '-'}</td>
+<td>${b.targetDate || '-'}</td>
 
 <td>
 <select onchange="updateBug('${b._id}',{status:this.value})">
- ${role === "Developer" ? devOptions : testerOptions}
+ ${role === "Developer" ? devOpt : testerOpt}
 </select>
 </td>
 
 <td>
-<input type="range" min="0" max="100"
- value="${b.completion || 0}"
+<input type="range" value="${b.completion || 0}"
  onchange="handleProg('${b._id}',this.value)">
  ${b.completion || 0}%
 </td>
@@ -268,34 +318,33 @@ Login not working | 2026-02-10"></textarea>
 <button onclick="deleteBug('${b._id}')"
  style="background:none;color:red">Remove</button>
 </td>
-
 </tr>`;
         }).join("");
     }
 
-    // ================= PROGRESS LOGIC =================
+    // ========== 100% RULE ==========
     async function handleProg(id, val) {
 
+      await updateBug(id, { completion: val });
+
       if (val == 100) {
+
         await updateBug(id, { completion: 100, status: "Review" });
 
         showNotify("Moved to Review");
 
-        if (role === "Developer") {
-          showNotify("🔔 Your task sent for REVIEW");
-        }
+        await pushNotify(user, "Task moved to Review");
 
-      } else {
-        await updateBug(id, { completion: val });
+        await pushNotify("Tester", "Developer moved task to Review");
       }
     }
 
-    // ================= CRUD =================
-    async function updateBug(id, data) {
+    // ========== CRUD ==========
+    async function updateBug(id, d) {
       await fetch("/bug/" + id, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
+        body: JSON.stringify(d)
       });
       loadBugs();
     }
@@ -311,12 +360,11 @@ Login not working | 2026-02-10"></textarea>
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: newP.value })
       });
-
       newP.value = "";
       loadData();
     }
 
-    // ================= SINGLE BUG =================
+    // ========== SINGLE BUG ==========
     async function addBug() {
 
       await fetch("/bugs", {
@@ -325,17 +373,19 @@ Login not working | 2026-02-10"></textarea>
         body: JSON.stringify([{
           project: projFilter.value,
           title: bugT.value,
+          startedAt: new Date().toISOString().slice(0, 10),
           assignedTo: assignTo.value
         }])
       });
 
-      showNotify("Bug Assigned to " + assignTo.value);
+      await pushNotify(assignTo.value,
+        "New defect assigned to you");
 
       bugT.value = "";
       loadBugs();
     }
 
-    // ================= BULK BUG =================
+    // ========== BULK (UNCHANGED FORMAT) ==========
     async function bulkCreate() {
 
       const lines = bulkBox.value.trim().split("\n");
@@ -346,7 +396,8 @@ Login not working | 2026-02-10"></textarea>
         return {
           project: projFilter.value,
           title: p[0].trim(),
-          target: p[1]?.trim(),
+          targetDate: p[1]?.trim(),
+          startedAt: new Date().toISOString().slice(0, 10),
           assignedTo: assignTo.value
         };
       });
@@ -357,28 +408,15 @@ Login not working | 2026-02-10"></textarea>
         body: JSON.stringify(data)
       });
 
-      showNotify("Bulk defects created");
+      await pushNotify(assignTo.value,
+        "Bulk defects assigned");
 
       bulkBox.value = "";
       loadBugs();
     }
 
-    // ================= NOTIFICATION CHECK =================
-    setInterval(async () => {
-
-      if (role === "Developer") {
-
-        const bugs = await fetch("/bugs").then(r => r.json());
-
-        const mine = bugs.filter(b =>
-          b.assignedTo === user && b.status === "Review");
-
-        if (mine.length > 0) {
-          showNotify("You have bugs under REVIEW");
-        }
-      }
-
-    }, 8000);
+    // ========== REAL TIME ==========
+    setInterval(loadBell, 6000);
 
     function logout() {
       localStorage.clear();

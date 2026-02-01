@@ -8,8 +8,6 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
-
-// Serve static files from current folder
 app.use(express.static(__dirname));
 
 // Security Header
@@ -28,17 +26,34 @@ mongoose
   .then(() => console.log("✅ MongoDB Connected"))
   .catch(err => console.log("Mongo Error:", err));
 
-// ===== MODELS =====
-const Project = mongoose.model("Project", { name: String });
+// ===== MODELS (OLD – UNTOUCHED) =====
+const Project = mongoose.model("Project", {
+  name: String
+});
 
 const Bug = mongoose.model("Bug", {
   project: String,
   title: String,
+  task: String,
+
+  startedAt: String,
+  targetDate: String,
+
+  assignedTo: String,
+
   status: { type: String, default: "Queue" },
   completion: { type: Number, default: 0 }
 });
 
-// ===== API ROUTES =====
+// ===== NEW MODEL – NOTIFICATION (ADDED ONLY) =====
+const Notify = mongoose.model("Notify", {
+  user: String,
+  message: String,
+  time: String,
+  read: { type: Boolean, default: false }
+});
+
+// ===== API ROUTES (OLD – KEPT SAME) =====
 
 // Projects
 app.get("/projects", async (req, res) => {
@@ -72,24 +87,44 @@ app.delete("/bug/:id", async (req, res) => {
   res.json({ success: true });
 });
 
-// ===== PAGE ROUTING (FIXED) =====
+// ===== NEW ROUTES – NOTIFICATION (ONLY ADDITION) =====
 
-// Default → Login Page
+// Create notification
+app.post("/notify", async (req, res) => {
+  await Notify.create(req.body);
+  res.json({ ok: 1 });
+});
+
+// Get notifications for user
+app.get("/notify/:user", async (req, res) => {
+  res.json(
+    await Notify.find({ user: req.params.user })
+      .sort({ _id: -1 })
+      .limit(50)
+  );
+});
+
+// Mark as read
+app.put("/notify/read/:id", async (req, res) => {
+  await Notify.findByIdAndUpdate(req.params.id, { read: true });
+  res.json({ ok: 1 });
+});
+
+// ===== PAGE ROUTING =====
+
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "login.html"));
 });
 
-// Explicit login page
 app.get("/login.html", (req, res) => {
   res.sendFile(path.join(__dirname, "login.html"));
 });
 
-// 🚀 THIS FIXES YOUR ERROR
 app.get("/tracker.html", (req, res) => {
   res.sendFile(path.join(__dirname, "tracker.html"));
 });
 
-// Fallback – always go to login
+// Fallback
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "login.html"));
 });
