@@ -4,8 +4,10 @@
 <head>
   <meta charset="UTF-8">
   <title>Webenoid Tracker</title>
+
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap"
     rel="stylesheet">
+
   <style>
     :root {
       --brand: #2563eb;
@@ -14,13 +16,12 @@
     }
 
     body {
-      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-family: 'Plus Jakarta Sans';
       background: var(--bg);
       margin: 0;
       display: flex;
       flex-direction: column;
       height: 100vh;
-      overflow: hidden;
     }
 
     nav {
@@ -31,13 +32,11 @@
       align-items: center;
       justify-content: space-between;
       padding: 0 30px;
-      flex-shrink: 0;
     }
 
     .wrapper {
       display: flex;
-      flex: 1;
-      overflow: hidden;
+      flex: 1
     }
 
     aside {
@@ -50,15 +49,7 @@
     main {
       flex: 1;
       padding: 30px;
-      overflow-y: auto;
-    }
-
-    .card {
-      background: white;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      padding: 20px;
-      margin-bottom: 20px;
+      overflow-y: auto
     }
 
     input,
@@ -68,7 +59,6 @@
       margin-bottom: 10px;
       border: 1px solid var(--border);
       border-radius: 8px;
-      box-sizing: border-box;
     }
 
     button {
@@ -78,29 +68,20 @@
       border: none;
       padding: 10px;
       border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
     }
 
     table {
-      width: 100%;
-      border-collapse: collapse;
+      width: 100%
     }
 
     th {
-      text-align: left;
-      padding: 12px;
       background: #fcfcfd;
-      border-bottom: 1px solid var(--border);
-      font-size: 11px;
-      color: #64748b;
-      text-transform: uppercase;
+      padding: 12px;
+      font-size: 11px
     }
 
     td {
-      padding: 12px;
-      border-bottom: 1px solid var(--border);
-      font-size: 14px;
+      padding: 12px
     }
 
     #notify {
@@ -112,8 +93,6 @@
       padding: 15px 25px;
       border-radius: 10px;
       display: none;
-      z-index: 1000;
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
     }
   </style>
 </head>
@@ -121,144 +100,231 @@
 <body>
 
   <nav>
-    <b style="color:var(--brand); font-size: 20px;">WEBENOID</b>
-    <div style="display: flex; align-items: center; gap: 20px;">
-      <span id="userTag" style="font-size:13px; font-weight:600; color:#64748b"></span>
-      <button onclick="logout()" style="background:#fee2e2; color:#ef4444; width:auto; padding:5px 15px">Logout</button>
+    <b style="color:var(--brand)">WEBENOID</b>
+
+    <div>
+      <span id="userTag"></span>
+      <button onclick="logout()" style="background:#fee2e2;color:red;width:auto">
+        Logout</button>
     </div>
   </nav>
 
   <div id="notify"></div>
 
+  <audio id="ding" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
+
   <div class="wrapper">
+
     <aside>
+
       <div id="adminPanel">
         <h3>Management</h3>
         <input id="newP" placeholder="Project Name">
         <button onclick="addProject()">Create Project</button>
-        <hr style="margin:20px 0; border:0; border-top:1px solid var(--border)">
       </div>
+
       <h3>Filter</h3>
       <select id="projFilter" onchange="loadBugs()"></select>
 
-      <div id="testerPanel" style="margin-top:20px">
+      <div id="testerPanel">
+
         <h3>New Defect</h3>
+
         <input id="bugT" placeholder="Summary">
+
+        <select id="assignTo">
+          <option value="">Assign Developer</option>
+          <option>Arun</option>
+          <option>Kiran</option>
+          <option>Priya</option>
+        </select>
+
         <button onclick="addBug()">Log Bug</button>
+
       </div>
     </aside>
 
     <main>
-      <div class="card" style="padding:0">
-        <table>
-          <thead>
-            <tr>
-              <th>Bug Description</th>
-              <th style="width:140px">Status</th>
-              <th>Progress</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody id="bugList"></tbody>
-        </table>
-      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Bug</th>
+            <th>Status</th>
+            <th>Progress</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+
+        <tbody id="bugList"></tbody>
+      </table>
     </main>
   </div>
 
   <script>
-    // --- AUTH & ROLE LOGIC ---
+    // ===== AUTH (OLD – UNTOUCHED) =====
     const role = localStorage.getItem("role");
     const user = localStorage.getItem("user");
-    if (!user) window.location.href = "login.html"; // Guard
+
+    if (!user) window.location.href = "login.html";
 
     if (role === "Developer") {
-      document.getElementById("adminPanel").style.display = "none";
-      document.getElementById("testerPanel").style.display = "none";
+      adminPanel.style.display = "none";
+      testerPanel.style.display = "none";
     }
-    document.getElementById("userTag").innerText = `${user} (${role})`;
 
-    // FIX: Clear all session data on logout
+    userTag.innerText = user + " (" + role + ")";
+
     function logout() {
       localStorage.clear();
       window.location.href = "/";
     }
 
-    function showNotify(msg) {
-      const n = document.getElementById("notify");
-      n.innerText = msg; n.style.display = "block";
-      setTimeout(() => n.style.display = "none", 4000);
+    // ===== ADDED: NOTIFICATION =====
+    function showNotify(m) {
+      notify.innerText = m;
+      notify.style.display = "block";
+      ding.play();
+      setTimeout(() => notify.style.display = "none", 4000);
     }
 
-    // --- DATA LOADING ---
+    // ===== ADDED: REAL TIME ALERT =====
+    async function checkAlerts() {
+      if (role !== "Developer") return;
+
+      const r = await fetch("/bugs");
+      const bugs = await r.json();
+
+      bugs.forEach(b => {
+        if (b.assignedTo === user) {
+          let key = "seen_" + b._id + b.status;
+
+          if (!localStorage.getItem(key)) {
+            showNotify("New defect: " + b.title);
+            localStorage.setItem(key, "yes");
+          }
+        }
+      });
+    }
+
+    // ===== LOAD (OLD LOGIC) =====
     async function loadData() {
-      const res = await fetch("/projects");
-      const data = await res.json();
-      projFilter.innerHTML = data.map(p => `<option value="${p.name}">${p.name}</option>`).join("");
+      const r = await fetch("/projects");
+      const d = await r.json();
+
+      projFilter.innerHTML = d.map(p =>
+        `<option>${p.name}</option>`
+      ).join("");
+
       loadBugs();
     }
 
     async function loadBugs() {
-      const res = await fetch("/bugs");
-      const bugs = await res.json();
+      const r = await fetch("/bugs");
+      const bugs = await r.json();
+
       const active = projFilter.value;
-      bugList.innerHTML = bugs.filter(b => b.project === active).map(b => `
-            <tr>
-                <td><strong>${b.title}</strong></td>
-                <td>
-                    <select onchange="updateBug('${b._id}', {status: this.value})">
-                        <option value="Queue" ${b.status == 'Queue' ? 'selected' : ''}>Queue</option>
-                        <option value="Review" ${b.status == 'Review' ? 'selected' : ''}>Review</option>
-                        ${role === 'Tester' ? `<option value="Fixed" ${b.status == 'Fixed' ? 'selected' : ''}>Fixed</option>` : ''}
-                    </select>
-                </td>
-                <td>
-                    <input type="range" value="${b.completion || 0}" onchange="handleProg('${b._id}', this.value)">
-                </td>
-                <td>
-                    <button onclick="deleteBug('${b._id}')" style="background:none; color:red; width:auto; font-size:12px">Remove</button>
-                </td>
-            </tr>
-        `).join("");
+
+      bugList.innerHTML = bugs
+        .filter(b => b.project === active)
+        .map(b => `
+
+<tr>
+<td>${b.title}</td>
+
+<td>
+<select onchange="updateBug('${b._id}',{status:this.value})">
+
+<option ${b.status == 'Queue' ? 'selected' : ''}>Queue</option>
+
+<option ${b.status == 'Review' ? 'selected' : ''}>Review</option>
+
+${role === 'Tester'
+            ? `<option ${b.status == 'Fixed' ? 'selected' : ''}>Fixed</option>`
+            : ''}
+
+</select>
+</td>
+
+<td>
+<input type="range"
+value="${b.completion || 0}"
+onchange="handleProg('${b._id}',this.value)">
+</td>
+
+<td>
+<button onclick="deleteBug('${b._id}')"
+style="background:none;color:red">
+Remove</button>
+</td>
+</tr>
+
+`).join("");
     }
 
-    // --- UPDATES & ACTIONS ---
-    async function updateBug(id, data) {
+    // ===== CRUD (OLD – KEPT) =====
+    async function updateBug(id, d) {
       await fetch("/bug/" + id, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
+        body: JSON.stringify(d)
       });
       loadBugs();
     }
 
+    // ===== ADDED: 100% AUTO REVIEW =====
     async function handleProg(id, val) {
-      if (val == 100) {
-        await updateBug(id, { completion: 100, status: 'Review' });
-        showNotify("🎉 Task Complete! Sent to Review.");
-      } else {
-        await updateBug(id, { completion: val });
+
+      await updateBug(id, { completion: val });
+
+      if (role === "Developer" && val == 100) {
+
+        await updateBug(id, {
+          completion: 100,
+          status: "Review"
+        });
+
+        showNotify("Moved to Review");
       }
     }
 
     async function deleteBug(id) {
-      if (confirm("Delete this bug?")) {
-        await fetch("/bug/" + id, { method: "DELETE" });
-        loadBugs();
-      }
+      await fetch("/bug/" + id, { method: "DELETE" });
+      loadBugs();
     }
 
     async function addProject() {
-      await fetch("/project", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: newP.value }) });
-      newP.value = ""; loadData();
+      await fetch("/project", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newP.value })
+      });
+
+      newP.value = "";
+      loadData();
     }
 
+    // ===== ADDED: ASSIGN WHILE CREATE =====
     async function addBug() {
-      await fetch("/bugs", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify([{ project: projFilter.value, title: bugT.value }]) });
-      bugT.value = ""; loadBugs();
+      await fetch("/bugs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify([{
+          project: projFilter.value,
+          title: bugT.value,
+          assignedTo: assignTo.value
+        }])
+      });
+
+      bugT.value = "";
+      loadBugs();
     }
 
+    // ===== START =====
     loadData();
+    checkAlerts();
+    setInterval(checkAlerts, 5000);
   </script>
+
 </body>
 
 </html>
