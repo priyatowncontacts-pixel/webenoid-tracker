@@ -4,170 +4,207 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Webenoid Tracker</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <title>Webenoid Bug Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
   <style>
     :root {
       --brand: #2563eb;
-      --bg: #f1f5f9;
+      --bg: #f8fafc;
       --panel: #ffffff;
       --text: #0f172a;
+      --text-light: #64748b;
       --border: #e2e8f0;
+      --radius: 12px;
     }
 
     body {
-      display: none;
-      font-family: 'Inter', sans-serif;
-      margin: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
       background: var(--bg);
       color: var(--text);
+      margin: 0;
+      display: flex;
       flex-direction: column;
       height: 100vh;
+      overflow: hidden;
     }
 
-    /* HEADER */
     nav {
+      height: 60px;
       background: var(--panel);
-      padding: 0 32px;
-      height: 64px;
+      border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border-bottom: 1px solid var(--border);
+      padding: 0 32px;
+      flex-shrink: 0;
     }
 
     .logo {
       font-weight: 800;
       color: var(--brand);
-      font-size: 18px;
+      font-size: 20px;
+      letter-spacing: -0.5px;
     }
 
-    .logout {
-      background: #fee2e2;
+    .logo span {
+      color: var(--text);
+    }
+
+    .logout-btn {
+      background: #fff;
       color: #ef4444;
-      border: none;
-      padding: 8px 16px;
+      border: 1px solid #fee2e2;
+      padding: 6px 14px;
       border-radius: 6px;
-      cursor: pointer;
       font-weight: 600;
-      font-size: 13px;
+      cursor: pointer;
     }
 
-    .container {
+    .wrapper {
       display: flex;
       flex: 1;
       overflow: hidden;
     }
 
-    /* SIDEBAR */
     aside {
-      width: 280px;
+      width: 300px;
       background: var(--panel);
       border-right: 1px solid var(--border);
       padding: 24px;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
+      overflow-y: auto;
+    }
+
+    main {
+      flex: 1;
+      padding: 20px 32px;
+      overflow-y: auto;
     }
 
     h3 {
-      font-size: 12px;
+      font-size: 11px;
+      font-weight: 700;
       text-transform: uppercase;
-      color: #64748b;
-      margin: 0 0 10px 0;
-      letter-spacing: 0.05em;
-    }
-
-    /* MAIN */
-    main {
-      flex: 1;
-      padding: 32px;
-      overflow-y: auto;
+      color: var(--text-light);
+      margin-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 5px;
     }
 
     .card {
       background: var(--panel);
-      border-radius: 12px;
+      border-radius: var(--radius);
       border: 1px solid var(--border);
       padding: 20px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
       margin-bottom: 24px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     }
 
-    /* INPUTS & BUTTONS */
     input,
     select,
     textarea {
       width: 100%;
-      padding: 10px;
+      padding: 10px 12px;
       border: 1px solid var(--border);
       border-radius: 8px;
-      font-size: 14px;
+      font-family: inherit;
+      font-size: 13px;
       margin-bottom: 10px;
+      outline: none;
       box-sizing: border-box;
     }
 
-    .btn-primary {
+    button {
+      width: 100%;
       background: var(--brand);
       color: white;
       border: none;
-      padding: 10px;
+      padding: 12px;
       border-radius: 8px;
-      cursor: pointer;
       font-weight: 600;
+      cursor: pointer;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 1000px;
+    }
+
+    th {
+      text-align: left;
+      padding: 12px;
+      font-size: 11px;
+      text-transform: uppercase;
+      color: var(--text-light);
+      border-bottom: 1px solid var(--border);
+      background: #fcfcfd;
+    }
+
+    td {
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+
+    .Queue {
+      background: #e0e7ff;
+      color: #3730a3;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-weight: 700;
+      border: none;
+      font-size: 11px;
+    }
+
+    .Fixed {
+      background: #dcfce7;
+      color: #166534;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-weight: 700;
+      border: none;
+      font-size: 11px;
+    }
+
+    .progress-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    input[type="range"] {
+      margin: 0;
+      cursor: pointer;
+      height: 6px;
+      accent-color: var(--brand);
+      width: 80px;
+    }
+
+    .grid-input {
+      font-size: 11px;
+      padding: 4px;
+      border: 1px solid transparent;
+      background: transparent;
       width: 100%;
     }
 
-    /* BUG LIST ITEM */
-    .bug-item {
-      background: white;
-      border: 1px solid var(--border);
+    .grid-input:hover {
+      border-color: var(--border);
+      background: #fff;
+    }
+
+    #notify {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #0f172a;
+      color: white;
+      padding: 14px 24px;
       border-radius: 8px;
-      padding: 12px 16px;
-      margin-bottom: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      transition: 0.2s;
-    }
-
-    .bug-item:hover {
-      border-color: var(--brand);
-    }
-
-    .bug-info {
-      flex: 1;
-    }
-
-    .bug-title {
+      display: none;
+      z-index: 10000;
       font-weight: 600;
-      font-size: 14px;
-      display: block;
-      margin-bottom: 4px;
-    }
-
-    .bug-meta {
-      font-size: 11px;
-      color: #64748b;
-    }
-
-    .status-select {
-      width: auto;
-      margin: 0 12px;
-      padding: 4px;
-      font-size: 12px;
-    }
-
-    .btn-del {
-      background: transparent;
-      color: #94a3b8;
-      border: none;
-      cursor: pointer;
-      font-size: 12px;
-    }
-
-    .btn-del:hover {
-      color: #ef4444;
     }
   </style>
 </head>
@@ -175,101 +212,154 @@
 <body>
 
   <nav>
-    <div class="logo">WEBENOID TRACKER</div>
-    <div>
-      <span id="userTag" style="margin-right:15px; font-weight:500; font-size: 14px"></span>
-      <button class="logout" onclick="logout()">Logout</button>
+    <div class="logo">WEBENOID <span>TRACKER</span></div>
+    <div style="display: flex; align-items: center; gap: 20px;">
+      <span id="userLabel" style="font-weight: 600; font-size: 13px; color: var(--text-light);"></span>
+      <button class="logout-btn" onclick="logout()">Logout</button>
     </div>
   </nav>
 
-  <div class="container">
+  <div id="notify"></div>
+
+  <div class="wrapper">
     <aside>
-      <div>
-        <h3>Project Scope</h3>
-        <select id="selProj" onchange="loadBugs()"></select>
-        <input id="newP" placeholder="Create new project...">
-        <button class="btn-primary" onclick="addP()">Add Project</button>
+      <h3>Directory</h3>
+      <input id="newDev" placeholder="Add Developer Name">
+      <button onclick="addDev()" style="background: #0f172a; margin-bottom: 20px;">Add Member</button>
+
+      <h3>Project Context</h3>
+      <input id="newProj" placeholder="Project Name">
+      <button onclick="addProj()">Create Project</button>
+      <select id="selProj" onchange="loadBugs()"></select>
+
+      <div style="margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px;">
+        <h3>Quick Entry</h3>
+        <input id="qTitle" placeholder="Defect Summary">
+        <select id="qAssign"></select>
+        <button onclick="submitSingle()">Log Defect</button>
       </div>
     </aside>
 
     <main>
       <div class="card">
-        <h3>Log New Defect</h3>
-        <div style="display:flex; gap:10px; margin-bottom:15px">
-          <input id="bugT" placeholder="Describe the issue..." style="margin:0">
-          <select id="status" style="width:180px; margin:0">
-            <option>Queue</option>
-            <option>In Progress</option>
-            <option>Fixed</option>
-          </select>
-          <button class="btn-primary" onclick="addB()" style="width:140px">Submit</button>
-        </div>
-
-        <h3>Bulk Operations</h3>
-        <textarea id="bulk" placeholder="Paste multiple issues (one per line)..." style="height:80px"></textarea>
-        <button class="btn-primary" onclick="bulkAdd()" style="background:#0f172a">Import List</button>
+        <h3>Bulk Copy-Paste</h3>
+        <textarea id="bPaste" rows="3" placeholder="Paste rows: Title | Target Date (YYYY-MM-DD)"></textarea>
+        <button onclick="submitBulk()" style="width: auto; padding: 10px 30px;">🚀 Process Batch List</button>
       </div>
 
-      <div id="list">
+      <div class="card" style="padding:0; overflow-x:auto">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:40px; text-align:center">#</th>
+              <th>Defect Details</th>
+              <th>Assignee</th>
+              <th style="width:120px">Status</th>
+              <th>Started At</th>
+              <th>Target Fix</th>
+              <th>Work Done</th>
+            </tr>
+          </thead>
+          <tbody id="bugList"></tbody>
+        </table>
       </div>
     </main>
   </div>
 
   <script>
-    // All of your original script logic remains identical
+    // --- AUTH GUARD (Maintaining your existing session logic) ---
     const session = localStorage.getItem("webenoid_session");
-    const user = localStorage.getItem("user");
-
-    if (!session || session !== "active") {
-      window.location.href = "login.html";
-    } else {
-      document.body.style.display = "flex";
-      document.getElementById('userTag').innerText = `Active User: ${user}`;
-    }
+    if (!session || session !== "active") window.location.href = "login.html";
+    document.getElementById('userLabel').innerText = `Logged in: ${localStorage.getItem("user")}`;
 
     function logout() {
       localStorage.clear();
       window.location.href = "login.html";
     }
 
+    function notify(msg) {
+      const n = document.getElementById('notify');
+      n.innerText = msg; n.style.display = "block";
+      setTimeout(() => n.style.display = "none", 3000);
+    }
+
+    // --- TEAM & DATA MANAGEMENT ---
+    let team = JSON.parse(localStorage.getItem("team_list")) || ["Assignee"];
+    function addDev() {
+      const name = document.getElementById('newDev').value.trim();
+      if (name) { team.push(name); localStorage.setItem("team_list", JSON.stringify(team)); updateDrops(); notify(`Added ${name}`); }
+    }
+    function updateDrops() {
+      const s = document.getElementById('qAssign');
+      s.innerHTML = ""; team.forEach(t => s.innerHTML += `<option value="${t}">${t}</option>`);
+    }
+
+    // --- BUG MANAGEMENT ---
     async function loadData() {
       const res = await fetch("/projects");
       const p = await res.json();
-      selProj.innerHTML = p.map(x => `<option value="${x.name}">${x.name}</option>`).join('');
+      document.getElementById('selProj').innerHTML = p.map(x => `<option value="${x.name}">${x.name}</option>`).join('');
       loadBugs();
     }
 
     async function loadBugs() {
       const res = await fetch("/bugs");
       const bugs = await res.json();
-      const active = selProj.value;
+      const active = document.getElementById('selProj').value;
+      const body = document.getElementById('bugList');
+      body.innerHTML = "";
 
-      list.innerHTML = bugs.filter(b => b.project === active)
-        .map(b => `
-                <div class="bug-item">
-                    <div class="bug-info">
-                        <span class="bug-title">${b.title}</span>
-                        <span class="bug-meta">Created: ${b.createdDate ? new Date(b.createdDate).toLocaleDateString() : 'N/A'}</span>
-                    </div>
-                    <select class="status-select" onchange="updateStatus('${b._id}',this.value)">
-                        <option ${b.status == "Queue" ? "selected" : ""}>Queue</option>
-                        <option ${b.status == "In Progress" ? "selected" : ""}>In Progress</option>
-                        <option ${b.status == "Fixed" ? "selected" : ""}>Fixed</option>
-                    </select>
-                    <button class="btn-del" onclick="del('${b._id}')">Delete</button>
+      bugs.filter(b => b.project === active).forEach((b, i) => {
+        body.innerHTML += `
+        <tr>
+            <td style="text-align:center">${i + 1}</td>
+            <td><strong>${b.title}</strong></td>
+            <td><strong>${b.assignedTo}</strong></td>
+            <td>
+                <select class="${b.status}" onchange="updateStatus('${b._id}',this.value)">
+                    <option ${b.status == 'Queue' ? 'selected' : ''}>Queue</option>
+                    <option ${b.status == 'In Progress' ? 'selected' : ''}>In Progress</option>
+                    <option ${b.status == 'Fixed' ? 'selected' : ''}>Fixed</option>
+                </select>
+            </td>
+            <td><input type="datetime-local" class="grid-input" value="${b.createdDate ? new Date(b.createdDate).toISOString().slice(0, 16) : ''}"></td>
+            <td><input type="date" class="grid-input"></td>
+            <td>
+                <div class="progress-container">
+                    <input type="range" min="0" max="100" value="0" oninput="this.nextElementSibling.innerText=this.value+'%'">
+                    <span style="font-weight:700; font-size:11px">0%</span>
                 </div>
-            `).join('');
+            </td>
+        </tr>`;
+      });
     }
 
-    // ... Rest of your original addP, addB, updateStatus, del, and bulkAdd functions ...
-    async function addP() {
-      await fetch("/project", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: newP.value }) });
-      newP.value = ""; loadData();
+    async function submitSingle() {
+      const data = [{
+        project: document.getElementById('selProj').value,
+        title: document.getElementById('qTitle').value,
+        assignedTo: document.getElementById('qAssign').value,
+        status: "Queue"
+      }];
+      await fetch("/bugs", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+      document.getElementById('qTitle').value = "";
+      loadBugs();
+      notify("Defect Created!");
     }
 
-    async function addB() {
-      await fetch("/bugs", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify([{ project: selProj.value, title: bugT.value, status: status.value, assignedTo: user }]) });
-      bugT.value = ""; loadBugs();
+    async function submitBulk() {
+      const lines = document.getElementById('bPaste').value.trim().split("\n");
+      const data = lines.map(l => ({
+        project: document.getElementById('selProj').value,
+        title: l.trim(),
+        assignedTo: localStorage.getItem("user"),
+        status: "Queue"
+      })).filter(x => x.title);
+
+      await fetch("/bugs", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+      document.getElementById('bPaste').value = "";
+      loadBugs();
+      notify(`Batch Logged: ${data.length} items`);
     }
 
     async function updateStatus(id, status) {
@@ -277,21 +367,14 @@
       loadBugs();
     }
 
-    async function del(id) {
-      await fetch("/bugs/" + id, { method: "DELETE" });
-      loadBugs();
+    async function addProj() {
+      await fetch("/project", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: document.getElementById('newProj').value }) });
+      document.getElementById('newProj').value = "";
+      loadData();
     }
 
-    async function bulkAdd() {
-      const lines = bulk.value.split("\n");
-      let arr = lines.map(l => ({ project: selProj.value, title: l, assignedTo: user, status: "Queue" }));
-      await fetch("/bugs", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(arr) });
-      bulk.value = ""; loadBugs();
-    }
-
-    loadData();
+    loadData(); updateDrops();
   </script>
-
 </body>
 
 </html>
