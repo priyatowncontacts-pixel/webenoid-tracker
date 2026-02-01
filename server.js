@@ -10,7 +10,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname));
 
-// AUTO API ORIGIN SUPPORT (LOCAL + RENDER)
+// allow render + browser
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   next();
@@ -37,7 +37,7 @@ const Bug = mongoose.model("Bug", {
   fixedDate: { type: Date, default: null },
 });
 
-// PROJECT API
+// API
 app.get("/projects", async (req, res) => {
   res.json(await Project.find());
 });
@@ -47,7 +47,6 @@ app.post("/project", async (req, res) => {
   res.json({ success: true });
 });
 
-// BUG API
 app.get("/bugs", async (req, res) => {
   res.json(await Bug.find().sort({ _id: -1 }));
 });
@@ -57,60 +56,14 @@ app.post("/bugs", async (req, res) => {
   res.json({ success: true });
 });
 
-// BULK BUG UPLOAD
-app.post("/bugs/bulk", async (req, res) => {
-  const text = req.body.text || "";
+// ROUTING
+app.get("/", (req, res) =>
+  res.sendFile(path.join(__dirname, "login.html"))
+);
 
-  const lines = text.split("\n");
-  let list = [];
-
-  lines.forEach(line => {
-    if (!line.trim()) return;
-
-    list.push({
-      title: line.replace(/^\d+\.\s*/, ""),
-      status: "Open",
-      createdDate: new Date(),
-    });
-  });
-
-  await Bug.insertMany(list);
-  res.json({ success: true });
-});
-
-// STATUS UPDATE
-app.put("/bugs/:id", async (req, res) => {
-  const { status } = req.body;
-
-  const update = { status };
-
-  if (status === "Fixed") {
-    update.fixedDate = new Date();
-  }
-
-  await Bug.findByIdAndUpdate(req.params.id, update);
-  res.json({ success: true });
-});
-
-// DELETE BUG
-app.delete("/bugs/:id", async (req, res) => {
-  await Bug.findByIdAndDelete(req.params.id);
-  res.json({ success: true });
-});
-
-// ROUTING TO HTML FILES
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "login.html"));
-});
-
-app.get("/dashboard", (req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
-});
-
-// IMPORTANT FOR RENDER DIRECT OPEN
-app.get("/index.html", (req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
-});
+app.get("/index.html", (req, res) =>
+  res.sendFile(path.join(__dirname, "index.html"))
+);
 
 app.get("*", (req, res) => res.redirect("/"));
 
