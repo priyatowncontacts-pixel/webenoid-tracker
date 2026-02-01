@@ -20,7 +20,7 @@
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, .1);
             text-align: center;
-            width: 300px;
+            width: 320px;
         }
 
         input,
@@ -43,30 +43,74 @@
             cursor: pointer;
             font-weight: bold;
         }
+
+        .error {
+            color: red;
+            font-size: 13px;
+            margin-top: 8px;
+        }
     </style>
 </head>
 
 <body>
     <div class="card">
         <h2 style="color:#2563eb; margin-bottom: 20px;">WEBENOID LOGIN</h2>
+
         <input id="u" placeholder="Username">
         <input id="p" type="password" placeholder="Password">
+
         <select id="r">
+            <option value="">Select Role</option>
             <option value="Developer">Developer</option>
             <option value="Tester">Tester</option>
         </select>
+
         <button onclick="handleLogin()">Sign In</button>
+
+        <div id="err" class="error"></div>
     </div>
+
     <script>
         function handleLogin() {
-            if (u.value === "Webenoid" && p.value === "Webenoid123") {
-                localStorage.setItem("user", u.value);
-                localStorage.setItem("role", r.value);
+
+            const user = u.value.trim();
+            const pass = p.value.trim();
+            const role = r.value;
+
+            err.innerText = "";
+
+            if (!user || !pass) {
+                err.innerText = "Please enter username and password";
+                return;
+            }
+
+            if (!role) {
+                err.innerText = "Please select a role";
+                return;
+            }
+
+            // ---- CREDENTIAL CHECK ----
+            if (user === "Webenoid" && pass === "Webenoid123") {
+
+                localStorage.setItem("user", user);
+                localStorage.setItem("role", role);
                 localStorage.setItem("webenoid_session", "active");
-                window.location.href = "index.html";
-            } else { alert("Access Denied: Invalid Credentials"); }
+                localStorage.setItem("login_time", new Date().toISOString());
+
+                // ✅ IMPORTANT → open tracker page
+                window.location.href = "tracker.html";
+
+            } else {
+                err.innerText = "Access Denied: Invalid Credentials";
+            }
         }
+
+        // Allow ENTER key login
+        document.addEventListener("keypress", function (e) {
+            if (e.key === "Enter") handleLogin();
+        });
     </script>
+
 </body>
 
 </html>
