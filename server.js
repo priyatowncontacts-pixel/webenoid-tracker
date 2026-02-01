@@ -35,9 +35,14 @@ app.post("/project", async (req, res) => { await Project.create(req.body); res.j
 app.get("/bugs", async (req, res) => res.json(await Bug.find().sort({ _id: -1 })));
 app.post("/bugs", async (req, res) => { await Bug.insertMany(req.body); res.json({ success: true }); });
 
-// Update Bug Route (Fixes 404)
+// --- FIX: Added Update and Delete routes to prevent 404 errors ---
 app.put("/bug/:id", async (req, res) => {
   await Bug.findByIdAndUpdate(req.params.id, req.body);
+  res.json({ success: true });
+});
+
+app.delete("/bug/:id", async (req, res) => {
+  await Bug.findByIdAndDelete(req.params.id);
   res.json({ success: true });
 });
 

@@ -156,6 +156,7 @@
               <th>Bug Description</th>
               <th style="width:140px">Status</th>
               <th>Progress</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody id="bugList"></tbody>
@@ -165,18 +166,18 @@
   </div>
 
   <script>
-    // Guard
+    // --- AUTH & ROLE LOGIC ---
     const role = localStorage.getItem("role");
     const user = localStorage.getItem("user");
-    if (!user) window.location.href = "/";
+    if (!user) window.location.href = "/"; // Guard
 
-    // UI Logic
     if (role === "Developer") {
       document.getElementById("adminPanel").style.display = "none";
       document.getElementById("testerPanel").style.display = "none";
     }
     document.getElementById("userTag").innerText = `${user} (${role})`;
 
+    // FIX: Clear all session data on logout
     function logout() {
       localStorage.clear();
       window.location.href = "/";
@@ -188,6 +189,7 @@
       setTimeout(() => n.style.display = "none", 4000);
     }
 
+    // --- DATA LOADING ---
     async function loadData() {
       const res = await fetch("/projects");
       const data = await res.json();
@@ -212,10 +214,14 @@
                 <td>
                     <input type="range" value="${b.completion || 0}" onchange="handleProg('${b._id}', this.value)">
                 </td>
+                <td>
+                    <button onclick="deleteBug('${b._id}')" style="background:none; color:red; width:auto; font-size:12px">Remove</button>
+                </td>
             </tr>
         `).join("");
     }
 
+    // --- UPDATES & ACTIONS ---
     async function updateBug(id, data) {
       await fetch("/bug/" + id, {
         method: "PUT",
@@ -228,9 +234,16 @@
     async function handleProg(id, val) {
       if (val == 100) {
         await updateBug(id, { completion: 100, status: 'Review' });
-        showNotify("🎉 Task Complete! Bug sent to Review.");
+        showNotify("🎉 Task Complete! Sent to Review.");
       } else {
         await updateBug(id, { completion: val });
+      }
+    }
+
+    async function deleteBug(id) {
+      if (confirm("Delete this bug?")) {
+        await fetch("/bug/" + id, { method: "DELETE" });
+        loadBugs();
       }
     }
 
