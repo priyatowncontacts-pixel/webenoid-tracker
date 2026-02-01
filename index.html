@@ -163,31 +163,6 @@
       font-size: 11px;
     }
 
-    .Fixed {
-      background: #dcfce7;
-      color: #166534;
-      padding: 4px 8px;
-      border-radius: 6px;
-      font-weight: 700;
-      border: none;
-      font-size: 11px;
-    }
-
-    .progress-container {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    input[type="range"] {
-      margin: 0;
-      cursor: pointer;
-      height: 6px;
-      accent-color: var(--brand);
-      width: 80px;
-    }
-
-    /* Notification Popup */
     #notify {
       position: fixed;
       top: 20px;
@@ -235,30 +210,27 @@
         <h3>Directory</h3>
         <input id="newDev" placeholder="Add Developer Name">
         <button onclick="addDev()" style="background: #0f172a; margin-bottom: 20px;">Add Member</button>
-
-        <h3>Context</h3>
-        <input id="newProj" placeholder="Project Name">
-        <button onclick="addProj()">Create Project</button>
+        <h3>Project Config</h3>
+        <input id="newProj" placeholder="New Project Name">
+        <button onclick="addProj()">Create</button>
       </div>
-
       <div style="margin-top: 20px;">
-        <h3>Active Project</h3>
+        <h3>Project Filter</h3>
         <select id="selProj" onchange="loadBugs()"></select>
       </div>
-
       <div id="quickEntry" style="margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px;">
-        <h3>Quick Entry</h3>
-        <input id="qTitle" placeholder="Defect Summary">
+        <h3>New Defect</h3>
+        <input id="qTitle" placeholder="Bug Title">
         <select id="qAssign"></select>
-        <button onclick="submitSingle()">Log Defect</button>
+        <button onclick="submitSingle()">Log Bug</button>
       </div>
     </aside>
 
     <main>
       <div id="bulkCard" class="card">
-        <h3>Batch List Processing</h3>
-        <textarea id="bPaste" rows="3" placeholder="Paste: Title | Details"></textarea>
-        <button onclick="submitBulk()" style="width: auto; padding: 10px 30px;">🚀 Process Batch</button>
+        <h3>Bulk Import</h3>
+        <textarea id="bPaste" rows="2" placeholder="Paste titles line by line..."></textarea>
+        <button onclick="submitBulk()" style="width: auto; padding: 10px 30px;">Process Batch</button>
       </div>
 
       <div class="card" style="padding:0; overflow-x:auto">
@@ -266,11 +238,10 @@
           <thead>
             <tr>
               <th style="width:40px; text-align:center">#</th>
-              <th>Defect Title</th>
-              <th>Assignee</th>
+              <th>Summary</th>
+              <th>Owner</th>
               <th style="width:130px">Status</th>
-              <th>Work Progress</th>
-              <th>Action</th>
+              <th>Progress</th>
             </tr>
           </thead>
           <tbody id="bugList"></tbody>
@@ -283,7 +254,7 @@
     const role = localStorage.getItem("role");
     const user = localStorage.getItem("user");
 
-    // --- UI ACCESS CONTROL ---
+    // --- DEVELOPER VIEW LOGIC ---
     if (role === "Developer") {
       document.getElementById('adminPanel').style.display = 'none';
       document.getElementById('quickEntry').style.display = 'none';
@@ -302,8 +273,7 @@
       setTimeout(() => n.style.display = "none", 4000);
     }
 
-    // --- LOGIC ---
-    let team = JSON.parse(localStorage.getItem("team_list")) || ["Assignee"];
+    let team = JSON.parse(localStorage.getItem("team_list")) || ["Unassigned"];
     function addDev() {
       const name = document.getElementById('newDev').value.trim();
       if (name) { team.push(name); localStorage.setItem("team_list", JSON.stringify(team)); updateDrops(); notify(`Added ${name}`); }
@@ -328,7 +298,7 @@
       body.innerHTML = "";
 
       bugs.filter(b => b.project === active).forEach((b, i) => {
-        // Restricted Status for Developers
+        // Only Queue and Review for Developers
         const options = role === "Developer"
           ? `<option value="Queue" ${b.status == 'Queue' ? 'selected' : ''}>Queue</option>
                <option value="Review" ${b.status == 'Review' ? 'selected' : ''}>Review</option>`
@@ -342,34 +312,36 @@
             <td><strong>${b.title}</strong></td>
             <td>${b.assignedTo}</td>
             <td>
-                <select id="stat-${b._id}" class="${b.status}" onchange="updateStatus('${b._id}',this.value)">
+                <select class="${b.status}" onchange="updateStatus('${b._id}',this.value)">
                     ${options}
                 </select>
             </td>
             <td>
-                <div class="progress-container">
+                <div style="display:flex; align-items:center; gap:8px">
                     <input type="range" min="0" max="100" value="${b.status == 'Review' ? 100 : 0}" 
-                        oninput="this.nextElementSibling.innerText=this.value+'%'"
                         onchange="handleProgress('${b._id}', this.value)">
                     <span style="font-weight:700; font-size:11px">${b.status == 'Review' ? 100 : 0}%</span>
                 </div>
             </td>
-            <td><button onclick="del('${b._id}')" style="background:transparent; color:#ef4444; padding:0; width:auto; font-size:12px">Remove</button></td>
         </tr>`;
       });
     }
 
-    // Automatic Review Logic + Notification
+    // FIX: Changed "/bugs/" to "/bug/" to match your server.js singular PUT route
+    async function updateStatus(id, status) {
+      await fetch("/bug/" + id, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status })
+      });
+      loadBugs();
+    }
+
     async function handleProgress(id, val) {
       if (val == 100) {
         await updateStatus(id, "Review");
-        notify("🎉 Task Completed! Successfully moved to Review.");
+        notify("🎉 Work Done! Bug moved to Review.");
       }
-    }
-
-    async function updateStatus(id, status) {
-      await fetch("/bugs/" + id, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }) });
-      loadBugs();
     }
 
     async function submitSingle() {
@@ -381,7 +353,7 @@
           status: "Queue"
         }])
       });
-      document.getElementById('qTitle').value = ""; loadBugs(); notify("Defect Logged");
+      document.getElementById('qTitle').value = ""; loadBugs(); notify("Defect Created");
     }
 
     async function submitBulk() {
@@ -393,11 +365,13 @@
         status: "Queue"
       }));
       await fetch("/bugs", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-      document.getElementById('bPaste').value = ""; loadBugs(); notify("Batch Processed");
+      document.getElementById('bPaste').value = ""; loadBugs(); notify("Bulk Uploaded");
     }
 
-    async function del(id) { await fetch("/bugs/" + id, { method: "DELETE" }); loadBugs(); }
-    async function addProj() { await fetch("/project", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: document.getElementById('newProj').value }) }); document.getElementById('newProj').value = ""; loadData(); }
+    async function addProj() {
+      await fetch("/project", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: document.getElementById('newProj').value }) });
+      document.getElementById('newProj').value = ""; loadData();
+    }
 
     loadData(); updateDrops();
   </script>
