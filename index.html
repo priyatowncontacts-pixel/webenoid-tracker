@@ -138,7 +138,6 @@
 
   <div id="notify"></div>
 
-  <!-- ===== BELL PANEL ===== -->
   <div id="bellPanel">
     <h3>Notifications</h3>
     <div id="bellList"></div>
@@ -146,7 +145,6 @@
 
   <div class="wrapper">
 
-    <!-- ===== TESTER DASHBOARD (UNCHANGED FEATURES) ===== -->
     <aside>
 
       <div id="adminPanel">
@@ -177,7 +175,6 @@
       </div>
     </aside>
 
-    <!-- ===== MAIN TABLE ===== -->
     <main>
       <table>
         <thead>
@@ -198,7 +195,7 @@
   </div>
 
   <script>
-    // ========== AUTH ==========
+    // ===== AUTH =====
     const role = localStorage.getItem("role");
     const user = localStorage.getItem("user");
 
@@ -206,20 +203,19 @@
 
     userTag.innerText = `${user} (${role})`;
 
-    // Developer restriction ONLY
     if (role === "Developer") {
       adminPanel.style.display = "none";
       testerPanel.style.display = "none";
     }
 
-    // ========== NOTIFY ==========
+    // ===== NOTIFY =====
     function showNotify(m) {
       notify.innerText = m;
       notify.style.display = "block";
       setTimeout(() => notify.style.display = "none", 4000);
     }
 
-    // ========== BELL SYSTEM ==========
+    // ===== BELL =====
     function openBell() {
       bellPanel.style.right = "0";
       loadBell();
@@ -260,14 +256,14 @@
       });
     }
 
-    // ========== TEAM ==========
+    // ===== TEAM =====
     let team = JSON.parse(localStorage.getItem("team")) ||
       ["Arun", "Kiran", "Priya"];
 
     assignTo.innerHTML =
       team.map(t => `<option>${t}</option>`).join("");
 
-    // ========== LOAD ==========
+    // ===== LOAD =====
     async function loadData() {
       const p = await fetch("/projects").then(r => r.json());
 
@@ -277,7 +273,7 @@
       loadBugs();
     }
 
-    // ========== LOAD BUGS ==========
+    // ===== LOAD BUGS (FIXED) =====
     async function loadBugs() {
 
       const bugs = await fetch("/bugs").then(r => r.json());
@@ -287,15 +283,6 @@
         .filter(b => b.project === active)
         .map(b => {
 
-          const devOpt = `
- <option value="Queue">Queue</option>
- <option value="Review">Review</option>`;
-
-          const testerOpt = `
- <option value="Queue">Queue</option>
- <option value="Review">Review</option>
- <option value="Fixed">Fixed</option>`;
-
           return `
 <tr>
 <td>${b.title}</td>
@@ -303,8 +290,16 @@
 <td>${b.targetDate || '-'}</td>
 
 <td>
-<select onchange="updateBug('${b._id}',{status:this.value})">
- ${role === "Developer" ? devOpt : testerOpt}
+<select onchange="updateStatus('${b._id}', this.value)">
+
+<option value="Queue"  ${b.status === 'Queue' ? 'selected' : ''}>Queue</option>
+
+<option value="Review" ${b.status === 'Review' ? 'selected' : ''}>Review</option>
+
+${role === 'Tester'
+              ? `<option value="Fixed" ${b.status === 'Fixed' ? 'selected' : ''}>Fixed</option>`
+              : ''}
+
 </select>
 </td>
 
@@ -322,33 +317,55 @@
         }).join("");
     }
 
-    // ========== 100% RULE ==========
-    async function handleProg(id, val) {
+    // ===== STATUS FIX =====
+    async function updateStatus(id, value) {
 
-      await updateBug(id, { completion: val });
-
-      if (val == 100) {
-
-        await updateBug(id, { completion: 100, status: "Review" });
-
-        showNotify("Moved to Review");
-
-        await pushNotify(user, "Task moved to Review");
-
-        await pushNotify("Tester", "Developer moved task to Review");
-      }
-    }
-
-    // ========== CRUD ==========
-    async function updateBug(id, d) {
       await fetch("/bug/" + id, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(d)
+        body: JSON.stringify({ status: value })
       });
+
+      showNotify("Status → " + value);
+
+      await pushNotify("Tester", "Status changed to " + value);
+      await pushNotify(user, "Status changed to " + value);
+
       loadBugs();
     }
 
+    // ===== PROGRESS FIX =====
+    async function handleProg(id, val) {
+
+      val = parseInt(val);
+
+      await fetch("/bug/" + id, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ completion: val })
+      });
+
+      if (val === 100) {
+
+        await fetch("/bug/" + id, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            completion: 100,
+            status: "Review"
+          })
+        });
+
+        showNotify("Auto → Review");
+
+        await pushNotify("Tester", "Developer moved task to Review");
+        await pushNotify(user, "Task sent to Review");
+      }
+
+      loadBugs();
+    }
+
+    // ===== CRUD =====
     async function deleteBug(id) {
       await fetch("/bug/" + id, { method: "DELETE" });
       loadBugs();
@@ -364,7 +381,6 @@
       loadData();
     }
 
-    // ========== SINGLE BUG ==========
     async function addBug() {
 
       await fetch("/bugs", {
@@ -378,14 +394,13 @@
         }])
       });
 
-      await pushNotify(assignTo.value,
-        "New defect assigned to you");
+      await pushNotify(assignTo.value, "New defect assigned to you");
 
       bugT.value = "";
       loadBugs();
     }
 
-    // ========== BULK (UNCHANGED FORMAT) ==========
+    // ===== BULK (SAME FORMAT) =====
     async function bulkCreate() {
 
       const lines = bulkBox.value.trim().split("\n");
@@ -408,14 +423,14 @@
         body: JSON.stringify(data)
       });
 
-      await pushNotify(assignTo.value,
-        "Bulk defects assigned");
+      await pushNotify(assignTo.value, "Bulk defects assigned");
 
       bulkBox.value = "";
       loadBugs();
     }
 
-    // ========== REAL TIME ==========
+    // ===== REAL TIME SYNC =====
+    setInterval(loadBugs, 5000);
     setInterval(loadBell, 6000);
 
     function logout() {
