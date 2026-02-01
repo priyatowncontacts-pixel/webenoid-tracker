@@ -28,7 +28,6 @@ main { flex:1; padding:20px; background:#f8fafc; }
 
 <aside>
 <h3>Projects</h3>
-
 <select id="selProj" onchange="loadBugs()"></select>
 
 <input id="newP" placeholder="New Project">
@@ -45,15 +44,16 @@ main { flex:1; padding:20px; background:#f8fafc; }
 </div>
 
 <script>
-// ===== ONLY CHANGE: API RELATIVE =====
+// RELATIVE API (RENDER + LOCAL)
 const API = "";
 
-// SECURITY CHECK FIX
+// SESSION FIX
 const session = localStorage.getItem("webenoid_session");
 const user = localStorage.getItem("user");
 
 if (!session || session !== "active") {
-  window.location.href = "/";
+  window.location.replace("/login.html");
+  throw new Error("not logged in");
 } else {
   document.body.style.display = "flex";
   document.getElementById("userTag").innerText = user;
@@ -61,7 +61,7 @@ if (!session || session !== "active") {
 
 function logout() {
   localStorage.clear();
-  window.location.href = "/";
+  window.location.replace("/login.html");
 }
 
 async function loadData() {
