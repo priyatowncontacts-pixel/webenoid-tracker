@@ -1,34 +1,33 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
-    <meta charset="UTF-8">
     <title>Login | Webenoid</title>
     <style>
         body {
             font-family: sans-serif;
-            background: #f8fafc;
             display: flex;
-            align-items: center;
             justify-content: center;
+            align-items: center;
             height: 100vh;
+            background: #f8fafc;
             margin: 0;
         }
 
         .card {
             background: white;
             padding: 40px;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            width: 320px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, .1);
             text-align: center;
+            width: 300px;
         }
 
         input,
         select {
             width: 100%;
             padding: 12px;
-            margin-bottom: 15px;
+            margin: 10px 0;
             border: 1px solid #e2e8f0;
             border-radius: 8px;
             box-sizing: border-box;
@@ -36,10 +35,10 @@
 
         button {
             width: 100%;
+            padding: 12px;
             background: #2563eb;
             color: white;
             border: none;
-            padding: 12px;
             border-radius: 8px;
             cursor: pointer;
             font-weight: bold;
@@ -49,22 +48,22 @@
 
 <body>
     <div class="card">
-        <h2 style="color:#2563eb">WEBENOID</h2>
-        <input type="text" id="u" placeholder="Username">
-        <input type="password" id="p" placeholder="Password">
+        <h2 style="color:#2563eb; margin-bottom: 20px;">WEBENOID</h2>
+        <input id="u" placeholder="Username">
+        <input id="p" type="password" placeholder="Password">
         <select id="r">
-            <option value="Developer">Developer</option>
-            <option value="Tester">Tester</option>
+            <option>Developer</option>
+            <option>Tester</option>
         </select>
-        <button onclick="login()">Sign In</button>
+        <button onclick="handleLogin()">Sign In</button>
     </div>
     <script>
-        function login() {
+        function handleLogin() {
             if (u.value === "Webenoid" && p.value === "Webenoid123") {
                 localStorage.setItem("user", u.value);
                 localStorage.setItem("role", r.value);
                 window.location.href = "index.html";
-            } else { alert("Wrong credentials"); }
+            } else { alert("Access Denied: Invalid Credentials"); }
         }
     </script>
 </body>

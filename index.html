@@ -3,22 +3,19 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Webenoid Bug Tracker</title>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+  <title>Webenoid Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap"
     rel="stylesheet">
   <style>
     :root {
       --brand: #2563eb;
       --bg: #f8fafc;
-      --panel: #ffffff;
-      --text: #0f172a;
       --border: #e2e8f0;
     }
 
     body {
       font-family: 'Plus Jakarta Sans', sans-serif;
       background: var(--bg);
-      color: var(--text);
       margin: 0;
       display: flex;
       flex-direction: column;
@@ -28,12 +25,12 @@
 
     nav {
       height: 60px;
-      background: var(--panel);
+      background: white;
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 32px;
+      padding: 0 30px;
       flex-shrink: 0;
     }
 
@@ -44,36 +41,33 @@
     }
 
     aside {
-      width: 280px;
-      background: var(--panel);
+      width: 260px;
+      background: white;
       border-right: 1px solid var(--border);
-      padding: 24px;
-      overflow-y: auto;
+      padding: 20px;
     }
 
     main {
       flex: 1;
-      padding: 20px 32px;
+      padding: 30px;
       overflow-y: auto;
     }
 
     .card {
-      background: var(--panel);
+      background: white;
       border-radius: 12px;
       border: 1px solid var(--border);
       padding: 20px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
 
     input,
-    select,
-    textarea {
+    select {
       width: 100%;
       padding: 10px;
+      margin-bottom: 10px;
       border: 1px solid var(--border);
       border-radius: 8px;
-      margin-bottom: 10px;
       box-sizing: border-box;
     }
 
@@ -84,8 +78,8 @@
       border: none;
       padding: 10px;
       border-radius: 8px;
-      font-weight: 600;
       cursor: pointer;
+      font-weight: 600;
     }
 
     table {
@@ -96,35 +90,17 @@
     th {
       text-align: left;
       padding: 12px;
-      font-size: 11px;
-      text-transform: uppercase;
-      color: #64748b;
-      border-bottom: 1px solid var(--border);
       background: #fcfcfd;
+      border-bottom: 1px solid var(--border);
+      font-size: 11px;
+      color: #64748b;
+      text-transform: uppercase;
     }
 
     td {
       padding: 12px;
       border-bottom: 1px solid var(--border);
-      font-size: 13px;
-    }
-
-    .Queue {
-      background: #e0e7ff;
-      color: #3730a3;
-      padding: 4px 8px;
-      border-radius: 6px;
-      font-weight: 700;
-      font-size: 11px;
-    }
-
-    .Review {
-      background: #fef3c7;
-      color: #92400e;
-      padding: 4px 8px;
-      border-radius: 6px;
-      font-weight: 700;
-      font-size: 11px;
+      font-size: 14px;
     }
 
     #notify {
@@ -133,8 +109,8 @@
       right: 20px;
       background: #0f172a;
       color: white;
-      padding: 16px 24px;
-      border-radius: 12px;
+      padding: 15px 25px;
+      border-radius: 10px;
       display: none;
       z-index: 1000;
       box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
@@ -145,9 +121,9 @@
 <body>
 
   <nav>
-    <div style="font-weight: 800; color: var(--brand); font-size: 20px;">WEBENOID TRACKER</div>
+    <b style="color:var(--brand); font-size: 20px;">WEBENOID</b>
     <div style="display: flex; align-items: center; gap: 20px;">
-      <span id="userLabel" style="font-weight: 600; font-size: 13px; color: #64748b;"></span>
+      <span id="userTag" style="font-size:13px; font-weight:600; color:#64748b"></span>
       <button onclick="logout()" style="background:#fee2e2; color:#ef4444; width:auto; padding:5px 15px">Logout</button>
     </div>
   </nav>
@@ -155,35 +131,31 @@
   <div id="notify"></div>
 
   <div class="wrapper">
-    <aside id="sidebar">
+    <aside>
       <div id="adminPanel">
         <h3>Management</h3>
-        <input id="newProj" placeholder="Project Name">
-        <button onclick="addProj()">Create Project</button>
+        <input id="newP" placeholder="Project Name">
+        <button onclick="addProject()">Create Project</button>
+        <hr style="margin:20px 0; border:0; border-top:1px solid var(--border)">
       </div>
+      <h3>Filter</h3>
+      <select id="projFilter" onchange="loadBugs()"></select>
 
-      <div style="margin-top: 20px;">
-        <h3>Active Project</h3>
-        <select id="selProj" onchange="loadBugs()"></select>
-      </div>
-
-      <div id="testerPanel" style="margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px;">
-        <h3>Log Bug</h3>
-        <input id="qTitle" placeholder="Bug Summary">
-        <button onclick="submitBug()">Add Bug</button>
+      <div id="testerPanel" style="margin-top:20px">
+        <h3>New Defect</h3>
+        <input id="bugT" placeholder="Summary">
+        <button onclick="addBug()">Log Bug</button>
       </div>
     </aside>
 
     <main>
-      <div class="card" style="padding:0; overflow-x:auto">
+      <div class="card" style="padding:0">
         <table>
           <thead>
             <tr>
-              <th>#</th>
-              <th>Summary</th>
-              <th style="width:130px">Status</th>
+              <th>Bug Description</th>
+              <th style="width:140px">Status</th>
               <th>Progress</th>
-              <th>Action</th>
             </tr>
           </thead>
           <tbody id="bugList"></tbody>
@@ -193,105 +165,83 @@
   </div>
 
   <script>
+    // Guard
     const role = localStorage.getItem("role");
     const user = localStorage.getItem("user");
+    if (!user) window.location.href = "/";
 
-    // Permission Logic
+    // UI Logic
     if (role === "Developer") {
-      document.getElementById('adminPanel').style.display = 'none';
-      document.getElementById('testerPanel').style.display = 'none';
+      document.getElementById("adminPanel").style.display = "none";
+      document.getElementById("testerPanel").style.display = "none";
     }
-    document.getElementById('userLabel').innerText = `${user} (${role})`;
+    document.getElementById("userTag").innerText = `${user} (${role})`;
 
-    function logout() { localStorage.clear(); window.location.href = "/"; }
+    function logout() {
+      localStorage.clear();
+      window.location.href = "/";
+    }
 
-    function notify(msg) {
-      const n = document.getElementById('notify');
+    function showNotify(msg) {
+      const n = document.getElementById("notify");
       n.innerText = msg; n.style.display = "block";
       setTimeout(() => n.style.display = "none", 4000);
     }
 
     async function loadData() {
       const res = await fetch("/projects");
-      const p = await res.json();
-      document.getElementById('selProj').innerHTML = p.map(x => `<option value="${x.name}">${x.name}</option>`).join('');
+      const data = await res.json();
+      projFilter.innerHTML = data.map(p => `<option value="${p.name}">${p.name}</option>`).join("");
       loadBugs();
     }
 
     async function loadBugs() {
       const res = await fetch("/bugs");
       const bugs = await res.json();
-      const active = document.getElementById('selProj').value;
-      const body = document.getElementById('bugList');
-      body.innerHTML = "";
-
-      bugs.filter(b => b.project === active).forEach((b, i) => {
-        const options = role === "Developer"
-          ? `<option value="Queue" ${b.status == 'Queue' ? 'selected' : ''}>Queue</option>
-               <option value="Review" ${b.status == 'Review' ? 'selected' : ''}>Review</option>`
-          : `<option value="Queue" ${b.status == 'Queue' ? 'selected' : ''}>Queue</option>
-               <option value="Review" ${b.status == 'Review' ? 'selected' : ''}>Review</option>
-               <option value="Fixed" ${b.status == 'Fixed' ? 'selected' : ''}>Fixed</option>`;
-
-        body.innerHTML += `
-        <tr>
-            <td>${i + 1}</td>
-            <td><strong>${b.title}</strong></td>
-            <td>
-                <select class="${b.status}" onchange="updateField('${b._id}', 'status', this.value)">
-                    ${options}
-                </select>
-            </td>
-            <td>
-                <div style="display:flex; align-items:center; gap:8px">
-                    <input type="range" value="${b.completion || 0}" 
-                        onchange="handleProg('${b._id}', this.value)">
-                    <span style="font-weight:700; font-size:11px">${b.completion || 0}%</span>
-                </div>
-            </td>
-            <td><button onclick="delBug('${b._id}')" style="background:none; color:red; width:auto; font-size:12px">Remove</button></td>
-        </tr>`;
-      });
+      const active = projFilter.value;
+      bugList.innerHTML = bugs.filter(b => b.project === active).map(b => `
+            <tr>
+                <td><strong>${b.title}</strong></td>
+                <td>
+                    <select onchange="updateBug('${b._id}', {status: this.value})">
+                        <option value="Queue" ${b.status == 'Queue' ? 'selected' : ''}>Queue</option>
+                        <option value="Review" ${b.status == 'Review' ? 'selected' : ''}>Review</option>
+                        ${role === 'Tester' ? `<option value="Fixed" ${b.status == 'Fixed' ? 'selected' : ''}>Fixed</option>` : ''}
+                    </select>
+                </td>
+                <td>
+                    <input type="range" value="${b.completion || 0}" onchange="handleProg('${b._id}', this.value)">
+                </td>
+            </tr>
+        `).join("");
     }
 
-    async function updateField(id, field, value) {
-      let payload = {};
-      payload[field] = value;
+    async function updateBug(id, data) {
       await fetch("/bug/" + id, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(data)
       });
       loadBugs();
     }
 
     async function handleProg(id, val) {
-      await updateField(id, 'completion', val);
       if (val == 100) {
-        await updateField(id, 'status', 'Review');
-        notify("🎉 Task Finished! Bug moved to Review.");
+        await updateBug(id, { completion: 100, status: 'Review' });
+        showNotify("🎉 Task Complete! Bug sent to Review.");
+      } else {
+        await updateBug(id, { completion: val });
       }
     }
 
-    async function delBug(id) {
-      await fetch("/bug/" + id, { method: "DELETE" });
-      loadBugs();
+    async function addProject() {
+      await fetch("/project", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: newP.value }) });
+      newP.value = ""; loadData();
     }
 
-    async function addProj() {
-      await fetch("/project", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: document.getElementById('newProj').value }) });
-      document.getElementById('newProj').value = ""; loadData();
-    }
-
-    async function submitBug() {
-      await fetch("/bugs", {
-        method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify([{
-          project: document.getElementById('selProj').value,
-          title: document.getElementById('qTitle').value,
-          status: "Queue"
-        }])
-      });
-      document.getElementById('qTitle').value = ""; loadBugs();
+    async function addBug() {
+      await fetch("/bugs", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify([{ project: projFilter.value, title: bugT.value }]) });
+      bugT.value = ""; loadBugs();
     }
 
     loadData();
