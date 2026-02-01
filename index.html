@@ -16,7 +16,7 @@
     }
 
     body {
-      font-family: 'Plus Jakarta Sans';
+      font-family: 'Plus Jakarta Sans', sans-serif;
       background: var(--bg);
       margin: 0;
       display: flex;
@@ -24,6 +24,7 @@
       height: 100vh;
     }
 
+    /* --- LAYOUT --- */
     nav {
       height: 60px;
       background: white;
@@ -36,11 +37,11 @@
 
     .wrapper {
       display: flex;
-      flex: 1
+      flex: 1;
     }
 
     aside {
-      width: 260px;
+      width: 300px;
       background: white;
       border-right: 1px solid var(--border);
       padding: 20px;
@@ -48,12 +49,22 @@
 
     main {
       flex: 1;
-      padding: 30px;
-      overflow-y: auto
+      padding: 20px;
+      overflow: auto;
+    }
+
+    /* --- UI --- */
+    .card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 15px;
     }
 
     input,
-    select {
+    select,
+    textarea {
       width: 100%;
       padding: 10px;
       margin-bottom: 10px;
@@ -63,36 +74,45 @@
 
     button {
       width: 100%;
+      padding: 10px;
       background: var(--brand);
       color: white;
       border: none;
-      padding: 10px;
       border-radius: 8px;
+      cursor: pointer;
     }
 
+    /* --- TABLE --- */
     table {
-      width: 100%
+      width: 100%;
+      border-collapse: collapse
     }
 
     th {
       background: #fcfcfd;
-      padding: 12px;
-      font-size: 11px
+      font-size: 11px;
+      text-transform: uppercase;
+      text-align: left;
+      padding: 10px;
+      border-bottom: 1px solid var(--border);
     }
 
     td {
-      padding: 12px
+      padding: 10px;
+      border-bottom: 1px solid var(--border);
     }
 
+    /* --- NOTIFY --- */
     #notify {
       position: fixed;
       top: 20px;
       right: 20px;
       background: #0f172a;
       color: white;
-      padding: 15px 25px;
+      padding: 14px 22px;
       border-radius: 10px;
       display: none;
+      z-index: 9999;
     }
   </style>
 </head>
@@ -100,191 +120,184 @@
 <body>
 
   <nav>
-    <b style="color:var(--brand)">WEBENOID</b>
-
+    <b style="color:var(--brand)">WEBENOID TRACKER</b>
     <div>
       <span id="userTag"></span>
-      <button onclick="logout()" style="background:#fee2e2;color:red;width:auto">
-        Logout</button>
+      <button onclick="logout()" style="width:auto;background:#fee2e2;color:#ef4444">Logout</button>
     </div>
   </nav>
 
   <div id="notify"></div>
 
-  <audio id="ding" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
-
   <div class="wrapper">
 
+    <!-- ========== SIDEBAR ========== -->
     <aside>
 
       <div id="adminPanel">
-        <h3>Management</h3>
+        <h3>Project</h3>
         <input id="newP" placeholder="Project Name">
         <button onclick="addProject()">Create Project</button>
+        <hr>
       </div>
 
       <h3>Filter</h3>
       <select id="projFilter" onchange="loadBugs()"></select>
 
+      <!-- ===== TESTER PANEL - KEPT SAME ===== -->
       <div id="testerPanel">
 
         <h3>New Defect</h3>
-
         <input id="bugT" placeholder="Summary">
-
-        <select id="assignTo">
-          <option value="">Assign Developer</option>
-          <option>Arun</option>
-          <option>Kiran</option>
-          <option>Priya</option>
-        </select>
-
+        <select id="assignTo"></select>
         <button onclick="addBug()">Log Bug</button>
 
+        <h3>Bulk Defects</h3>
+
+        <textarea id="bulkBox" rows="4" placeholder="Bug Title | Target Date
+Login not working | 2026-02-10"></textarea>
+
+        <button onclick="bulkCreate()">Create Bulk</button>
+
       </div>
+
     </aside>
 
+    <!-- ========== MAIN ========== -->
     <main>
-      <table>
-        <thead>
-          <tr>
-            <th>Bug</th>
-            <th>Status</th>
-            <th>Progress</th>
-            <th>Action</th>
-          </tr>
-        </thead>
 
-        <tbody id="bugList"></tbody>
-      </table>
+      <div class="card">
+        <table>
+          <thead>
+            <tr>
+              <th>Bug</th>
+              <th>Assign</th>
+              <th>Status</th>
+              <th>Progress</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+
+          <tbody id="bugList"></tbody>
+        </table>
+      </div>
+
     </main>
   </div>
 
   <script>
-    // ===== AUTH (OLD – UNTOUCHED) =====
+    // ================= AUTH =================
     const role = localStorage.getItem("role");
     const user = localStorage.getItem("user");
 
     if (!user) window.location.href = "login.html";
+
+    document.getElementById("userTag").innerText =
+      `${user} (${role})`;
 
     if (role === "Developer") {
       adminPanel.style.display = "none";
       testerPanel.style.display = "none";
     }
 
-    userTag.innerText = user + " (" + role + ")";
-
-    function logout() {
-      localStorage.clear();
-      window.location.href = "/";
-    }
-
-    // ===== ADDED: NOTIFICATION =====
+    // ================= NOTIFY =================
     function showNotify(m) {
       notify.innerText = m;
       notify.style.display = "block";
-      ding.play();
       setTimeout(() => notify.style.display = "none", 4000);
     }
 
-    // ===== ADDED: REAL TIME ALERT =====
-    async function checkAlerts() {
-      if (role !== "Developer") return;
+    // ================= TEAM =================
+    let team = JSON.parse(localStorage.getItem("team")) ||
+      ["Ravi", "Kumar", "Arun"];
 
-      const r = await fetch("/bugs");
-      const bugs = await r.json();
+    assignTo.innerHTML = team.map(t =>
+      `<option value="${t}">${t}</option>`).join("");
 
-      bugs.forEach(b => {
-        if (b.assignedTo === user) {
-          let key = "seen_" + b._id + b.status;
-
-          if (!localStorage.getItem(key)) {
-            showNotify("New defect: " + b.title);
-            localStorage.setItem(key, "yes");
-          }
-        }
-      });
-    }
-
-    // ===== LOAD (OLD LOGIC) =====
+    // ================= LOAD =================
     async function loadData() {
-      const r = await fetch("/projects");
-      const d = await r.json();
+      const p = await fetch("/projects").then(r => r.json());
 
-      projFilter.innerHTML = d.map(p =>
-        `<option>${p.name}</option>`
+      projFilter.innerHTML = p.map(x =>
+        `<option value="${x.name}">${x.name}</option>`
       ).join("");
 
       loadBugs();
     }
 
+    // ================= LOAD BUGS =================
     async function loadBugs() {
-      const r = await fetch("/bugs");
-      const bugs = await r.json();
+
+      const bugs = await fetch("/bugs").then(r => r.json());
 
       const active = projFilter.value;
 
       bugList.innerHTML = bugs
         .filter(b => b.project === active)
-        .map(b => `
+        .map(b => {
 
+          const devOptions = `
+   <option value="Queue">Queue</option>
+   <option value="Review">Review</option>`;
+
+          const testerOptions = `
+   <option value="Queue">Queue</option>
+   <option value="Review">Review</option>
+   <option value="Fixed">Fixed</option>`;
+
+          return `
 <tr>
 <td>${b.title}</td>
 
+<td>${b.assignedTo || '-'}</td>
+
 <td>
 <select onchange="updateBug('${b._id}',{status:this.value})">
-
-<option ${b.status == 'Queue' ? 'selected' : ''}>Queue</option>
-
-<option ${b.status == 'Review' ? 'selected' : ''}>Review</option>
-
-${role === 'Tester'
-            ? `<option ${b.status == 'Fixed' ? 'selected' : ''}>Fixed</option>`
-            : ''}
-
+ ${role === "Developer" ? devOptions : testerOptions}
 </select>
 </td>
 
 <td>
-<input type="range"
-value="${b.completion || 0}"
-onchange="handleProg('${b._id}',this.value)">
+<input type="range" min="0" max="100"
+ value="${b.completion || 0}"
+ onchange="handleProg('${b._id}',this.value)">
+ ${b.completion || 0}%
 </td>
 
 <td>
 <button onclick="deleteBug('${b._id}')"
-style="background:none;color:red">
-Remove</button>
+ style="background:none;color:red">Remove</button>
 </td>
-</tr>
 
-`).join("");
+</tr>`;
+        }).join("");
     }
 
-    // ===== CRUD (OLD – KEPT) =====
-    async function updateBug(id, d) {
+    // ================= PROGRESS LOGIC =================
+    async function handleProg(id, val) {
+
+      if (val == 100) {
+        await updateBug(id, { completion: 100, status: "Review" });
+
+        showNotify("Moved to Review");
+
+        if (role === "Developer") {
+          showNotify("🔔 Your task sent for REVIEW");
+        }
+
+      } else {
+        await updateBug(id, { completion: val });
+      }
+    }
+
+    // ================= CRUD =================
+    async function updateBug(id, data) {
       await fetch("/bug/" + id, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(d)
+        body: JSON.stringify(data)
       });
       loadBugs();
-    }
-
-    // ===== ADDED: 100% AUTO REVIEW =====
-    async function handleProg(id, val) {
-
-      await updateBug(id, { completion: val });
-
-      if (role === "Developer" && val == 100) {
-
-        await updateBug(id, {
-          completion: 100,
-          status: "Review"
-        });
-
-        showNotify("Moved to Review");
-      }
     }
 
     async function deleteBug(id) {
@@ -303,8 +316,9 @@ Remove</button>
       loadData();
     }
 
-    // ===== ADDED: ASSIGN WHILE CREATE =====
+    // ================= SINGLE BUG =================
     async function addBug() {
+
       await fetch("/bugs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -315,14 +329,63 @@ Remove</button>
         }])
       });
 
+      showNotify("Bug Assigned to " + assignTo.value);
+
       bugT.value = "";
       loadBugs();
     }
 
-    // ===== START =====
+    // ================= BULK BUG =================
+    async function bulkCreate() {
+
+      const lines = bulkBox.value.trim().split("\n");
+
+      const data = lines.map(l => {
+        const p = l.split("|");
+
+        return {
+          project: projFilter.value,
+          title: p[0].trim(),
+          target: p[1]?.trim(),
+          assignedTo: assignTo.value
+        };
+      });
+
+      await fetch("/bugs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+
+      showNotify("Bulk defects created");
+
+      bulkBox.value = "";
+      loadBugs();
+    }
+
+    // ================= NOTIFICATION CHECK =================
+    setInterval(async () => {
+
+      if (role === "Developer") {
+
+        const bugs = await fetch("/bugs").then(r => r.json());
+
+        const mine = bugs.filter(b =>
+          b.assignedTo === user && b.status === "Review");
+
+        if (mine.length > 0) {
+          showNotify("You have bugs under REVIEW");
+        }
+      }
+
+    }, 8000);
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = "login.html";
+    }
+
     loadData();
-    checkAlerts();
-    setInterval(checkAlerts, 5000);
   </script>
 
 </body>
