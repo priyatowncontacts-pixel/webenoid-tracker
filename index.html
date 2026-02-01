@@ -169,7 +169,7 @@
     // --- AUTH & ROLE LOGIC ---
     const role = localStorage.getItem("role");
     const user = localStorage.getItem("user");
-    if (!user) window.location.href = "/"; // Guard
+    if (!user) window.location.href = "login.html"; // Guard
 
     if (role === "Developer") {
       document.getElementById("adminPanel").style.display = "none";
