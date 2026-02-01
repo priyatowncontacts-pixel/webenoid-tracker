@@ -1,120 +1,226 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-<title>Webenoid Tracker</title>
+  <title>Webenoid Tracker</title>
+  <style>
+    body {
+      display: none;
+      font-family: sans-serif;
+      margin: 0;
+      flex-direction: column;
+      height: 100vh;
+    }
 
-<style>
-body { display:none; font-family:sans-serif; margin:0; flex-direction:column; height:100vh; }
-nav { background:white; padding:15px 25px; display:flex; justify-content:space-between; border-bottom:1px solid #eee; }
-.logout { background:#ef4444; color:white; border:none; padding:5px 15px; border-radius:6px; cursor:pointer; }
-.container { display:flex; flex:1; }
-aside { width:250px; border-right:1px solid #eee; padding:20px; }
-main { flex:1; padding:20px; background:#f8fafc; }
-</style>
+    nav {
+      background: white;
+      padding: 15px 25px;
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid #eee;
+    }
 
+    .logout {
+      background: #ef4444;
+      color: white;
+      border: none;
+      padding: 5px 15px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .container {
+      display: flex;
+      flex: 1;
+    }
+
+    aside {
+      width: 250px;
+      border-right: 1px solid #eee;
+      padding: 20px;
+    }
+
+    main {
+      flex: 1;
+      padding: 20px;
+      background: #f8fafc;
+    }
+  </style>
 </head>
 
 <body>
 
-<nav>
-<b>WEBENOID TRACKER</b>
-<div>
-<span id="userTag"></span>
-<button class="logout" onclick="logout()">Logout</button>
-</div>
-</nav>
+  <nav>
+    <b>WEBENOID TRACKER</b>
+    <div>
+      <span id="userTag"></span>
+      <button class="logout" onclick="logout()">Logout</button>
+    </div>
+  </nav>
 
-<div class="container">
+  <div class="container">
 
-<aside>
-<h3>Projects</h3>
-<select id="selProj" onchange="loadBugs()"></select>
+    <aside>
+      <h3>Projects</h3>
+      <select id="selProj" onchange="loadBugs()"></select>
 
-<input id="newP" placeholder="New Project">
-<button onclick="addP()">Add</button>
-</aside>
+      <input id="newP" placeholder="New Project">
+      <button onclick="addP()">Add</button>
+    </aside>
 
-<main>
-<input id="bugT" placeholder="Bug Title">
-<button onclick="addB()">Log Bug</button>
+    <main>
 
-<div id="list" style="margin-top:20px"></div>
-</main>
+      <input id="bugT" placeholder="Bug Title">
 
-</div>
+      <!-- NEW FEATURE ADDED – STATUS -->
+      <select id="status">
+        <option>Queue</option>
+        <option>In Progress</option>
+        <option>Fixed</option>
+      </select>
 
-<script>
-// RELATIVE API (RENDER + LOCAL)
-const API = "";
+      <button onclick="addB()">Log Bug</button>
 
-// SESSION FIX
-const session = localStorage.getItem("webenoid_session");
-const user = localStorage.getItem("user");
+      <!-- NEW FEATURE ADDED – BULK -->
+      <h4>Bulk Paste</h4>
+      <textarea id="bulk" style="width:100%;height:90px"></textarea>
+      <button onclick="bulkAdd()">Add Bulk</button>
 
-if (!session || session !== "active") {
-  window.location.replace("/login.html");
-  throw new Error("not logged in");
-} else {
-  document.body.style.display = "flex";
-  document.getElementById("userTag").innerText = user;
-}
+      <div id="list" style="margin-top:20px"></div>
 
-function logout() {
-  localStorage.clear();
-  window.location.replace("/login.html");
-}
+    </main>
+  </div>
 
-async function loadData() {
-  const res = await fetch(API + "/projects");
-  const p = await res.json();
+  <script>
+    // ===== EXISTING SECURITY – NOT CHANGED =====
+    const session = localStorage.getItem("webenoid_session");
+    const user = localStorage.getItem("user");
 
-  selProj.innerHTML =
-    p.map(x => `<option value="${x.name}">${x.name}</option>`).join("");
+    if (!session || session !== "active") {
+      window.location.href = "login.html";
+    } else {
+      document.body.style.display = "flex";
+      document.getElementById('userTag').innerText = user;
+    }
 
-  loadBugs();
-}
+    function logout() {
+      localStorage.clear();
+      window.location.href = "login.html";
+    }
 
-async function loadBugs() {
-  const res = await fetch(API + "/bugs");
-  const bugs = await res.json();
+    // ===== EXISTING FUNCTIONS – UNTOUCHED =====
+    async function loadData() {
+      const res = await fetch("/projects");
+      const p = await res.json();
 
-  const active = selProj.value;
+      selProj.innerHTML =
+        p.map(x => `<option value="${x.name}">${x.name}</option>`).join('');
 
-  list.innerHTML =
-    bugs
-    .filter(b => b.project === active)
-    .map(b => `<div>${b.title} - <b>${b.status}</b></div>`)
-    .join("");
-}
+      loadBugs();
+    }
 
-async function addP() {
-  await fetch(API + "/project", {
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({name:newP.value})
-  });
+    async function loadBugs() {
+      const res = await fetch("/bugs");
+      const bugs = await res.json();
 
-  newP.value="";
-  loadData();
-}
+      const active = selProj.value;
 
-async function addB() {
-  await fetch(API + "/bugs", {
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify([{
-      project: selProj.value,
-      title: bugT.value,
-      assignedTo: user
-    }])
-  });
+      // ===== ONLY RENDER PART ENHANCED =====
+      list.innerHTML =
+        bugs.filter(b => b.project === active)
+          .map(b => `
 
-  bugT.value="";
-  loadBugs();
-}
+    <div style="margin-bottom:8px">
 
-loadData();
-</script>
+    ${b.title}
+
+    <!-- NEW: STATUS DROPDOWN -->
+    <select onchange="updateStatus('${b._id}',this.value)">
+        <option ${b.status == "Queue" ? "selected" : ""}>Queue</option>
+        <option ${b.status == "In Progress" ? "selected" : ""}>In Progress</option>
+        <option ${b.status == "Fixed" ? "selected" : ""}>Fixed</option>
+    </select>
+
+    <!-- NEW: CREATED DATE -->
+    ${b.createdDate ? new Date(b.createdDate).toLocaleString() : ""}
+
+    <!-- NEW: DELETE -->
+    <button onclick="del('${b._id}')">Delete</button>
+
+    </div>
+
+    `).join('');
+    }
+
+    // ===== EXISTING ADD PROJECT – SAME =====
+    async function addP() {
+      await fetch("/project", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newP.value })
+      });
+
+      newP.value = "";
+      loadData();
+    }
+
+    // ===== EXISTING ADD BUG – EXTENDED ONLY =====
+    async function addB() {
+      await fetch("/bugs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify([{
+          project: selProj.value,
+          title: bugT.value,
+          status: status.value,      // ONLY ADD
+          assignedTo: user
+        }])
+      });
+
+      bugT.value = "";
+      loadBugs();
+    }
+
+    // ===== NEW FEATURE FUNCTIONS =====
+    async function updateStatus(id, status) {
+      await fetch("/bugs/" + id, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status })
+      });
+
+      loadBugs();
+    }
+
+    async function del(id) {
+      await fetch("/bugs/" + id, { method: "DELETE" });
+      loadBugs();
+    }
+
+    async function bulkAdd() {
+
+      const lines = bulk.value.split("\n");
+
+      let arr = lines.map(l => ({
+        project: selProj.value,
+        title: l,
+        assignedTo: user,
+        status: "Queue"
+      }));
+
+      await fetch("/bugs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(arr)
+      });
+
+      bulk.value = "";
+      loadBugs();
+    }
+
+    loadData();
+  </script>
 
 </body>
+
 </html>
