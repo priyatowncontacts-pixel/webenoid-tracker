@@ -4,109 +4,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | Webenoid Tracker</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Login | Webenoid Bug Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
     <style>
         :root {
-            --primary: #2563eb;
+            --brand: #2563eb;
             --bg: #f8fafc;
-            --text: #1e293b;
+            --text: #0f172a;
         }
 
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             background: var(--bg);
             display: flex;
             align-items: center;
             justify-content: center;
             height: 100vh;
             margin: 0;
-            color: var(--text);
         }
 
-        .card {
+        .login-card {
             background: white;
             padding: 40px;
             border-radius: 16px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
             width: 100%;
-            max-width: 360px;
+            max-width: 380px;
             text-align: center;
             border: 1px solid #e2e8f0;
         }
 
-        h2 {
+        .logo {
             font-weight: 800;
+            color: var(--brand);
+            font-size: 26px;
+            margin-bottom: 10px;
             letter-spacing: -1px;
-            margin-bottom: 8px;
-            font-size: 24px;
-            color: var(--primary);
+        }
+
+        .logo span {
+            color: var(--text);
         }
 
         p {
             color: #64748b;
             font-size: 14px;
-            margin-bottom: 24px;
+            margin-bottom: 30px;
         }
 
         input,
         select {
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             margin-bottom: 16px;
             border: 1px solid #e2e8f0;
             border-radius: 8px;
-            font-size: 14px;
-            box-sizing: border-box;
             outline: none;
+            box-sizing: border-box;
+            font-size: 14px;
             transition: 0.2s;
         }
 
         input:focus {
-            border-color: var(--primary);
+            border-color: var(--brand);
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
         button {
             width: 100%;
-            padding: 12px;
-            background: var(--primary);
+            background: var(--brand);
             color: white;
             border: none;
+            padding: 14px;
             border-radius: 8px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
-            transition: 0.2s;
+            font-size: 15px;
+            margin-top: 10px;
         }
 
-        button:hover {
-            background: #1d4ed8;
+        #errMsg {
+            color: #ef4444;
+            font-size: 13px;
+            margin-top: 15px;
+            display: none;
+            font-weight: 600;
         }
     </style>
 </head>
 
 <body>
-    <div class="card">
-        <h2>WEBENOID</h2>
-        <p>Sign in to your tracker</p>
-        <input id="username" placeholder="Username">
-        <input id="password" type="password" placeholder="Password">
+
+    <div class="login-card">
+        <div class="logo">WEBENOID <span>TRACKER</span></div>
+        <p>Secure Enterprise Access</p>
+
+        <input type="text" id="username" placeholder="Username">
+        <input type="password" id="password" placeholder="Password">
         <select id="role">
-            <option>Developer</option>
-            <option>Tester</option>
+            <option value="Developer">Developer</option>
+            <option value="Tester">Tester</option>
         </select>
         <button onclick="handleLogin()">Sign In</button>
+
+        <div id="errMsg">Invalid Username or Password</div>
     </div>
 
     <script>
         function handleLogin() {
             const u = document.getElementById('username').value;
             const p = document.getElementById('password').value;
-            // Existing logic placeholder - update as per your server requirements
-            if (u && p) {
+            const r = document.getElementById('role').value;
+
+            if (u === "Webenoid" && p === "Webenoid123") {
                 localStorage.setItem("webenoid_session", "active");
                 localStorage.setItem("user", u);
+                localStorage.setItem("role", r);
                 window.location.href = "index.html";
+            } else {
+                document.getElementById('errMsg').style.display = "block";
             }
         }
     </script>

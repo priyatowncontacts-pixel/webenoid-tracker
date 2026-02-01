@@ -47,10 +47,6 @@
       letter-spacing: -0.5px;
     }
 
-    .logo span {
-      color: var(--text);
-    }
-
     .logout-btn {
       background: #fff;
       color: #ef4444;
@@ -128,7 +124,7 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 1000px;
+      min-width: 900px;
     }
 
     th {
@@ -150,6 +146,16 @@
     .Queue {
       background: #e0e7ff;
       color: #3730a3;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-weight: 700;
+      border: none;
+      font-size: 11px;
+    }
+
+    .Review {
+      background: #fef3c7;
+      color: #92400e;
       padding: 4px 8px;
       border-radius: 6px;
       font-weight: 700;
@@ -181,30 +187,32 @@
       width: 80px;
     }
 
-    .grid-input {
-      font-size: 11px;
-      padding: 4px;
-      border: 1px solid transparent;
-      background: transparent;
-      width: 100%;
-    }
-
-    .grid-input:hover {
-      border-color: var(--border);
-      background: #fff;
-    }
-
+    /* Notification Popup */
     #notify {
       position: fixed;
       top: 20px;
       right: 20px;
       background: #0f172a;
       color: white;
-      padding: 14px 24px;
-      border-radius: 8px;
+      padding: 16px 24px;
+      border-radius: 12px;
       display: none;
       z-index: 10000;
       font-weight: 600;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+      animation: pop 0.3s ease;
+    }
+
+    @keyframes pop {
+      from {
+        transform: scale(0.8);
+        opacity: 0;
+      }
+
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
     }
   </style>
 </head>
@@ -222,17 +230,23 @@
   <div id="notify"></div>
 
   <div class="wrapper">
-    <aside>
-      <h3>Directory</h3>
-      <input id="newDev" placeholder="Add Developer Name">
-      <button onclick="addDev()" style="background: #0f172a; margin-bottom: 20px;">Add Member</button>
+    <aside id="sidebar">
+      <div id="adminPanel">
+        <h3>Directory</h3>
+        <input id="newDev" placeholder="Add Developer Name">
+        <button onclick="addDev()" style="background: #0f172a; margin-bottom: 20px;">Add Member</button>
 
-      <h3>Project Context</h3>
-      <input id="newProj" placeholder="Project Name">
-      <button onclick="addProj()">Create Project</button>
-      <select id="selProj" onchange="loadBugs()"></select>
+        <h3>Context</h3>
+        <input id="newProj" placeholder="Project Name">
+        <button onclick="addProj()">Create Project</button>
+      </div>
 
-      <div style="margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px;">
+      <div style="margin-top: 20px;">
+        <h3>Active Project</h3>
+        <select id="selProj" onchange="loadBugs()"></select>
+      </div>
+
+      <div id="quickEntry" style="margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px;">
         <h3>Quick Entry</h3>
         <input id="qTitle" placeholder="Defect Summary">
         <select id="qAssign"></select>
@@ -241,10 +255,10 @@
     </aside>
 
     <main>
-      <div class="card">
-        <h3>Bulk Copy-Paste</h3>
-        <textarea id="bPaste" rows="3" placeholder="Paste rows: Title | Target Date (YYYY-MM-DD)"></textarea>
-        <button onclick="submitBulk()" style="width: auto; padding: 10px 30px;">🚀 Process Batch List</button>
+      <div id="bulkCard" class="card">
+        <h3>Batch List Processing</h3>
+        <textarea id="bPaste" rows="3" placeholder="Paste: Title | Details"></textarea>
+        <button onclick="submitBulk()" style="width: auto; padding: 10px 30px;">🚀 Process Batch</button>
       </div>
 
       <div class="card" style="padding:0; overflow-x:auto">
@@ -252,12 +266,11 @@
           <thead>
             <tr>
               <th style="width:40px; text-align:center">#</th>
-              <th>Defect Details</th>
+              <th>Defect Title</th>
               <th>Assignee</th>
-              <th style="width:120px">Status</th>
-              <th>Started At</th>
-              <th>Target Fix</th>
-              <th>Work Done</th>
+              <th style="width:130px">Status</th>
+              <th>Work Progress</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody id="bugList"></tbody>
@@ -267,23 +280,29 @@
   </div>
 
   <script>
-    // --- AUTH GUARD (Maintaining your existing session logic) ---
+    const role = localStorage.getItem("role");
+    const user = localStorage.getItem("user");
+
+    // --- UI ACCESS CONTROL ---
+    if (role === "Developer") {
+      document.getElementById('adminPanel').style.display = 'none';
+      document.getElementById('quickEntry').style.display = 'none';
+      document.getElementById('bulkCard').style.display = 'none';
+    }
+
     const session = localStorage.getItem("webenoid_session");
     if (!session || session !== "active") window.location.href = "login.html";
-    document.getElementById('userLabel').innerText = `Logged in: ${localStorage.getItem("user")}`;
+    document.getElementById('userLabel').innerText = `${user} (${role})`;
 
-    function logout() {
-      localStorage.clear();
-      window.location.href = "login.html";
-    }
+    function logout() { localStorage.clear(); window.location.href = "login.html"; }
 
     function notify(msg) {
       const n = document.getElementById('notify');
       n.innerText = msg; n.style.display = "block";
-      setTimeout(() => n.style.display = "none", 3000);
+      setTimeout(() => n.style.display = "none", 4000);
     }
 
-    // --- TEAM & DATA MANAGEMENT ---
+    // --- LOGIC ---
     let team = JSON.parse(localStorage.getItem("team_list")) || ["Assignee"];
     function addDev() {
       const name = document.getElementById('newDev').value.trim();
@@ -291,10 +310,9 @@
     }
     function updateDrops() {
       const s = document.getElementById('qAssign');
-      s.innerHTML = ""; team.forEach(t => s.innerHTML += `<option value="${t}">${t}</option>`);
+      if (s) { s.innerHTML = ""; team.forEach(t => s.innerHTML += `<option value="${t}">${t}</option>`); }
     }
 
-    // --- BUG MANAGEMENT ---
     async function loadData() {
       const res = await fetch("/projects");
       const p = await res.json();
@@ -310,56 +328,43 @@
       body.innerHTML = "";
 
       bugs.filter(b => b.project === active).forEach((b, i) => {
+        // Restricted Status for Developers
+        const options = role === "Developer"
+          ? `<option value="Queue" ${b.status == 'Queue' ? 'selected' : ''}>Queue</option>
+               <option value="Review" ${b.status == 'Review' ? 'selected' : ''}>Review</option>`
+          : `<option value="Queue" ${b.status == 'Queue' ? 'selected' : ''}>Queue</option>
+               <option value="Review" ${b.status == 'Review' ? 'selected' : ''}>Review</option>
+               <option value="Fixed" ${b.status == 'Fixed' ? 'selected' : ''}>Fixed</option>`;
+
         body.innerHTML += `
         <tr>
             <td style="text-align:center">${i + 1}</td>
             <td><strong>${b.title}</strong></td>
-            <td><strong>${b.assignedTo}</strong></td>
+            <td>${b.assignedTo}</td>
             <td>
-                <select class="${b.status}" onchange="updateStatus('${b._id}',this.value)">
-                    <option ${b.status == 'Queue' ? 'selected' : ''}>Queue</option>
-                    <option ${b.status == 'In Progress' ? 'selected' : ''}>In Progress</option>
-                    <option ${b.status == 'Fixed' ? 'selected' : ''}>Fixed</option>
+                <select id="stat-${b._id}" class="${b.status}" onchange="updateStatus('${b._id}',this.value)">
+                    ${options}
                 </select>
             </td>
-            <td><input type="datetime-local" class="grid-input" value="${b.createdDate ? new Date(b.createdDate).toISOString().slice(0, 16) : ''}"></td>
-            <td><input type="date" class="grid-input"></td>
             <td>
                 <div class="progress-container">
-                    <input type="range" min="0" max="100" value="0" oninput="this.nextElementSibling.innerText=this.value+'%'">
-                    <span style="font-weight:700; font-size:11px">0%</span>
+                    <input type="range" min="0" max="100" value="${b.status == 'Review' ? 100 : 0}" 
+                        oninput="this.nextElementSibling.innerText=this.value+'%'"
+                        onchange="handleProgress('${b._id}', this.value)">
+                    <span style="font-weight:700; font-size:11px">${b.status == 'Review' ? 100 : 0}%</span>
                 </div>
             </td>
+            <td><button onclick="del('${b._id}')" style="background:transparent; color:#ef4444; padding:0; width:auto; font-size:12px">Remove</button></td>
         </tr>`;
       });
     }
 
-    async function submitSingle() {
-      const data = [{
-        project: document.getElementById('selProj').value,
-        title: document.getElementById('qTitle').value,
-        assignedTo: document.getElementById('qAssign').value,
-        status: "Queue"
-      }];
-      await fetch("/bugs", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-      document.getElementById('qTitle').value = "";
-      loadBugs();
-      notify("Defect Created!");
-    }
-
-    async function submitBulk() {
-      const lines = document.getElementById('bPaste').value.trim().split("\n");
-      const data = lines.map(l => ({
-        project: document.getElementById('selProj').value,
-        title: l.trim(),
-        assignedTo: localStorage.getItem("user"),
-        status: "Queue"
-      })).filter(x => x.title);
-
-      await fetch("/bugs", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-      document.getElementById('bPaste').value = "";
-      loadBugs();
-      notify(`Batch Logged: ${data.length} items`);
+    // Automatic Review Logic + Notification
+    async function handleProgress(id, val) {
+      if (val == 100) {
+        await updateStatus(id, "Review");
+        notify("🎉 Task Completed! Successfully moved to Review.");
+      }
     }
 
     async function updateStatus(id, status) {
@@ -367,11 +372,32 @@
       loadBugs();
     }
 
-    async function addProj() {
-      await fetch("/project", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: document.getElementById('newProj').value }) });
-      document.getElementById('newProj').value = "";
-      loadData();
+    async function submitSingle() {
+      await fetch("/bugs", {
+        method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify([{
+          project: document.getElementById('selProj').value,
+          title: document.getElementById('qTitle').value,
+          assignedTo: document.getElementById('qAssign').value,
+          status: "Queue"
+        }])
+      });
+      document.getElementById('qTitle').value = ""; loadBugs(); notify("Defect Logged");
     }
+
+    async function submitBulk() {
+      const lines = document.getElementById('bPaste').value.trim().split("\n");
+      const data = lines.map(l => ({
+        project: document.getElementById('selProj').value,
+        title: l.trim(),
+        assignedTo: user,
+        status: "Queue"
+      }));
+      await fetch("/bugs", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+      document.getElementById('bPaste').value = ""; loadBugs(); notify("Batch Processed");
+    }
+
+    async function del(id) { await fetch("/bugs/" + id, { method: "DELETE" }); loadBugs(); }
+    async function addProj() { await fetch("/project", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: document.getElementById('newProj').value }) }); document.getElementById('newProj').value = ""; loadData(); }
 
     loadData(); updateDrops();
   </script>
