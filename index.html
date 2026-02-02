@@ -4,75 +4,48 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Webenoid | Professional Bug Tracker</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <title>Webenoid | Bug Tracker Pro</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
   <style>
     :root {
-      --brand: #4f46e5;
-      --brand-hover: #4338ca;
-      --bg: #f1f5f9;
+      --brand: #2563eb;
+      --bg: #f8fafc;
       --panel: #ffffff;
-      --text-main: #1e293b;
-      --text-muted: #64748b;
+      --text: #0f172a;
+      --text-light: #64748b;
       --border: #e2e8f0;
-      --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-      --radius: 8px;
-    }
-
-    * {
-      box-sizing: border-box;
+      --radius: 12px;
     }
 
     body {
-      font-family: 'Inter', sans-serif;
+      font-family: 'Plus Jakarta Sans', sans-serif;
       background: var(--bg);
-      color: var(--text-main);
+      color: var(--text);
       margin: 0;
       display: flex;
       flex-direction: column;
       height: 100vh;
+      overflow: hidden;
     }
 
-    /* --- Navigation --- */
     nav {
-      height: 64px;
+      height: 60px;
       background: var(--panel);
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 2rem;
-      z-index: 10;
+      padding: 0 32px;
+      flex-shrink: 0;
     }
 
     .logo {
-      font-weight: 700;
-      letter-spacing: -0.5px;
-      font-size: 1.25rem;
+      font-weight: 800;
       color: var(--brand);
+      font-size: 20px;
     }
 
-    .logo span {
-      color: var(--text-main);
-    }
-
-    .user-profile {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      font-size: 0.875rem;
-    }
-
-    button.secondary {
-      background: transparent;
-      border: 1px solid var(--border);
-      padding: 6px 12px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 500;
-    }
-
-    /* --- Layout --- */
     .wrapper {
       display: flex;
       flex: 1;
@@ -80,148 +53,99 @@
     }
 
     aside {
-      width: 280px;
+      width: 320px;
       background: var(--panel);
       border-right: 1px solid var(--border);
-      padding: 1.5rem;
+      padding: 24px;
       overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 2rem;
     }
 
     main {
       flex: 1;
-      padding: 2rem;
+      padding: 24px;
       overflow-y: auto;
     }
 
-    /* --- Typography & Inputs --- */
     h3 {
-      font-size: 0.75rem;
+      font-size: 11px;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--text-muted);
-      margin-bottom: 1rem;
-    }
-
-    .input-group {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      margin-bottom: 1rem;
+      letter-spacing: 1px;
+      color: var(--text-light);
+      margin: 20px 0 10px 0;
     }
 
     input,
     select,
     textarea {
       width: 100%;
-      padding: 0.625rem;
+      padding: 10px;
       border: 1px solid var(--border);
-      border-radius: var(--radius);
+      border-radius: 8px;
+      margin-bottom: 10px;
       font-family: inherit;
-      font-size: 0.875rem;
-      outline: none;
-      transition: border 0.2s;
     }
 
-    input:focus {
-      border-color: var(--brand);
-    }
-
-    button.primary {
+    button {
       width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      transition: 0.2s;
+      margin-bottom: 5px;
+    }
+
+    .btn-brand {
       background: var(--brand);
       color: white;
-      border: none;
-      padding: 0.625rem;
-      border-radius: var(--radius);
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s;
     }
 
-    button.primary:hover {
-      background: var(--brand-hover);
+    .btn-dark {
+      background: #0f172a;
+      color: white;
     }
 
-    /* --- Content Cards --- */
     .card {
       background: var(--panel);
-      border-radius: var(--radius);
       border: 1px solid var(--border);
-      padding: 1.5rem;
-      margin-bottom: 2rem;
-      box-shadow: var(--shadow);
-    }
-
-    /* --- Table Styling --- */
-    .table-container {
-      background: var(--panel);
       border-radius: var(--radius);
-      border: 1px solid var(--border);
-      overflow: hidden;
-      box-shadow: var(--shadow);
+      padding: 20px;
+      margin-bottom: 20px;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      text-align: left;
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
     }
 
     th {
-      background: #f8fafc;
-      padding: 1rem;
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: var(--text-muted);
-      border-bottom: 1px solid var(--border);
+      text-align: left;
+      background: #f1f5f9;
+      padding: 12px;
+      font-size: 12px;
+      color: var(--text-light);
     }
 
     td {
-      padding: 1rem;
-      font-size: 0.875rem;
+      padding: 12px;
       border-bottom: 1px solid var(--border);
-    }
-
-    tr:last-child td {
-      border-bottom: none;
-    }
-
-    .status-pill {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 99px;
-      font-size: 0.75rem;
-      font-weight: 500;
-      background: #e0f2fe;
-      color: #0369a1;
+      font-size: 13px;
     }
 
     #notify {
       position: fixed;
-      bottom: 24px;
-      right: 24px;
-      background: #1e293b;
+      top: 20px;
+      right: 20px;
+      background: #0f172a;
       color: white;
-      padding: 12px 20px;
+      padding: 12px 24px;
       border-radius: 8px;
       display: none;
-      animation: slideUp 0.3s ease;
-      z-index: 100;
-    }
-
-    @keyframes slideUp {
-      from {
-        transform: translateY(20px);
-        opacity: 0;
-      }
-
-      to {
-        transform: translateY(0);
-        opacity: 1;
-      }
+      z-index: 1000;
     }
   </style>
 </head>
@@ -230,9 +154,10 @@
 
   <nav>
     <div class="logo">WEBENOID <span>TRACKER</span></div>
-    <div class="user-profile">
-      <span id="userLabel" style="font-weight: 500;"></span>
-      <button class="secondary" onclick="logout()">Logout</button>
+    <div style="display:flex; gap:15px; align-items:center;">
+      <span id="userLabel" style="font-size:13px; color:var(--text-light)"></span>
+      <button onclick="logout()"
+        style="width:auto; padding:5px 15px; background:#fee2e2; color:#ef4444;">Logout</button>
     </div>
   </nav>
 
@@ -240,94 +165,218 @@
 
   <div class="wrapper">
     <aside>
-      <section>
-        <h3>Administration</h3>
-        <div class="input-group">
-          <input id="newDev" placeholder="Developer Name">
-          <button class="primary" onclick="addDev()">Add Member</button>
-        </div>
-        <div class="input-group">
-          <input id="newProj" placeholder="Project Name">
-          <button class="primary" onclick="addProj()">Create Project</button>
-        </div>
-      </section>
+      <h3>Directory</h3>
+      <input id="newDev" placeholder="New Developer Name">
+      <button class="btn-dark" onclick="addDev()">Add Member</button>
 
-      <section>
-        <h3>Linking</h3>
-        <div class="input-group">
-          <select id="selProj" onchange="loadTasks()"></select>
-          <input id="newTask" placeholder="Task Name">
-          <button class="primary" onclick="addTask()">Link Task</button>
-        </div>
-      </section>
+      <h3>Context</h3>
+      <input id="newProj" placeholder="Project Title">
+      <button class="btn-brand" onclick="addProj()">Create Project</button>
 
-      <section>
-        <h3>Quick Entry</h3>
-        <div class="input-group">
-          <select id="qProj" onchange="loadQTasks()"></select>
-          <select id="qTask"></select>
-          <input id="qTitle" placeholder="Defect Title">
-          <select id="qAssign"></select>
-          <button class="primary" onclick="submitSingle()">Create Bug</button>
-        </div>
-      </section>
+      <select id="selProj" onchange="loadTasks()"></select>
+      <input id="newTask" placeholder="Task Name">
+      <button class="btn-brand" onclick="addTask()">Link Task</button>
+
+      <h3>Quick Entry</h3>
+      <select id="qProj" onchange="loadQTasks()"></select>
+      <select id="qTask"></select>
+      <input id="qTitle" placeholder="Bug Title">
+      <select id="qAssign"></select>
+      <button class="btn-brand" onclick="submitSingle()">Log Defect</button>
     </aside>
 
     <main>
       <div class="card">
-        <h3 style="margin-top:0">Bulk Process</h3>
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1rem;">
+        <h3>Bulk Import</h3>
+        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; margin-bottom:10px;">
           <select id="bProj" onchange="loadBTasks()"></select>
           <select id="bTask"></select>
           <select id="bAssign"></select>
         </div>
-        <textarea id="bPaste" rows="3" placeholder="Format: Title | Target Date (one per line)"></textarea>
-        <button class="primary" style="margin-top: 1rem; width: auto; padding-left: 2rem; padding-right: 2rem;"
-          onclick="submitBulk()">Process Batch</button>
+        <textarea id="bPaste" rows="3" placeholder="Format: Title | Target Date"></textarea>
+        <button class="btn-brand" style="width:auto; padding:10px 30px;" onclick="submitBulk()">Process Batch</button>
       </div>
 
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>DEFECT TITLE</th>
-              <th>ASSIGNEE</th>
-              <th>STATUS</th>
-            </tr>
-          </thead>
-          <tbody id="bugList">
-          </tbody>
-        </table>
-      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Defect Details</th>
+            <th>Assignee</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="bugList"></tbody>
+      </table>
     </main>
   </div>
 
   <script>
-    /* ... (Keep your existing JS logic, it works perfectly with these IDs) ... */
+    // Constants
+    const API = window.location.origin;
 
-    // Minimal adjustment to loadBugs for the new Status Pill UI
-    async function loadBugs() {
-      // (Mocking fetch for demo purpose or use your real API)
+    // Notification Helper
+    window.notify = function (msg) {
+      const n = document.getElementById('notify');
+      n.innerText = msg;
+      n.style.display = "block";
+      setTimeout(() => n.style.display = "none", 3000);
+    };
+
+    // Logout Helper
+    window.logout = function () {
+      localStorage.clear();
+      window.location.href = "login.html";
+    };
+
+    // 1. PROJECT HELPERS
+    window.addProj = async function () {
+      const name = document.getElementById('newProj').value;
+      if (!name) return;
+      try {
+        await fetch(API + "/project", {
+          method: "POST",
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name })
+        });
+        document.getElementById('newProj').value = "";
+        loadData();
+        notify("Project Created");
+      } catch (e) { console.error(e); }
+    };
+
+    window.addTask = async function () {
+      const proj = document.getElementById('selProj').value;
+      const name = document.getElementById('newTask').value;
+      if (!name) return;
+      try {
+        await fetch(API + "/task", {
+          method: "POST",
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ project: proj, name: name })
+        });
+        document.getElementById('newTask').value = "";
+        loadData();
+        notify("Task Linked");
+      } catch (e) { console.error(e); }
+    };
+
+    // 2. DEFECT SUBMISSION
+    window.submitSingle = async function () {
+      const data = [{
+        project: document.getElementById('qProj').value,
+        task: document.getElementById('qTask').value,
+        title: document.getElementById('qTitle').value,
+        assignedTo: document.getElementById('qAssign').value,
+        status: "Queue",
+        completion: 0,
+        startedAt: new Date().toISOString()
+      }];
+
+      await fetch(API + "/bugs", {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      document.getElementById('qTitle').value = "";
+      loadBugs();
+      notify("Bug Logged");
+    };
+
+    window.submitBulk = async function () {
+      const lines = document.getElementById('bPaste').value.trim().split("\n");
+      const data = lines.map(l => {
+        const p = l.split("|");
+        return {
+          project: document.getElementById('bProj').value,
+          task: document.getElementById('bTask').value,
+          title: p[0].trim(),
+          assignedTo: document.getElementById('bAssign').value,
+          status: "Queue",
+          targetDate: p[1]?.trim() || ""
+        };
+      });
+
+      await fetch(API + "/bugs", {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      document.getElementById('bPaste').value = "";
+      loadBugs();
+      notify("Batch Processed");
+    };
+
+    // 3. TEAM MANAGEMENT
+    let team = JSON.parse(localStorage.getItem("team_list")) || ["Assignee"];
+    window.addDev = function () {
+      const name = document.getElementById('newDev').value.trim();
+      if (!name) return;
+      team.push(name);
+      localStorage.setItem("team_list", JSON.stringify(team));
+      updateDrops();
+      document.getElementById('newDev').value = "";
+      notify("Dev Added");
+    };
+
+    function updateDrops() {
+      const drops = ['qAssign', 'bAssign'];
+      drops.forEach(id => {
+        const el = document.getElementById(id);
+        el.innerHTML = "";
+        team.forEach(t => el.innerHTML += `<option>${t}</option>`);
+      });
+    }
+
+    // 4. DATA LOADING
+    window.loadData = async function () {
+      try {
+        const res = await fetch(API + "/projects");
+        const p = await res.json();
+        const selects = ['selProj', 'qProj', 'bProj'];
+        selects.forEach(id => {
+          const s = document.getElementById(id);
+          s.innerHTML = "";
+          p.forEach(x => s.innerHTML += `<option>${x.name}</option>`);
+        });
+        loadTasks(); loadQTasks(); loadBTasks();
+      } catch (e) { console.log("Init failed"); }
+    };
+
+    window.loadBugs = async function () {
       const res = await fetch(API + "/bugs");
       const bugs = await res.json();
       const body = document.getElementById('bugList');
       body.innerHTML = "";
-
       bugs.forEach((b, i) => {
-        body.innerHTML += `
-          <tr>
-            <td style="color: var(--text-muted)">${String(i + 1).padStart(2, '0')}</td>
-            <td style="font-weight: 500">${b.title}</td>
-            <td>${b.assignedTo}</td>
-            <td><span class="status-pill">${b.status}</span></td>
-          </tr>`;
+        body.innerHTML += `<tr><td>${i + 1}</td><td><b>${b.title}</b><br>${b.project}</td><td>${b.assignedTo}</td><td>${b.status}</td></tr>`;
       });
-    }
+    };
 
-    // Initialize as before
-    // ... (rest of your functions)
+    // Task Loaders
+    window.loadTasks = async function () { };
+    window.loadQTasks = async function () {
+      const proj = document.getElementById('qProj').value;
+      const res = await fetch(API + "/tasks/" + proj);
+      const tasks = await res.json();
+      document.getElementById('qTask').innerHTML = tasks.map(t => `<option>${t.name}</option>`).join('');
+    };
+    window.loadBTasks = async function () {
+      const proj = document.getElementById('bProj').value;
+      const res = await fetch(API + "/tasks/" + proj);
+      const tasks = await res.json();
+      document.getElementById('bTask').innerHTML = tasks.map(t => `<option>${t.name}</option>`).join('');
+    };
+
+    // Init
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById('userLabel').innerText = "User: " + (localStorage.getItem("user") || "Guest");
+      loadData();
+      loadBugs();
+      updateDrops();
+    });
   </script>
+
 </body>
 
 </html>
