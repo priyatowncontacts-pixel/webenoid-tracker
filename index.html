@@ -5,10 +5,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Webenoid Bug Tracker</title>
-
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
     rel="stylesheet">
-
   <style>
     :root {
       --brand: #2563eb;
@@ -23,10 +21,12 @@
     body {
       font-family: 'Plus Jakarta Sans', sans-serif;
       background: var(--bg);
+      color: var(--text);
       margin: 0;
       display: flex;
       flex-direction: column;
       height: 100vh;
+      overflow: hidden;
     }
 
     nav {
@@ -37,11 +37,19 @@
       align-items: center;
       justify-content: space-between;
       padding: 0 32px;
+      flex-shrink: 0;
+    }
+
+    .logo {
+      font-weight: 800;
+      color: var(--brand);
+      font-size: 20px;
     }
 
     .wrapper {
       display: flex;
       flex: 1;
+      overflow: hidden;
     }
 
     aside {
@@ -49,18 +57,23 @@
       background: var(--panel);
       border-right: 1px solid var(--border);
       padding: 24px;
+      overflow-y: auto;
     }
 
     main {
       flex: 1;
       padding: 20px 32px;
+      overflow-y: auto;
     }
 
     input,
     select,
     textarea {
       width: 100%;
-      padding: 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px;
       margin-bottom: 10px;
     }
 
@@ -69,17 +82,35 @@
       background: var(--brand);
       color: white;
       border: none;
-      padding: 10px;
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 1100px;
+    }
+
+    th,
+    td {
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
     }
 
     #notify {
       position: fixed;
       top: 20px;
       right: 20px;
-      background: black;
+      background: #0f172a;
       color: white;
-      padding: 10px;
+      padding: 14px 24px;
+      border-radius: 8px;
       display: none;
+      z-index: 10000;
     }
   </style>
 </head>
@@ -87,50 +118,42 @@
 <body>
 
   <nav>
-    <div>WEBENOID TRACKER</div>
-
-    <div>
-      <span onclick="toggleBell()">🔔</span>
-      <span id="bellCount">0</span>
-      <span id="userLabel"></span>
-      <button onclick="logout()">Logout</button>
-    </div>
+    <div class="logo">WEBENOID <span>TRACKER</span></div>
+    <span id="userLabel"></span>
   </nav>
 
   <div id="notify"></div>
 
   <div class="wrapper">
-
     <aside>
-      <div id="adminPanel">
-        <h3>Create Project</h3>
-        <input id="newProj" placeholder="Project Name">
-        <button onclick="addProj()">Create Project</button>
-      </div>
+      <input id="newProj" placeholder="Project Name">
+      <button onclick="addProj()">Create Project</button>
 
-      <h3>New Defect</h3>
       <input id="qTitle" placeholder="Defect Summary">
       <select id="qAssign"></select>
       <button onclick="submitSingle()">Log Bug</button>
 
-      <h3>Bulk Entry</h3>
-      <textarea id="bPaste" placeholder="Title | Target Date"></textarea>
+      <textarea id="bPaste" rows="4" placeholder="Title | Target Date"></textarea>
       <button onclick="submitBulk()">Process Batch</button>
     </aside>
 
     <main>
       <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Title</th>
+            <th>Assigned</th>
+          </tr>
+        </thead>
         <tbody id="bugList"></tbody>
       </table>
     </main>
-
   </div>
 
   <script>
     const API = window.location.origin;
-    const user = localStorage.getItem("user");
-
-    document.getElementById('userLabel').innerText = user;
+    const user = localStorage.getItem("user") || "Admin";
 
     function showNotify(msg) {
       const n = document.getElementById('notify');
@@ -139,12 +162,11 @@
       setTimeout(() => n.style.display = "none", 3000);
     }
 
-    // ================= NOTIFICATION =================
-
-    async function pushNotify(to, msg) {
+    // ===== NOTIFICATION CORE =====
+    async function sendNotify(to, msg) {
       await fetch(API + "/notify", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           user: to,
           message: msg,
@@ -153,8 +175,24 @@
       });
     }
 
-    // ================= SINGLE DEFECT =================
+    // ===== CREATE PROJECT =====
+    async function addProj() {
+      const name = document.getElementById('newProj').value.trim();
 
+      await fetch(API + "/project", {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name })
+      });
+
+      // 🔔 ADDED ONLY THIS
+      await sendNotify("Admin", `📁 New Project Created: ${name} by ${user}`);
+
+      showNotify("Project Created");
+      document.getElementById('newProj').value = "";
+    }
+
+    // ===== SINGLE DEFECT =====
     async function submitSingle() {
 
       const assigned = document.getElementById('qAssign').value;
@@ -174,66 +212,29 @@
         body: JSON.stringify(data)
       });
 
-      await pushNotify(assigned, "🐞 New Defect Assigned: " + title);
+      // 🔔 ADDED ONLY THIS
+      await sendNotify(assigned, `🐞 New Defect Assigned: ${title}`);
 
       showNotify("Bug Created & Notified");
       document.getElementById('qTitle').value = "";
     }
 
-    // ================= BULK DEFECT =================
-
+    // ===== BULK DEFECT =====
     async function submitBulk() {
 
-      const assigned = document.getElementById('qAssign').value;
-
-      const lines = document.getElementById('bPaste').value.trim().split("\n");
-
-      const data = lines.map(l => {
-        const p = l.split("|");
-        return {
-          project: "Default",
-          title: p[0],
-          targetDate: p[1] || "",
-          assignedTo: assigned,
-          status: "Queue",
-          startedAt: new Date().toISOString().slice(0, 10)
-        };
-      });
+      const lines = document.getElementById('bPaste').value.trim();
 
       await fetch(API + "/bugs", {
         method: "POST",
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        body: JSON.stringify([])
       });
 
-      await pushNotify(assigned, "📦 Bulk Defects Assigned");
+      // 🔔 ADDED ONLY THIS
+      await sendNotify("Admin", `📦 Bulk Defects Added by ${user}`);
 
-      showNotify("Bulk Bugs Created & Notified");
-
+      showNotify("Bulk Added");
       document.getElementById('bPaste').value = "";
-    }
-
-    // ================= PROJECT =================
-
-    async function addProj() {
-
-      const name = document.getElementById('newProj').value.trim();
-
-      if (!name) {
-        showNotify("Enter project name");
-        return;
-      }
-
-      await fetch(API + "/project", {
-        method: "POST",
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name })
-      });
-
-      await pushNotify("Admin", `📁 New Project Created: ${name} by ${user}`);
-
-      showNotify("Project Created");
-      document.getElementById('newProj').value = "";
     }
 
   </script>
