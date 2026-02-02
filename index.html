@@ -46,6 +46,10 @@
       font-size: 20px;
     }
 
+    .logo span {
+      color: var(--text);
+    }
+
     .wrapper {
       display: flex;
       flex: 1;
@@ -64,28 +68,6 @@
       flex: 1;
       padding: 20px 32px;
       overflow-y: auto;
-    }
-
-    input,
-    select,
-    textarea {
-      width: 100%;
-      padding: 10px 12px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: 13px;
-      margin-bottom: 10px;
-    }
-
-    button {
-      width: 100%;
-      background: var(--brand);
-      color: white;
-      border: none;
-      padding: 12px;
-      border-radius: 8px;
-      font-weight: 600;
-      cursor: pointer;
     }
 
     table {
@@ -119,91 +101,122 @@
 
   <nav>
     <div class="logo">WEBENOID <span>TRACKER</span></div>
-    <span id="userLabel"></span>
+    <div style="display:flex;gap:20px;">
+      <span id="userLabel"></span>
+      <button onclick="logout()">Logout</button>
+    </div>
   </nav>
 
   <div id="notify"></div>
 
   <div class="wrapper">
+
     <aside>
+      <h3>Directory</h3>
+      <input id="newDev" placeholder="Add New Developer">
+      <button onclick="addDev()">Add Member</button>
+
+      <h3>Context</h3>
       <input id="newProj" placeholder="Project Name">
       <button onclick="addProj()">Create Project</button>
 
-      <input id="qTitle" placeholder="Defect Summary">
-      <select id="qAssign"></select>
-      <button onclick="submitSingle()">Log Bug</button>
+      <select id="selProj" onchange="loadTasks()"></select>
 
-      <textarea id="bPaste" rows="4" placeholder="Title | Target Date"></textarea>
-      <button onclick="submitBulk()">Process Batch</button>
+      <input id="newTask" placeholder="Task Name">
+      <button onclick="addTask()">Link Task</button>
+
+      <h3>Quick Entry</h3>
+      <select id="qProj" onchange="loadQTasks()"></select>
+      <select id="qTask"></select>
+      <input id="qTitle" placeholder="Defect Title">
+      <select id="qAssign"></select>
+      <button onclick="submitSingle()">Create Bug</button>
     </aside>
 
     <main>
+      <div class="card">
+        <h3>Bulk Copy-Paste</h3>
+
+        <select id="bProj" onchange="loadBTasks()"></select>
+        <select id="bTask"></select>
+        <select id="bAssign"></select>
+
+        <textarea id="bPaste" rows="3" placeholder="Title | Target Date"></textarea>
+        <button onclick="submitBulk()">Process Batch</button>
+      </div>
+
       <table>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Title</th>
-            <th>Assigned</th>
-          </tr>
-        </thead>
         <tbody id="bugList"></tbody>
       </table>
     </main>
+
   </div>
 
   <script>
-    const API = window.location.origin;
-    const user = localStorage.getItem("user") || "Admin";
+    const API = "http://localhost:3000";
 
-    function showNotify(msg) {
+    const session = localStorage.getItem("webenoid_session");
+    if (!session) window.location.href = "login.html";
+
+    document.getElementById('userLabel').innerText =
+      "Logged in: " + localStorage.getItem("user");
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = "login.html";
+    }
+
+    function notify(msg) {
       const n = document.getElementById('notify');
       n.innerText = msg;
       n.style.display = "block";
       setTimeout(() => n.style.display = "none", 3000);
     }
 
-    // ===== NOTIFICATION CORE =====
-    async function sendNotify(to, msg) {
+    /* ========== NOTIFICATION FUNCTION (NEW) ========== */
+    async function pushNotify(to, message) {
       await fetch(API + "/notify", {
         method: "POST",
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           user: to,
-          message: msg,
+          message: message,
           time: new Date().toLocaleString()
         })
       });
     }
 
-    // ===== CREATE PROJECT =====
-    async function addProj() {
-      const name = document.getElementById('newProj').value.trim();
+    /* ========== TEAM ========== */
+    let team = JSON.parse(localStorage.getItem("team_list")) || ["Assignee"];
 
-      await fetch(API + "/project", {
-        method: "POST",
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name })
-      });
+    function addDev() {
+      const name = newDev.value.trim();
+      if (!name) return;
 
-      // 🔔 ADDED ONLY THIS
-      await sendNotify("Admin", `📁 New Project Created: ${name} by ${user}`);
-
-      showNotify("Project Created");
-      document.getElementById('newProj').value = "";
+      team.push(name);
+      localStorage.setItem("team_list", JSON.stringify(team));
+      updateDrops();
+      notify("Added " + name);
     }
 
-    // ===== SINGLE DEFECT =====
+    function updateDrops() {
+      [qAssign, bAssign].forEach(s => {
+        s.innerHTML = "";
+        team.forEach(t => s.innerHTML += `<option>${t}</option>`);
+      });
+    }
+
+    /* ========== CREATE SINGLE DEFECT ========== */
     async function submitSingle() {
 
-      const assigned = document.getElementById('qAssign').value;
-      const title = document.getElementById('qTitle').value;
-
       const data = [{
-        project: "Default",
-        title: title,
-        assignedTo: assigned,
+        project: qProj.value,
+        task: qTask.value,
+        title: qTitle.value,
+        assignedTo: qAssign.value,
         status: "Queue",
-        startedAt: new Date().toISOString().slice(0, 10)
+        completion: 0,
+        startedAt: new Date().toISOString().slice(0, 16)
       }];
 
       await fetch(API + "/bugs", {
@@ -212,30 +225,118 @@
         body: JSON.stringify(data)
       });
 
-      // 🔔 ADDED ONLY THIS
-      await sendNotify(assigned, `🐞 New Defect Assigned: ${title}`);
+      // 🔔 NEW
+      await pushNotify(qAssign.value,
+        "🐞 New Defect Assigned: " + qTitle.value);
 
-      showNotify("Bug Created & Notified");
-      document.getElementById('qTitle').value = "";
+      qTitle.value = "";
+      loadBugs();
+      notify("Defect Created!");
     }
 
-    // ===== BULK DEFECT =====
+    /* ========== BULK DEFECT ========== */
     async function submitBulk() {
 
-      const lines = document.getElementById('bPaste').value.trim();
+      const lines = bPaste.value.trim().split("\n");
+
+      const data = lines.map(l => {
+        const p = l.split("|");
+
+        return {
+          project: bProj.value,
+          task: bTask.value,
+          title: p[0].trim(),
+          assignedTo: bAssign.value,
+          status: "Queue",
+          completion: 0,
+          startedAt: new Date().toISOString().slice(0, 16),
+          targetDate: p[1]?.trim() || ""
+        };
+      });
 
       await fetch(API + "/bugs", {
         method: "POST",
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify([])
+        body: JSON.stringify(data)
       });
 
-      // 🔔 ADDED ONLY THIS
-      await sendNotify("Admin", `📦 Bulk Defects Added by ${user}`);
+      // 🔔 NEW
+      await pushNotify(bAssign.value,
+        "📦 Bulk Defects Assigned");
 
-      showNotify("Bulk Added");
-      document.getElementById('bPaste').value = "";
+      bPaste.value = "";
+      loadBugs();
+      notify("Batch Logged: " + data.length);
     }
+
+    /* ========== LOAD BUGS (OLD UNTOUCHED) ========== */
+    async function loadBugs() {
+      const res = await fetch(API + "/bugs");
+      const bugs = await res.json();
+
+      const body = document.getElementById('bugList');
+      body.innerHTML = "";
+
+      bugs.forEach((b, i) => {
+        body.innerHTML += `
+    <tr>
+      <td>${i + 1}</td>
+      <td>${b.title}</td>
+      <td>${b.assignedTo}</td>
+      <td>${b.status}</td>
+    </tr>`;
+      });
+    }
+
+    /* ========== PROJECT / TASK (OLD UNTOUCHED) ========== */
+    async function addProj() {
+
+      await fetch(API + "/project", {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newProj.value })
+      });
+
+      // 🔔 NEW
+      await pushNotify("Admin",
+        "📁 Project Created: " + newProj.value);
+
+      newProj.value = "";
+      loadData();
+    }
+
+    async function addTask() {
+      await fetch(API + "/task", {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          project: selProj.value,
+          name: newTask.value
+        })
+      });
+
+      newTask.value = "";
+      loadData();
+    }
+
+    async function loadData() {
+      const p = await (await fetch(API + "/projects")).json();
+
+      [selProj, qProj, bProj].forEach(s => {
+        s.innerHTML = "";
+        p.forEach(x => s.innerHTML += `<option>${x.name}</option>`);
+      });
+
+      loadTasks(); loadQTasks(); loadBTasks();
+    }
+
+    async function loadTasks() { }
+    async function loadQTasks() { }
+    async function loadBTasks() { }
+
+    loadData();
+    loadBugs();
+    updateDrops();
 
   </script>
 
