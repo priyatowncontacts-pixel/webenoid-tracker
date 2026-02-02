@@ -457,18 +457,41 @@
     }
 
     async function submitSingle() {
+
+      const assigned = document.getElementById('qAssign').value;
+      const title = document.getElementById('qTitle').value;
+
       const data = [{
         project: document.getElementById('selProj').value,
-        title: document.getElementById('qTitle').value,
-        assignedTo: document.getElementById('qAssign').value,
+        title: title,
+        assignedTo: assigned,
         status: "Queue",
         startedAt: new Date().toISOString().slice(0, 10)
       }];
-      await fetch(API + "/bugs", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-      await pushNotify(document.getElementById('qAssign').value, "New bug assigned to you");
+
+      await fetch(API + "/bugs", {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      // 🔔 DIRECT NOTIFICATION CALL (NOT relying on pushNotify)
+      await fetch(API + "/notify", {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user: assigned,
+          message: `🐞 New Defect Assigned: ${title}`,
+          time: new Date().toLocaleString()
+        })
+      });
+
+      showNotify("Bug Created & Notified");
+
       document.getElementById('qTitle').value = "";
       loadBugs();
     }
+
 
     async function submitBulk() {
       const lines = document.getElementById('bPaste').value.trim().split("\n");
