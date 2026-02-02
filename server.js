@@ -26,7 +26,11 @@ mongoose
   .then(() => console.log("✅ MongoDB Connected"))
   .catch(err => console.log("Mongo Error:", err));
 
-// ===== MODELS (OLD – UNTOUCHED) =====
+
+// =====================================================
+// MODELS  (OLD + NEW TASK MODEL)
+// =====================================================
+
 const Project = mongoose.model("Project", {
   name: String
 });
@@ -45,7 +49,13 @@ const Bug = mongoose.model("Bug", {
   completion: { type: Number, default: 0 }
 });
 
-// ===== NEW MODEL – NOTIFICATION (ADDED ONLY) =====
+// 🔥 NEW – TASK MODEL (THIS WAS MISSING)
+const Task = mongoose.model("Task", {
+  project: String,
+  name: String
+});
+
+// 🔔 NOTIFICATION MODEL
 const Notify = mongoose.model("Notify", {
   user: String,
   message: String,
@@ -53,9 +63,11 @@ const Notify = mongoose.model("Notify", {
   read: { type: Boolean, default: false }
 });
 
-// ===== API ROUTES (OLD – KEPT SAME) =====
 
-// Projects
+// =====================================================
+// PROJECT ROUTES  (OLD – UNTOUCHED)
+// =====================================================
+
 app.get("/projects", async (req, res) => {
   res.json(await Project.find());
 });
@@ -65,7 +77,26 @@ app.post("/project", async (req, res) => {
   res.json({ success: true });
 });
 
-// Bugs
+
+// =====================================================
+// 🔥 TASK ROUTES  (NEW – REQUIRED BY YOUR UI)
+// =====================================================
+
+app.post("/task", async (req, res) => {
+  await Task.create(req.body);
+  res.json({ ok: 1 });
+});
+
+app.get("/tasks/:project", async (req, res) => {
+  const list = await Task.find({ project: req.params.project });
+  res.json(list);
+});
+
+
+// =====================================================
+// BUG ROUTES  (OLD – UNTOUCHED)
+// =====================================================
+
 app.get("/bugs", async (req, res) => {
   res.json(await Bug.find().sort({ _id: -1 }));
 });
@@ -75,27 +106,26 @@ app.post("/bugs", async (req, res) => {
   res.json({ success: true });
 });
 
-// Update Bug
 app.put("/bug/:id", async (req, res) => {
   await Bug.findByIdAndUpdate(req.params.id, req.body);
   res.json({ success: true });
 });
 
-// Delete Bug
 app.delete("/bug/:id", async (req, res) => {
   await Bug.findByIdAndDelete(req.params.id);
   res.json({ success: true });
 });
 
-// ===== NEW ROUTES – NOTIFICATION (ONLY ADDITION) =====
 
-// Create notification
+// =====================================================
+// NOTIFICATION ROUTES  (ALREADY USED BY YOUR UI)
+// =====================================================
+
 app.post("/notify", async (req, res) => {
   await Notify.create(req.body);
   res.json({ ok: 1 });
 });
 
-// Get notifications for user
 app.get("/notify/:user", async (req, res) => {
   res.json(
     await Notify.find({ user: req.params.user })
@@ -104,13 +134,15 @@ app.get("/notify/:user", async (req, res) => {
   );
 });
 
-// Mark as read
 app.put("/notify/read/:id", async (req, res) => {
   await Notify.findByIdAndUpdate(req.params.id, { read: true });
   res.json({ ok: 1 });
 });
 
-// ===== PAGE ROUTING =====
+
+// =====================================================
+// PAGE ROUTING (OLD – UNTOUCHED)
+// =====================================================
 
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "login.html"));
@@ -124,12 +156,15 @@ app.get("/tracker.html", (req, res) => {
   res.sendFile(path.join(__dirname, "tracker.html"));
 });
 
-// Fallback
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "login.html"));
 });
 
-// ===== START SERVER =====
+
+// =====================================================
+// START SERVER
+// =====================================================
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () =>
