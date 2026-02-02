@@ -153,7 +153,8 @@
   </div>
 
   <script>
-    const API = "http://localhost:3000";
+    const API = window.location.origin;
+
 
     const session = localStorage.getItem("webenoid_session");
     if (!session) window.location.href = "login.html";
