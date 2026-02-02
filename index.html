@@ -125,14 +125,15 @@
 
       <div style="position:relative">
         <span onclick="openBell()" style="cursor:pointer">🔔</span>
-        <span id="bellCount" style="background:red;color:white;border-radius:50%;
- padding:2px 6px;font-size:10px">0</span>
+        <span id="bellCount"
+          style="background:red;color:white;border-radius:50%;padding:2px 6px;font-size:10px">0</span>
       </div>
 
       <span id="userTag"></span>
 
       <button onclick="logout()" style="width:auto;background:#fee2e2;color:#ef4444">
         Logout</button>
+
     </div>
   </nav>
 
@@ -173,9 +174,11 @@
         <button onclick="bulkCreate()">Create Bulk</button>
 
       </div>
+
     </aside>
 
     <main>
+
       <table>
         <thead>
           <tr>
@@ -183,18 +186,26 @@
             <th>Started</th>
             <th>Target</th>
             <th>Status</th>
-            <th>Progress</th>
+
+            <script>
+              if (localStorage.getItem("role") === "Developer") {
+                document.write("<th>Progress</th>");
+              }
+            </script>
+
             <th>Action</th>
           </tr>
         </thead>
 
         <tbody id="bugList"></tbody>
-      </table>
-    </main>
 
+      </table>
+
+    </main>
   </div>
 
   <script>
+
     // ===== AUTH =====
     const role = localStorage.getItem("role");
     const user = localStorage.getItem("user");
@@ -215,7 +226,7 @@
       setTimeout(() => notify.style.display = "none", 4000);
     }
 
-    // ===== BELL =====
+    // ===== BELL SYSTEM =====
     function openBell() {
       bellPanel.style.right = "0";
       loadBell();
@@ -227,15 +238,18 @@
       bellCount.innerText = list.filter(x => !x.read).length;
 
       bellList.innerHTML = list.map(n => `
- <div style="border-bottom:1px solid #eee;
-  padding:8px;background:${n.read ? '#fff' : '#f0f7ff'}">
 
-  <div>${n.message}</div>
-  <small>${n.time}</small>
+<div style="border-bottom:1px solid #eee;padding:8px;background:${n.read ? '#fff' : '#f0f7ff'}">
 
-  <button onclick="markRead('${n._id}')"
-   style="width:auto;font-size:10px">mark</button>
- </div>
+<div>${n.message}</div>
+<small>${n.time}</small>
+
+<button onclick="markRead('${n._id}')" style="width:auto;font-size:10px">
+mark
+</button>
+
+</div>
+
 `).join("");
     }
 
@@ -257,67 +271,71 @@
     }
 
     // ===== TEAM =====
-    let team = JSON.parse(localStorage.getItem("team")) ||
-      ["Arun", "Kiran", "Priya"];
+    let team = JSON.parse(localStorage.getItem("team")) || ["Arun", "Kiran", "Priya"];
 
-    assignTo.innerHTML =
-      team.map(t => `<option>${t}</option>`).join("");
+    assignTo.innerHTML = team.map(t => `<option>${t}</option>`).join("");
 
     // ===== LOAD =====
     async function loadData() {
+
       const p = await fetch("/projects").then(r => r.json());
 
-      projFilter.innerHTML =
-        p.map(x => `<option>${x.name}</option>`).join("");
+      projFilter.innerHTML = p.map(x => `<option>${x.name}</option>`).join("");
 
       loadBugs();
     }
 
-    // ===== LOAD BUGS (FIXED) =====
+    // ===== LOAD BUGS =====
     async function loadBugs() {
 
       const bugs = await fetch("/bugs").then(r => r.json());
       const active = projFilter.value;
 
-      bugList.innerHTML = bugs
-        .filter(b => b.project === active)
-        .map(b => {
+      bugList.innerHTML = bugs.filter(b => b.project === active).map(b => `
 
-          return `
 <tr>
+
 <td>${b.title}</td>
 <td>${b.startedAt || '-'}</td>
 <td>${b.targetDate || '-'}</td>
 
 <td>
-<select onchange="updateStatus('${b._id}', this.value)">
+<select onchange="updateStatus('${b._id}',this.value)">
 
-<option value="Queue"  ${b.status === 'Queue' ? 'selected' : ''}>Queue</option>
+<option value="Queue" ${b.status === 'Queue' ? 'selected' : ''}>Queue</option>
 
 <option value="Review" ${b.status === 'Review' ? 'selected' : ''}>Review</option>
 
 ${role === 'Tester'
-              ? `<option value="Fixed" ${b.status === 'Fixed' ? 'selected' : ''}>Fixed</option>`
-              : ''}
+          ? `<option value="Fixed" ${b.status === 'Fixed' ? 'selected' : ''}>Fixed</option>`
+          : ''}
 
 </select>
 </td>
 
+${role === "Developer" ? `
+
 <td>
 <input type="range" value="${b.completion || 0}"
- onchange="handleProg('${b._id}',this.value)">
- ${b.completion || 0}%
+onchange="handleProg('${b._id}',this.value)">
+${b.completion || 0}%
 </td>
+
+` : ""
+        }
 
 <td>
-<button onclick="deleteBug('${b._id}')"
- style="background:none;color:red">Remove</button>
+<button onclick="deleteBug('${b._id}')" style="background:none;color:red">
+Remove
+</button>
 </td>
-</tr>`;
-        }).join("");
+
+</tr>
+
+`).join("");
     }
 
-    // ===== STATUS FIX =====
+    // ===== STATUS =====
     async function updateStatus(id, value) {
 
       await fetch("/bug/" + id, {
@@ -334,7 +352,7 @@ ${role === 'Tester'
       loadBugs();
     }
 
-    // ===== PROGRESS FIX =====
+    // ===== PROGRESS FOR DEV ONLY =====
     async function handleProg(id, val) {
 
       val = parseInt(val);
@@ -377,6 +395,7 @@ ${role === 'Tester'
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: newP.value })
       });
+
       newP.value = "";
       loadData();
     }
@@ -400,7 +419,7 @@ ${role === 'Tester'
       loadBugs();
     }
 
-    // ===== BULK (SAME FORMAT) =====
+    // ===== BULK =====
     async function bulkCreate() {
 
       const lines = bulkBox.value.trim().split("\n");
@@ -429,7 +448,7 @@ ${role === 'Tester'
       loadBugs();
     }
 
-    // ===== REAL TIME SYNC =====
+    // ===== REALTIME =====
     setInterval(loadBugs, 5000);
     setInterval(loadBell, 6000);
 
@@ -439,6 +458,7 @@ ${role === 'Tester'
     }
 
     loadData();
+
   </script>
 
 </body>
