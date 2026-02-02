@@ -489,14 +489,37 @@
     }
 
     async function addProj() {
+      const name = document.getElementById('newProj').value.trim();
+
+      if (!name) {
+        showNotify("Enter project name");
+        return;
+      }
+
+      // 1. Create project
       await fetch(API + "/project", {
         method: "POST",
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: document.getElementById('newProj').value })
+        body: JSON.stringify({ name })
       });
+
+      // 2. 🔔 Create notification
+      await fetch(API + "/notify", {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user: "Admin",
+          message: `📁 New Project Created: ${name} by ${user}`,
+          time: new Date().toLocaleString()
+        })
+      });
+
+      showNotify("Project Created");
       document.getElementById('newProj').value = "";
+
       loadData();
     }
+
 
     async function deleteBug(id) {
       if (confirm("Confirm Delete?")) {
