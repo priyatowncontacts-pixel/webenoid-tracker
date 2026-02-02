@@ -1,228 +1,517 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-  <title>Bug Tracker</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Webenoid Bug Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
   <style>
+    :root {
+      --brand: #2563eb;
+      --bg: #f8fafc;
+      --panel: #ffffff;
+      --text: #0f172a;
+      --text-light: #64748b;
+      --border: #e2e8f0;
+      --radius: 12px;
+    }
+
     body {
-      font-family: Arial;
-      background: #f4f6fb;
-      padding: 20px
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* HEADER */
+    nav {
+      height: 60px;
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      flex-shrink: 0;
+    }
+
+    .logo {
+      font-weight: 800;
+      color: var(--brand);
+      font-size: 20px;
+      letter-spacing: -0.5px;
+    }
+
+    .logo span {
+      color: var(--text);
+    }
+
+    .logout-btn {
+      background: #fff;
+      color: #ef4444;
+      border: 1px solid #fee2e2;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .wrapper {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    aside {
+      width: 320px;
+      background: var(--panel);
+      border-right: 1px solid var(--border);
+      padding: 24px;
+      overflow-y: auto;
+    }
+
+    main {
+      flex: 1;
+      padding: 20px 32px;
+      overflow-y: auto;
+    }
+
+    h3 {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--text-light);
+      margin-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 5px;
+      margin-top: 15px;
     }
 
     .card {
-      background: #fff;
-      padding: 15px;
-      border-radius: 8px;
-      margin-bottom: 20px
+      background: var(--panel);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      margin-bottom: 24px;
     }
 
     input,
     select,
     textarea {
       width: 100%;
-      padding: 8px;
-      margin-top: 5px
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 13px;
+      margin-bottom: 10px;
+      outline: none;
     }
 
     button {
-      background: black;
+      width: 100%;
+      background: var(--brand);
       color: white;
-      padding: 8px 14px;
-      border: none
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
     }
 
+    /* BELL PANEL */
+    #bellPanel {
+      position: fixed;
+      right: -420px;
+      top: 60px;
+      width: 380px;
+      height: 90%;
+      background: white;
+      box-shadow: -5px 0 10px #0001;
+      transition: .3s;
+      padding: 20px;
+      overflow: auto;
+      z-index: 999;
+      border-left: 1px solid var(--border);
+    }
+
+    .notif-item {
+      border-bottom: 1px solid #eee;
+      padding: 12px;
+      margin-bottom: 5px;
+      border-radius: 8px;
+    }
+
+    /* TABLE */
     table {
       width: 100%;
-      border-collapse: collapse
+      border-collapse: collapse;
+      min-width: 1100px;
     }
 
-    th,
+    th {
+      text-align: left;
+      padding: 12px;
+      font-size: 11px;
+      text-transform: uppercase;
+      color: var(--text-light);
+      border-bottom: 1px solid var(--border);
+      background: #fcfcfd;
+    }
+
     td {
-      padding: 8px;
-      border-bottom: 1px solid #ddd;
-      text-align: center
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
     }
 
-    .badge {
+    .Queue {
+      background: #e0e7ff;
+      color: #3730a3;
       padding: 4px 8px;
-      border-radius: 5px
+      border-radius: 6px;
+      font-weight: 700;
+      border: none;
+      font-size: 11px;
     }
 
-    .open {
-      background: #fee2e2
+    .Review {
+      background: #fef9c3;
+      color: #854d0e;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-weight: 700;
+      border: none;
+      font-size: 11px;
     }
 
-    .fixed {
-      background: #dcfce7
+    .Fixed {
+      background: #dcfce7;
+      color: #166534;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-weight: 700;
+      border: none;
+      font-size: 11px;
+    }
+
+    .progress-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    input[type="range"] {
+      margin: 0;
+      cursor: pointer;
+      height: 6px;
+      accent-color: var(--brand);
+      width: 80px;
     }
 
     #notify {
       position: fixed;
       top: 20px;
       right: 20px;
-      background: black;
+      background: #0f172a;
       color: white;
-      padding: 10px;
-      border-radius: 5px;
+      padding: 14px 24px;
+      border-radius: 8px;
       display: none;
+      z-index: 10000;
+      font-weight: 600;
     }
   </style>
 </head>
 
 <body>
 
-  <h2>🐞 Bug Tracker</h2>
+  <nav>
+    <div class="logo">WEBENOID <span>TRACKER</span></div>
+    <div style="display: flex; align-items: center; gap: 20px;">
+      <div style="position:relative">
+        <span onclick="toggleBell()" style="cursor:pointer; font-size: 20px;">🔔</span>
+        <span id="bellCount"
+          style="position:absolute; top:-5px; right:-5px; background:red; color:white; border-radius:50%; padding:2px 6px; font-size:10px">0</span>
+      </div>
+      <span id="userLabel" style="font-weight: 600; font-size: 13px; color: var(--text-light);"></span>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+  </nav>
+
   <div id="notify"></div>
 
-  <!-- PROJECT -->
-  <div class="card">
-    <h3>Create Project</h3>
-    <input id="projectName">
-    <button onclick="addProject()">Create</button>
+  <div id="bellPanel">
+    <div style="display:flex; justify-content:space-between; align-items:center">
+      <h2 style="font-size: 18px;">Notifications</h2>
+      <button onclick="toggleBell()" style="width:auto; background:none; color:#000">✕</button>
+    </div>
+    <div id="bellList"></div>
   </div>
 
-  <!-- TASK -->
-  <div class="card">
-    <h3>Create Task</h3>
-    <select id="projectSelect"></select>
-    <input id="taskName">
-    <button onclick="addTask()">Create</button>
-  </div>
+  <div class="wrapper">
+    <aside>
+      <div id="adminPanel">
+        <h3>Directory</h3>
+        <input id="newDev" placeholder="Add New Member">
+        <button onclick="addMember()" style="background: #0f172a;">Add Member</button>
 
-  <!-- BULK BUG -->
-  <div class="card">
-    <h3>Bulk Defects</h3>
-    <select id="bugProject"></select>
-    <select id="bugTask"></select>
+        <h3>Infrastructure</h3>
+        <input id="newProj" placeholder="Project Name">
+        <button onclick="addProj()">Create Project</button>
+        <hr style="border:0; border-top:1px solid var(--border); margin: 20px 0;">
+      </div>
 
-    <textarea id="bulkInput" rows="6" placeholder="Bug Title | Assigned | Status
-Login error | John | Open
-API error | Alex | Fixed"></textarea>
+      <h3>Filters</h3>
+      <select id="selProj" onchange="loadBugs()"></select>
 
-    <button onclick="submitBulk()">Create Bugs</button>
-  </div>
+      <div id="testerPanel">
+        <h3>New Defect</h3>
+        <input id="qTitle" placeholder="Defect Summary">
+        <select id="qAssign"></select>
+        <button onclick="submitSingle()">Log Bug</button>
 
-  <!-- LIST -->
-  <div class="card">
-    <h3>Bug List</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Project</th>
-          <th>Task</th>
-          <th>Bug</th>
-          <th>Assigned</th>
-          <th>Status</th>
-          <th>Created</th>
-          <th>Fixed</th>
-        </tr>
-      </thead>
-      <tbody id="bugList"></tbody>
-    </table>
+        <h3>Bulk Entry</h3>
+        <textarea id="bPaste" rows="4" placeholder="Title | Target Date"></textarea>
+        <button onclick="submitBulk()" style="background: #0f172a;">Process Batch</button>
+      </div>
+    </aside>
+
+    <main>
+      <div class="card" style="padding:0; overflow-x:auto">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:40px; text-align:center">#</th>
+              <th>Defect Details</th>
+              <th>Started</th>
+              <th>Target</th>
+              <th style="width:120px">Status</th>
+              <script>
+                if (localStorage.getItem("role") === "Developer") {
+                  document.write("<th>Progress</th>");
+                }
+              </script>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="bugList"></tbody>
+        </table>
+      </div>
+    </main>
   </div>
 
   <script>
     const API = "http://localhost:3000";
+    const role = localStorage.getItem("role");
+    const user = localStorage.getItem("user");
 
-    function notify(msg) {
-      notifyBox.innerText = msg;
-      notifyBox.style.display = "block";
-      setTimeout(() => notifyBox.style.display = "none", 2000);
+    // --- AUTH & INITIAL UI ---
+    if (!user) window.location.href = "login.html";
+    document.getElementById('userLabel').innerText = `${user} (${role})`;
+
+    if (role === "Developer") {
+      document.getElementById('adminPanel').style.display = "none";
+      document.getElementById('testerPanel').style.display = "none";
     }
 
-    async function addProject() {
-      await fetch(API + "/project", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: projectName.value }) });
-      projectName.value = "";
-      loadProjects();
+    // --- TEAM MANAGEMENT ---
+    let team = JSON.parse(localStorage.getItem("team_list")) || ["Arun", "Kiran", "Priya"];
+
+    function updateTeamDropdowns() {
+      const assignSelect = document.getElementById('qAssign');
+      assignSelect.innerHTML = team.map(t => `<option value="${t}">${t}</option>`).join("");
     }
 
-    async function addTask() {
-      await fetch(API + "/task", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ project: projectSelect.value, name: taskName.value }) });
-      taskName.value = "";
-      loadTasks();
+    function addMember() {
+      const name = document.getElementById('newDev').value.trim();
+      if (name) {
+        team.push(name);
+        localStorage.setItem("team_list", JSON.stringify(team));
+        updateTeamDropdowns();
+        showNotify(`Added ${name} to Directory`);
+        document.getElementById('newDev').value = "";
+      }
     }
 
-    async function submitBulk() {
-      const lines = bulkInput.value.trim().split("\n");
-      let data = [];
-      lines.forEach(l => {
-        const p = l.split("|");
-        if (p.length >= 2) {
-          data.push({
-            project: bugProject.value,
-            task: bugTask.value,
-            title: p[0].trim(),
-            assignedTo: p[1].trim(),
-            status: p[2]?.trim() || "Open"
-          });
-        }
-      });
+    function logout() {
+      localStorage.clear();
+      window.location.href = "login.html";
+    }
 
-      await fetch(API + "/bugs", {
+    function showNotify(msg) {
+      const n = document.getElementById('notify');
+      n.innerText = msg; n.style.display = "block";
+      setTimeout(() => n.style.display = "none", 3000);
+    }
+
+    // --- NOTIFICATION BELL SYSTEM ---
+    let bellOpen = false;
+    function toggleBell() {
+      bellOpen = !bellOpen;
+      document.getElementById('bellPanel').style.right = bellOpen ? "0" : "-420px";
+      if (bellOpen) loadBell();
+    }
+
+    async function loadBell() {
+      try {
+        const list = await fetch(`${API}/notify/${user}`).then(r => r.json());
+        document.getElementById('bellCount').innerText = list.filter(x => !x.read).length;
+        document.getElementById('bellList').innerHTML = list.map(n => `
+            <div class="notif-item" style="background:${n.read ? '#fff' : '#f0f7ff'}">
+                <div style="font-size:13px">${n.message}</div>
+                <small style="color:#888">${n.time}</small>
+                <button onclick="markRead('${n._id}')" style="width:auto; padding:2px 8px; font-size:10px; margin-top:5px">Mark Read</button>
+            </div>
+        `).join("");
+      } catch (e) { console.log("Notification fetch error", e); }
+    }
+
+    async function markRead(id) {
+      await fetch(`${API}/notify/read/${id}`, { method: "PUT" });
+      loadBell();
+    }
+
+    async function pushNotify(to, msg) {
+      await fetch(`${API}/notify`, {
         method: "POST",
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user: to, message: msg, time: new Date().toLocaleString() })
       });
+    }
 
-      notify("Bugs Created");
-      bulkInput.value = "";
+    // --- BUG & PROJECT DATA ---
+    async function loadData() {
+      const p = await fetch(API + "/projects").then(r => r.json());
+      const sel = document.getElementById('selProj');
+      sel.innerHTML = p.map(x => `<option value="${x.name}">${x.name}</option>`).join("");
       loadBugs();
-    }
-
-    async function loadProjects() {
-      const p = await (await fetch(API + "/projects")).json();
-      projectSelect.innerHTML = bugProject.innerHTML = "";
-      p.forEach(x => {
-        projectSelect.innerHTML += `<option>${x.name}</option>`;
-        bugProject.innerHTML += `<option>${x.name}</option>`;
-      });
-      loadTasks();
-    }
-
-    async function loadTasks() {
-      const t = await (await fetch(API + "/tasks/" + bugProject.value)).json();
-      bugTask.innerHTML = "";
-      t.forEach(x => bugTask.innerHTML += `<option>${x.name}</option>`);
     }
 
     async function loadBugs() {
-      const b = await (await fetch(API + "/bugs")).json();
-      bugList.innerHTML = "";
-      b.forEach((x, i) => {
-        bugList.innerHTML += `
-    <tr>
-      <td>${i + 1}</td>
-      <td>${x.project}</td>
-      <td>${x.task}</td>
-      <td>${x.title}</td>
-      <td>${x.assignedTo}</td>
-      <td>
-        <select onchange="changeStatus('${x._id}',this.value)">
-          <option ${x.status == "Open" ? "selected" : ""}>Open</option>
-          <option ${x.status == "In Progress" ? "selected" : ""}>In Progress</option>
-          <option ${x.status == "Fixed" ? "selected" : ""}>Fixed</option>
-          <option ${x.status == "Closed" ? "selected" : ""}>Closed</option>
-        </select>
-      </td>
-      <td>${new Date(x.createdAt).toLocaleDateString()}</td>
-      <td>${x.fixedDate ? new Date(x.fixedDate).toLocaleDateString() : "-"}</td>
-    </tr>`;
+      const res = await fetch(API + "/bugs");
+      const bugs = await res.json();
+      const activeFilter = document.getElementById('selProj').value;
+      const body = document.getElementById('bugList');
+      body.innerHTML = "";
+
+      bugs.filter(b => b.project === activeFilter).forEach((b, i) => {
+        body.innerHTML += `
+        <tr>
+            <td style="text-align:center">${i + 1}</td>
+            <td><strong>${b.title}</strong><br><small>${b.assignedTo}</small></td>
+            <td>${b.startedAt || '-'}</td>
+            <td>${b.targetDate || '-'}</td>
+            <td>
+                <select class="${b.status}" onchange="updateStatus('${b._id}',this.value)">
+                    <option value="Queue" ${b.status == 'Queue' ? 'selected' : ''}>Queue</option>
+                    <option value="Review" ${b.status == 'Review' ? 'selected' : ''}>Review</option>
+                    ${role === 'Tester' ? `<option value="Fixed" ${b.status == 'Fixed' ? 'selected' : ''}>Fixed</option>` : ''}
+                </select>
+            </td>
+            ${role === "Developer" ? `
+            <td>
+                <div class="progress-container">
+                    <input type="range" min="0" max="100" value="${b.completion || 0}" onchange="handleProg('${b._id}',this.value)">
+                    <span style="font-weight:700; font-size:11px">${b.completion || 0}%</span>
+                </div>
+            </td>` : ""}
+            <td><button onclick="deleteBug('${b._id}')" style="background:none; color:red; width:auto">Remove</button></td>
+        </tr>`;
       });
     }
 
-    async function changeStatus(id, status) {
-      await fetch(API + "/bug/" + id, {
+    // --- BUG ACTIONS ---
+    async function updateStatus(id, val) {
+      await fetch(`${API}/bug/${id}`, {
         method: "PUT",
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: val })
+      });
+      showNotify("Status Updated to " + val);
+      await pushNotify("Tester", `${user} updated bug status to ${val}`);
+      loadBugs();
+    }
+
+    async function handleProg(id, val) {
+      val = parseInt(val);
+      let payload = { completion: val };
+      if (val === 100) {
+        payload.status = "Review";
+        showNotify("Completed → Sent to Review");
+        await pushNotify("Tester", `Bug fixed by ${user}`);
+      }
+      await fetch(`${API}/bug/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
       });
       loadBugs();
     }
 
-    loadProjects();
-    loadBugs();
+    async function submitSingle() {
+      const data = [{
+        project: document.getElementById('selProj').value,
+        title: document.getElementById('qTitle').value,
+        assignedTo: document.getElementById('qAssign').value,
+        status: "Queue",
+        startedAt: new Date().toISOString().slice(0, 10)
+      }];
+      await fetch(API + "/bugs", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+      await pushNotify(document.getElementById('qAssign').value, "New bug assigned to you");
+      document.getElementById('qTitle').value = "";
+      loadBugs();
+    }
+
+    async function submitBulk() {
+      const lines = document.getElementById('bPaste').value.trim().split("\n");
+      const data = lines.map(l => {
+        const p = l.split("|");
+        return {
+          project: document.getElementById('selProj').value,
+          title: p[0].trim(),
+          targetDate: p[1]?.trim() || "",
+          assignedTo: document.getElementById('qAssign').value,
+          status: "Queue",
+          startedAt: new Date().toISOString().slice(0, 10)
+        };
+      });
+      await fetch(API + "/bugs", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+      document.getElementById('bPaste').value = "";
+      loadBugs();
+    }
+
+    async function addProj() {
+      await fetch(API + "/project", {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: document.getElementById('newProj').value })
+      });
+      document.getElementById('newProj').value = "";
+      loadData();
+    }
+
+    async function deleteBug(id) {
+      if (confirm("Confirm Delete?")) {
+        await fetch(`${API}/bug/${id}`, { method: "DELETE" });
+        loadBugs();
+      }
+    }
+
+    // REALTIME REFRESH
+    setInterval(loadBugs, 5000);
+    setInterval(loadBell, 6000);
+
+    // INITIALIZE
+    loadData();
+    updateTeamDropdowns();
   </script>
 </body>
 
