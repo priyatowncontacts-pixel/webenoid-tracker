@@ -493,23 +493,15 @@
     }
 
 
-    async function submitBulk() {
-      const lines = document.getElementById('bPaste').value.trim().split("\n");
-      const data = lines.map(l => {
-        const p = l.split("|");
-        return {
-          project: document.getElementById('selProj').value,
-          title: p[0].trim(),
-          targetDate: p[1]?.trim() || "",
-          assignedTo: document.getElementById('qAssign').value,
-          status: "Queue",
-          startedAt: new Date().toISOString().slice(0, 10)
-        };
-      });
-      await fetch(API + "/bugs", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-      document.getElementById('bPaste').value = "";
-      loadBugs();
-    }
+    await fetch(API + "/notify", {
+      method: "POST",
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user: document.getElementById('qAssign').value,
+        message: `📦 Bulk Defects Assigned`,
+        time: new Date().toLocaleString()
+      })
+    });
 
     async function addProj() {
       const name = document.getElementById('newProj').value.trim();
