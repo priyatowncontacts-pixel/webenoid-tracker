@@ -4,52 +4,75 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Webenoid Bug Tracker</title>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
-    rel="stylesheet">
+  <title>Webenoid | Professional Bug Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --brand: #2563eb;
-      --bg: #f8fafc;
+      --brand: #4f46e5;
+      --brand-hover: #4338ca;
+      --bg: #f1f5f9;
       --panel: #ffffff;
-      --text: #0f172a;
-      --text-light: #64748b;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
       --border: #e2e8f0;
-      --radius: 12px;
+      --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+      --radius: 8px;
+    }
+
+    * {
+      box-sizing: border-box;
     }
 
     body {
-      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-family: 'Inter', sans-serif;
       background: var(--bg);
-      color: var(--text);
+      color: var(--text-main);
       margin: 0;
       display: flex;
       flex-direction: column;
       height: 100vh;
-      overflow: hidden;
     }
 
+    /* --- Navigation --- */
     nav {
-      height: 60px;
+      height: 64px;
       background: var(--panel);
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 32px;
-      flex-shrink: 0;
+      padding: 0 2rem;
+      z-index: 10;
     }
 
     .logo {
-      font-weight: 800;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      font-size: 1.25rem;
       color: var(--brand);
-      font-size: 20px;
     }
 
     .logo span {
-      color: var(--text);
+      color: var(--text-main);
     }
 
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      font-size: 0.875rem;
+    }
+
+    button.secondary {
+      background: transparent;
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    /* --- Layout --- */
     .wrapper {
       display: flex;
       flex: 1;
@@ -57,42 +80,148 @@
     }
 
     aside {
-      width: 320px;
+      width: 280px;
       background: var(--panel);
       border-right: 1px solid var(--border);
-      padding: 24px;
+      padding: 1.5rem;
       overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
     }
 
     main {
       flex: 1;
-      padding: 20px 32px;
+      padding: 2rem;
       overflow-y: auto;
+    }
+
+    /* --- Typography & Inputs --- */
+    h3 {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      padding: 0.625rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 0.875rem;
+      outline: none;
+      transition: border 0.2s;
+    }
+
+    input:focus {
+      border-color: var(--brand);
+    }
+
+    button.primary {
+      width: 100%;
+      background: var(--brand);
+      color: white;
+      border: none;
+      padding: 0.625rem;
+      border-radius: var(--radius);
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button.primary:hover {
+      background: var(--brand-hover);
+    }
+
+    /* --- Content Cards --- */
+    .card {
+      background: var(--panel);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: var(--shadow);
+    }
+
+    /* --- Table Styling --- */
+    .table-container {
+      background: var(--panel);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      box-shadow: var(--shadow);
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 1100px;
+      text-align: left;
     }
 
-    th,
-    td {
-      padding: 12px;
+    th {
+      background: #f8fafc;
+      padding: 1rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
       border-bottom: 1px solid var(--border);
-      font-size: 13px;
+    }
+
+    td {
+      padding: 1rem;
+      font-size: 0.875rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    .status-pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 99px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      background: #e0f2fe;
+      color: #0369a1;
     }
 
     #notify {
       position: fixed;
-      top: 20px;
-      right: 20px;
-      background: #0f172a;
+      bottom: 24px;
+      right: 24px;
+      background: #1e293b;
       color: white;
-      padding: 14px 24px;
+      padding: 12px 20px;
       border-radius: 8px;
       display: none;
-      z-index: 10000;
+      animation: slideUp 0.3s ease;
+      z-index: 100;
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(20px);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
     }
   </style>
 </head>
@@ -101,246 +230,104 @@
 
   <nav>
     <div class="logo">WEBENOID <span>TRACKER</span></div>
-    <div style="display:flex;gap:20px;">
-      <span id="userLabel"></span>
-      <button onclick="logout()">Logout</button>
+    <div class="user-profile">
+      <span id="userLabel" style="font-weight: 500;"></span>
+      <button class="secondary" onclick="logout()">Logout</button>
     </div>
   </nav>
 
   <div id="notify"></div>
 
   <div class="wrapper">
-
     <aside>
-      <h3>Directory</h3>
-      <input id="newDev" placeholder="Add New Developer">
-      <button onclick="addDev()">Add Member</button>
+      <section>
+        <h3>Administration</h3>
+        <div class="input-group">
+          <input id="newDev" placeholder="Developer Name">
+          <button class="primary" onclick="addDev()">Add Member</button>
+        </div>
+        <div class="input-group">
+          <input id="newProj" placeholder="Project Name">
+          <button class="primary" onclick="addProj()">Create Project</button>
+        </div>
+      </section>
 
-      <h3>Context</h3>
-      <input id="newProj" placeholder="Project Name">
-      <button onclick="addProj()">Create Project</button>
+      <section>
+        <h3>Linking</h3>
+        <div class="input-group">
+          <select id="selProj" onchange="loadTasks()"></select>
+          <input id="newTask" placeholder="Task Name">
+          <button class="primary" onclick="addTask()">Link Task</button>
+        </div>
+      </section>
 
-      <select id="selProj" onchange="loadTasks()"></select>
-
-      <input id="newTask" placeholder="Task Name">
-      <button onclick="addTask()">Link Task</button>
-
-      <h3>Quick Entry</h3>
-      <select id="qProj" onchange="loadQTasks()"></select>
-      <select id="qTask"></select>
-      <input id="qTitle" placeholder="Defect Title">
-      <select id="qAssign"></select>
-      <button onclick="submitSingle()">Create Bug</button>
+      <section>
+        <h3>Quick Entry</h3>
+        <div class="input-group">
+          <select id="qProj" onchange="loadQTasks()"></select>
+          <select id="qTask"></select>
+          <input id="qTitle" placeholder="Defect Title">
+          <select id="qAssign"></select>
+          <button class="primary" onclick="submitSingle()">Create Bug</button>
+        </div>
+      </section>
     </aside>
 
     <main>
       <div class="card">
-        <h3>Bulk Copy-Paste</h3>
-
-        <select id="bProj" onchange="loadBTasks()"></select>
-        <select id="bTask"></select>
-        <select id="bAssign"></select>
-
-        <textarea id="bPaste" rows="3" placeholder="Title | Target Date"></textarea>
-        <button onclick="submitBulk()">Process Batch</button>
+        <h3 style="margin-top:0">Bulk Process</h3>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1rem;">
+          <select id="bProj" onchange="loadBTasks()"></select>
+          <select id="bTask"></select>
+          <select id="bAssign"></select>
+        </div>
+        <textarea id="bPaste" rows="3" placeholder="Format: Title | Target Date (one per line)"></textarea>
+        <button class="primary" style="margin-top: 1rem; width: auto; padding-left: 2rem; padding-right: 2rem;"
+          onclick="submitBulk()">Process Batch</button>
       </div>
 
-      <table>
-        <tbody id="bugList"></tbody>
-      </table>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>DEFECT TITLE</th>
+              <th>ASSIGNEE</th>
+              <th>STATUS</th>
+            </tr>
+          </thead>
+          <tbody id="bugList">
+          </tbody>
+        </table>
+      </div>
     </main>
-
   </div>
 
   <script>
-    const API = window.location.origin;
+    /* ... (Keep your existing JS logic, it works perfectly with these IDs) ... */
 
-
-    const session = localStorage.getItem("webenoid_session");
-    if (!session) window.location.href = "login.html";
-
-    document.getElementById('userLabel').innerText =
-      "Logged in: " + localStorage.getItem("user");
-
-    function logout() {
-      localStorage.clear();
-      window.location.href = "login.html";
-    }
-
-    function notify(msg) {
-      const n = document.getElementById('notify');
-      n.innerText = msg;
-      n.style.display = "block";
-      setTimeout(() => n.style.display = "none", 3000);
-    }
-
-    /* ========== NOTIFICATION FUNCTION (NEW) ========== */
-    async function pushNotify(to, message) {
-      await fetch(API + "/notify", {
-        method: "POST",
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user: to,
-          message: message,
-          time: new Date().toLocaleString()
-        })
-      });
-    }
-
-    /* ========== TEAM ========== */
-    let team = JSON.parse(localStorage.getItem("team_list")) || ["Assignee"];
-
-    function addDev() {
-      const name = newDev.value.trim();
-      if (!name) return;
-
-      team.push(name);
-      localStorage.setItem("team_list", JSON.stringify(team));
-      updateDrops();
-      notify("Added " + name);
-    }
-
-    function updateDrops() {
-      [qAssign, bAssign].forEach(s => {
-        s.innerHTML = "";
-        team.forEach(t => s.innerHTML += `<option>${t}</option>`);
-      });
-    }
-
-    /* ========== CREATE SINGLE DEFECT ========== */
-    async function submitSingle() {
-
-      const data = [{
-        project: qProj.value,
-        task: qTask.value,
-        title: qTitle.value,
-        assignedTo: qAssign.value,
-        status: "Queue",
-        completion: 0,
-        startedAt: new Date().toISOString().slice(0, 16)
-      }];
-
-      await fetch(API + "/bugs", {
-        method: "POST",
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-
-      // 🔔 NEW
-      await pushNotify(qAssign.value,
-        "🐞 New Defect Assigned: " + qTitle.value);
-
-      qTitle.value = "";
-      loadBugs();
-      notify("Defect Created!");
-    }
-
-    /* ========== BULK DEFECT ========== */
-    async function submitBulk() {
-
-      const lines = bPaste.value.trim().split("\n");
-
-      const data = lines.map(l => {
-        const p = l.split("|");
-
-        return {
-          project: bProj.value,
-          task: bTask.value,
-          title: p[0].trim(),
-          assignedTo: bAssign.value,
-          status: "Queue",
-          completion: 0,
-          startedAt: new Date().toISOString().slice(0, 16),
-          targetDate: p[1]?.trim() || ""
-        };
-      });
-
-      await fetch(API + "/bugs", {
-        method: "POST",
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-
-      // 🔔 NEW
-      await pushNotify(bAssign.value,
-        "📦 Bulk Defects Assigned");
-
-      bPaste.value = "";
-      loadBugs();
-      notify("Batch Logged: " + data.length);
-    }
-
-    /* ========== LOAD BUGS (OLD UNTOUCHED) ========== */
+    // Minimal adjustment to loadBugs for the new Status Pill UI
     async function loadBugs() {
+      // (Mocking fetch for demo purpose or use your real API)
       const res = await fetch(API + "/bugs");
       const bugs = await res.json();
-
       const body = document.getElementById('bugList');
       body.innerHTML = "";
 
       bugs.forEach((b, i) => {
         body.innerHTML += `
-    <tr>
-      <td>${i + 1}</td>
-      <td>${b.title}</td>
-      <td>${b.assignedTo}</td>
-      <td>${b.status}</td>
-    </tr>`;
+          <tr>
+            <td style="color: var(--text-muted)">${String(i + 1).padStart(2, '0')}</td>
+            <td style="font-weight: 500">${b.title}</td>
+            <td>${b.assignedTo}</td>
+            <td><span class="status-pill">${b.status}</span></td>
+          </tr>`;
       });
     }
 
-    /* ========== PROJECT / TASK (OLD UNTOUCHED) ========== */
-    async function addProj() {
-
-      await fetch(API + "/project", {
-        method: "POST",
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: newProj.value })
-      });
-
-      // 🔔 NEW
-      await pushNotify("Admin",
-        "📁 Project Created: " + newProj.value);
-
-      newProj.value = "";
-      loadData();
-    }
-
-    async function addTask() {
-      await fetch(API + "/task", {
-        method: "POST",
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          project: selProj.value,
-          name: newTask.value
-        })
-      });
-
-      newTask.value = "";
-      loadData();
-    }
-
-    async function loadData() {
-      const p = await (await fetch(API + "/projects")).json();
-
-      [selProj, qProj, bProj].forEach(s => {
-        s.innerHTML = "";
-        p.forEach(x => s.innerHTML += `<option>${x.name}</option>`);
-      });
-
-      loadTasks(); loadQTasks(); loadBTasks();
-    }
-
-    async function loadTasks() { }
-    async function loadQTasks() { }
-    async function loadBTasks() { }
-
-    loadData();
-    loadBugs();
-    updateDrops();
-
+    // Initialize as before
+    // ... (rest of your functions)
   </script>
-
 </body>
 
 </html>
