@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Webenoid Tracker | Dashboard</title>
+  <title>Webenoid Tracker</title>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
     rel="stylesheet">
   <style>
@@ -46,17 +46,6 @@
       font-size: 20px;
     }
 
-    .user-badge {
-      background: #eff6ff;
-      color: var(--brand);
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 700;
-      border: 1px solid #dbeafe;
-      margin-right: 10px;
-    }
-
     .logout-btn {
       background: #fff;
       color: #ef4444;
@@ -74,7 +63,7 @@
     }
 
     aside {
-      width: 300px;
+      width: 320px;
       background: var(--panel);
       border-right: 1px solid var(--border);
       padding: 24px;
@@ -87,7 +76,6 @@
       overflow-y: auto;
     }
 
-    /* Role-based visibility */
     .tester-only {
       display: none;
     }
@@ -101,7 +89,7 @@
       font-weight: 700;
       text-transform: uppercase;
       color: var(--text-light);
-      margin: 20px 0 10px 0;
+      margin-bottom: 12px;
       border-bottom: 1px solid var(--border);
       padding-bottom: 5px;
     }
@@ -122,7 +110,6 @@
       padding: 10px 12px;
       border: 1px solid var(--border);
       border-radius: 8px;
-      font-family: inherit;
       font-size: 13px;
       margin-bottom: 10px;
     }
@@ -141,6 +128,7 @@
     table {
       width: 100%;
       border-collapse: collapse;
+      min-width: 1000px;
     }
 
     th {
@@ -148,8 +136,8 @@
       padding: 12px;
       font-size: 11px;
       color: var(--text-light);
-      border-bottom: 1px solid var(--border);
       background: #fcfcfd;
+      border-bottom: 1px solid var(--border);
     }
 
     td {
@@ -189,7 +177,7 @@
       display: none;
       z-index: 10000;
       font-weight: 600;
-      animation: slideIn 0.3s
+      animation: slideIn 0.3s;
     }
 
     @keyframes slideIn {
@@ -205,65 +193,42 @@
 </head>
 
 <body>
-
   <nav>
     <div class="logo">WEBENOID <span>TRACKER</span></div>
-    <div style="display: flex; align-items: center;">
-      <span class="user-badge" id="roleLabel"></span>
-      <span id="userLabel"
-        style="font-weight: 600; font-size: 13px; color: var(--text-light); margin-right: 15px;"></span>
+    <div style="display: flex; align-items: center; gap: 20px;">
+      <span id="userLabel" style="font-weight: 600; font-size: 13px; color: var(--text-light);"></span>
       <button class="logout-btn" onclick="logout()">Logout</button>
     </div>
   </nav>
-
   <div id="notify"></div>
-
   <div class="wrapper">
-    <aside id="sidebar">
+    <aside>
       <div class="tester-only">
-        <h3>Management</h3>
+        <h3>Directory</h3>
         <input id="newDev" placeholder="Developer Name">
-        <button onclick="addDev()" style="background: #0f172a; margin-bottom: 20px;">Add Member</button>
-
-        <h3>Projects</h3>
+        <button onclick="addDev()" style="background:#0f172a">Add Member</button>
+        <h3>Setup</h3>
         <input id="newProj" placeholder="Project Name">
         <button onclick="addProj()">Create Project</button>
       </div>
-
-      <h3>Filters</h3>
-      <select id="selProj" onchange="loadBugs()">
-        <option value="">All Projects</option>
-      </select>
+      <h3>Filter View</h3>
+      <select id="selProj" onchange="loadBugs()"></select>
       <div class="tester-only">
-        <select id="selAssign" onchange="loadBugs()">
-          <option value="">All Assignees</option>
-        </select>
-      </div>
-
-      <div class="tester-only" style="margin-top: 30px;">
-        <h3>Quick Bug Log</h3>
+        <h3>Log Bug</h3>
         <input id="qTitle" placeholder="Defect Title">
         <select id="qAssign"></select>
-        <button onclick="submitSingle()">Create Bug</button>
+        <button onclick="submitSingle()">Assign Bug</button>
       </div>
     </aside>
-
     <main>
-      <div class="card tester-only">
-        <h3>Bulk Import</h3>
-        <textarea id="bPaste" rows="2" placeholder="Title | Date (YYYY-MM-DD)"></textarea>
-        <button onclick="submitBulk()" style="width: auto; padding: 10px 30px;">Process Batch</button>
-      </div>
-
       <div class="card" style="padding:0; overflow-x:auto">
         <table>
           <thead>
             <tr>
               <th style="width:40px">#</th>
-              <th>Defect</th>
-              <th>Project</th>
+              <th>Defect Details</th>
               <th>Assignee</th>
-              <th>Status</th>
+              <th style="width:100px">Status</th>
               <th>Target Fix</th>
               <th>Progress</th>
             </tr>
@@ -277,115 +242,99 @@
   <script>
     const API = window.location.origin;
     const user = localStorage.getItem("user");
-    const role = localStorage.getItem("role")?.toLowerCase(); // "developer" or "tester"
+    const role = localStorage.getItem("role")?.toLowerCase();
 
-    // Initialize UI based on role
     document.body.className = `role-${role}`;
-    document.getElementById('roleLabel').innerText = role?.toUpperCase();
-    document.getElementById('userLabel').innerText = `Hello, ${user}`;
+    document.getElementById('userLabel').innerText = `${user} (${role})`;
 
     if (!localStorage.getItem("webenoid_session")) window.location.href = "login.html";
-
     function logout() { localStorage.clear(); window.location.href = "login.html"; }
+    function notify(msg) { const n = document.getElementById('notify'); n.innerText = msg; n.style.display = "block"; setTimeout(() => n.style.display = "none", 3000); }
 
-    function notify(msg) {
-      const n = document.getElementById('notify');
-      n.innerText = msg; n.style.display = "block";
-      setTimeout(() => n.style.display = "none", 3000);
+    async function sendNotify(target, message) {
+      await fetch(API + "/notify", {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user: target, message, time: new Date().toLocaleString() })
+      });
     }
 
-    // --- DATA LOADING ---
     async function loadData() {
       const projs = await (await fetch(API + "/projects")).json();
-      const selProj = document.getElementById('selProj');
-      projs.forEach(p => selProj.innerHTML += `<option value="${p.name}">${p.name}</option>`);
+      const sel = document.getElementById('selProj');
+      sel.innerHTML = '<option value="">All Projects</option>';
+      projs.forEach(p => sel.innerHTML += `<option value="${p.name}">${p.name}</option>`);
 
       if (role === 'tester') {
-        const team = JSON.parse(localStorage.getItem("team_list")) || ["Assignee"];
-        const qA = document.getElementById('qAssign');
-        const sA = document.getElementById('selAssign');
-        team.forEach(t => {
-          const opt = `<option value="${t}">${t}</option>`;
-          qA.innerHTML += opt;
-          sA.innerHTML += opt;
-        });
+        const team = await (await fetch(API + "/team")).json();
+        const qa = document.getElementById('qAssign');
+        qa.innerHTML = "";
+        team.forEach(t => qa.innerHTML += `<option value="${t.name}">${t.name}</option>`);
       }
       loadBugs();
     }
 
     async function loadBugs() {
-      const projFilter = document.getElementById('selProj').value;
-      let url = `${API}/bugs`;
-
-      // If Developer, strictly filter by their name
-      if (role === 'developer') {
-        url += `?assignedTo=${user}`;
-        if (projFilter) url += `&project=${projFilter}`;
-      } else {
-        const assignFilter = document.getElementById('selAssign').value;
-        const params = new URLSearchParams();
-        if (projFilter) params.append('project', projFilter);
-        if (assignFilter) params.append('assignedTo', assignFilter);
-        url += `?${params.toString()}`;
-      }
+      const proj = document.getElementById('selProj').value;
+      let url = `${API}/bugs?`;
+      if (role === 'developer') url += `assignedTo=${user}&`;
+      if (proj) url += `project=${proj}`;
 
       const bugs = await (await fetch(url)).json();
       const body = document.getElementById('bugList');
       body.innerHTML = "";
-
       bugs.forEach((b, i) => {
         body.innerHTML += `
         <tr>
             <td>${i + 1}</td>
-            <td><strong>${b.title}</strong></td>
-            <td><small>${b.project}</small></td>
+            <td><strong>${b.title}</strong><br><small>${b.project}</small></td>
             <td>${b.assignedTo}</td>
             <td>
-                <select class="${b.status}" onchange="updateBug('${b._id}', 'status', this.value)">
+                <select class="${b.status}" onchange="patch('${b._id}','status',this.value,'${b.assignedTo}')">
                     <option ${b.status == 'Queue' ? 'selected' : ''}>Queue</option>
                     <option ${b.status == 'Fixed' ? 'selected' : ''}>Fixed</option>
                 </select>
             </td>
-            <td>${b.targetDate || '---'}</td>
+            <td><input type="date" value="${b.targetDate || ''}" onchange="patch('${b._id}','targetDate',this.value,'${b.assignedTo}')"></td>
             <td>
-                <input type="range" value="${b.completion}" onchange="updateBug('${b._id}', 'completion', this.value)">
-                <span style="font-size:10px; font-weight:bold">${b.completion}%</span>
+                <input type="range" value="${b.completion}" onchange="patch('${b._id}','completion',this.value,'${b.assignedTo}')">
+                <span>${b.completion}%</span>
             </td>
         </tr>`;
       });
     }
 
-    async function updateBug(id, field, value) {
-      const data = {}; data[field] = value;
+    async function patch(id, field, value, assignee) {
       await fetch(`${API}/bug/${id}`, {
         method: "PUT",
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        body: JSON.stringify({ [field]: value })
       });
-
-      // Notification Logic
-      const target = (role === 'tester') ? "Developer" : "Tester";
-      notify(`Updated! ${target} has been notified.`);
+      const target = role === 'tester' ? assignee : 'Tester';
+      await sendNotify(target, `${user} updated ${field} to ${value} for bug ${id}`);
+      notify(`${target} notified!`);
       if (field === 'status') loadBugs();
     }
 
-    // Tester only actions
     async function addProj() {
       const name = document.getElementById('newProj').value;
       await fetch(API + "/project", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) });
-      location.reload();
+      await sendNotify("All", `New Project Created: ${name}`);
+      document.getElementById('newProj').value = ""; loadData(); notify("Team notified of new project!");
+    }
+
+    async function addDev() {
+      const name = document.getElementById('newDev').value;
+      await fetch(API + "/team", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) });
+      await sendNotify("All", `New Developer Joined: ${name}`);
+      document.getElementById('newDev').value = ""; loadData(); notify("Directory updated!");
     }
 
     async function submitSingle() {
-      const data = [{
-        project: document.getElementById('selProj').value || "General",
-        title: document.getElementById('qTitle').value,
-        assignedTo: document.getElementById('qAssign').value,
-        status: "Queue", completion: 0
-      }];
+      const data = [{ project: document.getElementById('selProj').value || "General", title: document.getElementById('qTitle').value, assignedTo: document.getElementById('qAssign').value }];
       await fetch(API + "/bugs", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-      notify("Bug assigned to Developer");
-      loadBugs();
+      await sendNotify(data[0].assignedTo, `New Bug Assigned: ${data[0].title}`);
+      document.getElementById('qTitle').value = ""; loadBugs(); notify("Bug Assigned!");
     }
 
     loadData();
