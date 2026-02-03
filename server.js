@@ -204,9 +204,6 @@ app.get("/login.html", (req, res) => {
   res.sendFile(path.join(__dirname, "login.html"));
 });
 
-app.get("/tracker.html", (req, res) => {
-  res.sendFile(path.join(__dirname, "tracker.html"));
-});
 
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "login.html"));
