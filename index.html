@@ -1,248 +1,434 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Webenoid Tracker</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root { --brand: #2563eb; --bg: #f8fafc; --panel: #ffffff; --text: #0f172a; --text-light: #64748b; --border: #e2e8f0; --radius: 12px; }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-        
-        /* HEADER & BELL */
-        nav { height: 60px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 32px; flex-shrink: 0; }
-        .logo { font-weight: 800; color: var(--brand); font-size: 20px; }
-        .nav-right { display: flex; align-items: center; gap: 20px; }
-        .bell-container { position: relative; cursor: pointer; padding: 5px; }
-        #bellCount { position: absolute; top: 0; right: 0; background: #ef4444; color: white; font-size: 10px; padding: 2px 5px; border-radius: 10px; display: none; }
-        #notifDropdown { position: absolute; top: 40px; right: 0; width: 280px; background: white; border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); display: none; z-index: 2000; max-height: 400px; overflow-y: auto; }
-        .notif-item { padding: 12px; border-bottom: 1px solid var(--border); font-size: 12px; }
-        .notif-item:last-child { border: none; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Webenoid Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --brand: #2563eb;
+      --bg: #f8fafc;
+      --panel: #ffffff;
+      --text: #0f172a;
+      --text-light: #64748b;
+      --border: #e2e8f0;
+      --radius: 12px;
+    }
 
-        .wrapper { display: flex; flex: 1; overflow: hidden; }
-        aside { width: 320px; background: var(--panel); border-right: 1px solid var(--border); padding: 24px; overflow-y: auto; }
-        main { flex: 1; padding: 20px 32px; overflow-y: auto; }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
 
-        .tester-only { display: none; }
-        body.role-tester .tester-only { display: block; }
+    nav {
+      height: 60px;
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      flex-shrink: 0;
+    }
 
-        h3 { font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-light); margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
-        .card { background: var(--panel); border-radius: var(--radius); border: 1px solid var(--border); padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 24px; }
-        input, select, textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; margin-bottom: 10px; }
-        button { width: 100%; background: var(--brand); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+    .logo {
+      font-weight: 800;
+      color: var(--brand);
+      font-size: 20px;
+    }
 
-        table { width: 100%; border-collapse: collapse; min-width: 1200px; }
-        th { text-align: left; padding: 12px; font-size: 11px; color: var(--text-light); background: #fcfcfd; border-bottom: 1px solid var(--border); }
-        td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 13px; }
-        
-        #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #0f172a; color: white; padding: 12px 24px; border-radius: 30px; display: none; z-index: 10000; font-size: 13px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
-    </style>
+    /* Notification Bell Styles */
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .bell-box {
+      position: relative;
+      cursor: pointer;
+      font-size: 20px;
+      padding: 5px;
+    }
+
+    #notifBadge {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: #ef4444;
+      color: white;
+      font-size: 10px;
+      padding: 2px 5px;
+      border-radius: 10px;
+      display: none;
+    }
+
+    #notifPane {
+      position: absolute;
+      top: 45px;
+      right: 0;
+      width: 280px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+      display: none;
+      z-index: 2000;
+      max-height: 350px;
+      overflow-y: auto;
+    }
+
+    .notif-row {
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .wrapper {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    aside {
+      width: 320px;
+      background: var(--panel);
+      border-right: 1px solid var(--border);
+      padding: 24px;
+      overflow-y: auto;
+    }
+
+    main {
+      flex: 1;
+      padding: 20px 32px;
+      overflow-y: auto;
+    }
+
+    .tester-only {
+      display: none;
+    }
+
+    body.role-tester .tester-only {
+      display: block;
+    }
+
+    h3 {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--text-light);
+      margin-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 5px;
+    }
+
+    .card {
+      background: var(--panel);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      margin-bottom: 24px;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+
+    /* Status Colors - FIXED */
+    select.Queue {
+      background: #e0e7ff;
+      color: #3730a3;
+      font-weight: 700;
+      border: none;
+    }
+
+    select.Review {
+      background: #fef9c3;
+      color: #854d0e;
+      font-weight: 700;
+      border: none;
+    }
+
+    select.Fixed {
+      background: #dcfce7;
+      color: #166534;
+      font-weight: 700;
+      border: none;
+    }
+
+    #toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0f172a;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 20px;
+      display: none;
+      z-index: 3000;
+    }
+  </style>
 </head>
+
 <body>
 
-<nav>
+  <nav>
     <div class="logo">WEBENOID <span>TRACKER</span></div>
     <div class="nav-right">
-        <div class="bell-container" onclick="toggleNotifs()">
-            <span style="font-size: 20px;">🔔</span>
-            <span id="bellCount">0</span>
-            <div id="notifDropdown">
-                <div style="padding: 10px; font-weight: 700; border-bottom: 1px solid var(--border);">Notifications</div>
-                <div id="notifList"></div>
-            </div>
+      <div class="bell-box" onclick="toggleBell()">
+        🔔<span id="notifBadge">0</span>
+        <div id="notifPane">
+          <div style="padding: 10px; font-weight: 700; background: #f8fafc;">Recent Activity</div>
+          <div id="notifList"></div>
         </div>
-        <span id="userLabel" style="font-weight: 600; font-size: 13px; color: var(--text-light);"></span>
-        <button class="logout-btn" onclick="logout()">Logout</button>
+      </div>
+      <span id="userLabel" style="font-weight: 600; font-size: 13px;"></span>
+      <button class="logout-btn" onclick="logout()"
+        style="color:red; background:none; border:none; cursor:pointer; font-weight:600;">Logout</button>
     </div>
-</nav>
+  </nav>
 
-<div id="toast"></div>
+  <div id="toast"></div>
 
-<div class="wrapper">
+  <div class="wrapper">
     <aside>
-        <div class="tester-only">
-            <h3>Directory</h3>
-            <input id="newDev" placeholder="Developer Name">
-            <button onclick="addDev()">Add Member</button>
-            <h3 style="margin-top:20px">Context</h3>
-            <input id="newProj" placeholder="Project Name">
-            <button onclick="addProj()">Create Project</button>
-            <input id="newTask" placeholder="Task Name">
-            <button onclick="addTask()">Link Task</button>
-        </div>
+      <div class="tester-only">
+        <h3>Directory</h3>
+        <input id="newDev" placeholder="Developer Name">
+        <button onclick="addDev()"
+          style="width:100%; background:#0f172a; color:white; padding:10px; border-radius:8px; cursor:pointer;">Add
+          Member</button>
+        <h3 style="margin-top:20px">Context</h3>
+        <input id="newProj" placeholder="Project Name">
+        <button onclick="addProj()"
+          style="width:100%; background:#2563eb; color:white; padding:10px; border-radius:8px; cursor:pointer;">Create
+          Project</button>
+        <input id="newTask" placeholder="Task Name">
+        <button onclick="addTask()"
+          style="width:100%; background:#2563eb; color:white; padding:10px; border-radius:8px; cursor:pointer;">Link
+          Task</button>
+      </div>
 
-        <h3 style="margin-top:20px">Filters</h3>
-        <select id="selProj" onchange="loadDataUpdate()"><option value="">Select Project</option></select>
-        <select id="selAssign" onchange="loadBugs()"><option value="">Select Developer</option></select>
+      <h3 style="margin-top:20px">Filters</h3>
+      <select id="selProj" onchange="loadTasks(); loadBugs();">
+        <option value="">Select Project</option>
+      </select>
+      <select id="selAssign" onchange="loadBugs()">
+        <option value="">Select Developer</option>
+      </select>
 
-        <div class="tester-only" style="margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px;">
-            <h3>Quick Entry</h3>
-            <select id="qTask"><option value="">Select Task</option></select>
-            <input id="qTitle" placeholder="Defect Title">
-            <button onclick="submitSingle()">Log Bug</button>
-        </div>
+      <div class="tester-only" style="margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px;">
+        <h3>Quick Entry</h3>
+        <select id="qTask">
+          <option value="">Select Task</option>
+        </select>
+        <input id="qTitle" placeholder="Defect Title">
+        <button onclick="submitSingle()"
+          style="width:100%; background:#2563eb; color:white; padding:10px; border-radius:8px; cursor:pointer;">Log
+          Bug</button>
+      </div>
     </aside>
 
     <main>
-        <div class="card tester-only">
-            <h3>Bulk Log</h3>
-            <textarea id="bPaste" rows="2" placeholder="Title | Task Name | Date"></textarea>
-            <button onclick="submitBulk()">🚀 Process Batch</button>
-        </div>
+      <div class="card tester-only">
+        <h3>Bulk Copy-Paste</h3>
+        <textarea id="bPaste" rows="2" placeholder="Title | Task Name | Date"></textarea>
+        <button onclick="submitBulk()"
+          style="width:auto; padding:10px 30px; background:#2563eb; color:white; border-radius:8px; cursor:pointer;">🚀
+          Process Batch</button>
+      </div>
 
-        <div class="card" style="padding:0; overflow-x:auto">
-            <h3 style="padding: 20px 20px 0 20px;">Live Bug Tracker</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Project / Task</th>
-                        <th>Defect Title</th>
-                        <th>Assignee</th>
-                        <th style="width:120px">Status</th>
-                        <th>Started At</th>
-                        <th>Target Fix</th>
-                        <th>Progress</th>
-                    </tr>
-                </thead>
-                <tbody id="bugList"></tbody>
-            </table>
-        </div>
+      <div class="card" style="padding:0; overflow-x:auto">
+        <h3 style="padding: 20px 20px 0 20px;">Defect Table</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Project / Task</th>
+              <th>Defect Title</th>
+              <th>Assignee</th>
+              <th style="width:120px">Status</th>
+              <th>Started At</th>
+              <th>Target Fix</th>
+              <th>Progress</th>
+            </tr>
+          </thead>
+          <tbody id="bugList"></tbody>
+        </table>
+      </div>
     </main>
-</div>
+  </div>
 
-<script>
-const API = "http://localhost:3000";
-const user = localStorage.getItem("user");
-const role = localStorage.getItem("role")?.toLowerCase() || "developer";
-let unreadCount = 0;
+  <script>
+    const API = "http://localhost:3000";
+    const user = localStorage.getItem("user");
+    const role = localStorage.getItem("role")?.toLowerCase() || "developer";
+    let unread = 0;
 
-document.body.className = `role-${role}`;
-document.getElementById('userLabel').innerText = `${user} (${role})`;
+    document.body.className = `role-${role}`;
+    document.getElementById('userLabel').innerText = `${user} (${role})`;
 
-// 1. IMMEDIATE LOGIN NOTIFICATION
-window.onload = () => {
-    sendNotify("All", `${user} (${role}) has joined the dashboard.`);
-    showToast(`Logged in as ${user}`);
-    loadData();
-};
+    // Immediate Login Notif
+    window.onload = () => {
+      addNotif(`${user} joined as ${role}`);
+      loadData();
+    };
 
-function logout() { localStorage.clear(); window.location.href = "login.html"; }
-
-function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.innerText = msg; t.style.display = "block";
-    setTimeout(() => t.style.display = "none", 3000);
-}
-
-function toggleNotifs() {
-    const d = document.getElementById('notifDropdown');
-    d.style.display = d.style.display === 'block' ? 'none' : 'block';
-    unreadCount = 0;
-    document.getElementById('bellCount').style.display = 'none';
-}
-
-async function sendNotify(target, message) {
-    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    // Add to local bell history
-    const list = document.getElementById('notifList');
-    list.insertAdjacentHTML('afterbegin', `<div class="notif-item"><b>${message}</b><br><small>${time}</small></div>`);
-    
-    unreadCount++;
-    const bc = document.getElementById('bellCount');
-    bc.innerText = unreadCount;
-    bc.style.display = 'block';
-
-    // Send to server
-    await fetch(API + "/notify", {
-        method: "POST",
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ user: target, message, time: new Date().toLocaleString() })
-    });
-}
-
-async function loadData() {
-    const projs = await (await fetch(API + "/projects")).json();
-    const selP = document.getElementById('selProj');
-    projs.forEach(p => selP.innerHTML += `<option value="${p.name}">${p.name}</option>`);
-
-    const team = await (await fetch(API + "/team")).json();
-    const selA = document.getElementById('selAssign');
-    team.forEach(t => selA.innerHTML += `<option value="${t.name}">${t.name}</option>`);
-    
-    if(role === 'developer') selA.value = user;
-    loadBugs();
-}
-
-async function loadDataUpdate() {
-    const proj = document.getElementById('selProj').value;
-    if(proj && role === 'tester') {
-        const tasks = await (await fetch(API + "/tasks/" + proj)).json();
-        const qT = document.getElementById('qTask');
-        qT.innerHTML = '<option value="">Select Task</option>';
-        tasks.forEach(t => qT.innerHTML += `<option value="${t.name}">${t.name}</option>`);
+    function toggleBell() {
+      const pane = document.getElementById('notifPane');
+      pane.style.display = pane.style.display === 'block' ? 'none' : 'block';
+      unread = 0;
+      document.getElementById('notifBadge').style.display = 'none';
     }
-    loadBugs();
-}
 
-async function loadBugs() {
-    const proj = document.getElementById('selProj').value;
-    const assign = document.getElementById('selAssign').value;
-    const params = new URLSearchParams();
-    if (proj) params.append("project", proj);
-    if (assign) params.append("assignedTo", assign);
+    function addNotif(msg) {
+      const list = document.getElementById('notifList');
+      const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      list.insertAdjacentHTML('afterbegin', `<div class="notif-row"><b>${msg}</b><br><small>${time}</small></div>`);
+      unread++;
+      const badge = document.getElementById('notifBadge');
+      badge.innerText = unread;
+      badge.style.display = 'block';
+    }
 
-    const bugs = await (await fetch(`${API}/bugs?${params.toString()}`)).json();
-    const body = document.getElementById('bugList');
-    body.innerHTML = "";
-    
-    bugs.forEach((b, i) => {
-        let statusOptions = (role === 'developer') 
-            ? `<option value="Queue" ${b.status=='Queue'?'selected':''}>Queue</option><option value="Review" ${b.status=='Review'?'selected':''}>Review</option>`
-            : `<option value="Queue" ${b.status=='Queue'?'selected':''}>Queue</option><option value="Review" ${b.status=='Review'?'selected':''}>Review</option><option value="Fixed" ${b.status=='Fixed'?'selected':''}>Fixed</option>`;
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.innerText = msg; t.style.display = "block";
+      setTimeout(() => t.style.display = "none", 3000);
+    }
+
+    function logout() { localStorage.clear(); window.location.href = "login.html"; }
+
+    async function loadData() {
+      const pRes = await fetch(API + "/projects");
+      const projs = await pRes.json();
+      const selP = document.getElementById('selProj');
+      projs.forEach(p => selP.innerHTML += `<option value="${p.name}">${p.name}</option>`);
+
+      const tRes = await fetch(API + "/team");
+      const team = await tRes.json();
+      const selA = document.getElementById('selAssign');
+      team.forEach(t => selA.innerHTML += `<option value="${t.name}">${t.name}</option>`);
+
+      if (role === 'developer') selA.value = user;
+      loadBugs();
+    }
+
+    async function loadTasks() {
+      const proj = document.getElementById('selProj').value;
+      if (!proj) return;
+      const res = await fetch(API + "/tasks/" + proj);
+      const tasks = await res.json();
+      const qT = document.getElementById('qTask');
+      qT.innerHTML = '<option value="">Select Task</option>';
+      tasks.forEach(t => qT.innerHTML += `<option value="${t.name}">${t.name}</option>`);
+    }
+
+    async function loadBugs() {
+      const proj = document.getElementById('selProj').value;
+      const assign = document.getElementById('selAssign').value;
+      const params = new URLSearchParams();
+      if (proj) params.append("project", proj);
+      if (assign) params.append("assignedTo", assign);
+
+      const res = await fetch(`${API}/bugs?${params.toString()}`);
+      const bugs = await res.json();
+      const body = document.getElementById('bugList');
+      body.innerHTML = "";
+
+      bugs.forEach((b, i) => {
+        let options = (role === 'developer')
+          ? `<option value="Queue" ${b.status == 'Queue' ? 'selected' : ''}>Queue</option><option value="Review" ${b.status == 'Review' ? 'selected' : ''}>Review</option>`
+          : `<option value="Queue" ${b.status == 'Queue' ? 'selected' : ''}>Queue</option><option value="Review" ${b.status == 'Review' ? 'selected' : ''}>Review</option><option value="Fixed" ${b.status == 'Fixed' ? 'selected' : ''}>Fixed</option>`;
 
         body.innerHTML += `
         <tr>
-            <td>${i+1}</td>
+            <td>${i + 1}</td>
             <td><strong>${b.project}</strong><br><small>${b.task || '-'}</small></td>
             <td>${b.title}</td>
             <td>${b.assignedTo}</td>
-            <td><select onchange="patch('${b._id}','status',this.value,'${b.assignedTo}')">${statusOptions}</select></td>
-            <td><input type="datetime-local" value="${b.startedAt||''}" onchange="patch('${b._id}','startedAt',this.value,'${b.assignedTo}')"></td>
-            <td><input type="date" value="${b.targetDate||''}" onchange="patch('${b._id}','targetDate',this.value,'${b.assignedTo}')"></td>
+            <td>
+                <select class="${b.status}" onchange="patch('${b._id}','status',this.value,'${b.assignedTo}', this)">
+                    ${options}
+                </select>
+            </td>
+            <td><input type="datetime-local" value="${b.startedAt || ''}" onchange="patch('${b._id}','startedAt',this.value,'${b.assignedTo}')"></td>
+            <td><input type="date" value="${b.targetDate || ''}" onchange="patch('${b._id}','targetDate',this.value,'${b.assignedTo}')"></td>
             <td>
                 <input type="range" min="0" max="100" value="${b.completion}" onchange="handleProgress('${b._id}', this.value, '${b.assignedTo}')">
                 <span>${b.completion}%</span>
             </td>
         </tr>`;
-    });
-}
-
-async function handleProgress(id, value, assignee) {
-    let updateData = { completion: value };
-    if (value == 100 && role === 'developer') {
-        updateData.status = "Review";
-        sendNotify("Tester", `Bug ${id} is 100% complete and ready for review.`);
+      });
     }
-    await fetch(`${API}/bug/${id}`, { method: "PUT", headers: {'Content-Type': 'application/json'}, body: JSON.stringify(updateData) });
-    loadBugs();
-}
 
-async function patch(id, field, value, assignee) {
-    await fetch(`${API}/bug/${id}`, { method: "PUT", headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ [field]: value }) });
-    const recipient = (role === 'tester') ? assignee : 'Tester';
-    sendNotify(recipient, `${user} updated ${field} on bug ${id}`);
-    if(field === 'status') loadBugs();
-}
+    async function patch(id, field, value, assignee, el) {
+      // Update color immediately if it's the status select
+      if (el) { el.className = value; }
 
-// Tester Functions
-async function addProj() { await fetch(API+"/project", {method:"POST", headers:{'Content-Type':'application/json'}, body:JSON.stringify({name:newProj.value})}); loadData(); }
-async function addTask() { await fetch(API+"/task", {method:"POST", headers:{'Content-Type':'application/json'}, body:JSON.stringify({project:selProj.value, name:newTask.value})}); loadDataUpdate(); }
-async function submitSingle() { 
-    const data = [{ project: selProj.value, task: qTask.value, title: qTitle.value, assignedTo: selAssign.value, startedAt: new Date().toISOString().slice(0,16) }];
-    await fetch(API+"/bugs", {method:"POST", headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)});
-    loadBugs();
-}
-</script>
+      await fetch(`${API}/bug/${id}`, {
+        method: "PUT",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [field]: value })
+      });
+
+      addNotif(`Updated ${field} to ${value}`);
+      if (field === 'status') loadBugs();
+    }
+
+    async function handleProgress(id, value, assignee) {
+      let update = { completion: value };
+      if (value == 100 && role === 'developer') {
+        update.status = "Review";
+        addNotif("Bug moved to Review (100%)");
+      }
+      await fetch(`${API}/bug/${id}`, { method: "PUT", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(update) });
+      loadBugs();
+    }
+
+    // Tester Actions
+    async function addProj() {
+      await fetch(API + "/project", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: newProj.value }) });
+      newProj.value = ""; loadData();
+    }
+    async function addTask() {
+      await fetch(API + "/task", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ project: selProj.value, name: newTask.value }) });
+      newTask.value = ""; loadTasks();
+    }
+    async function submitSingle() {
+      const data = [{ project: selProj.value, task: qTask.value, title: qTitle.value, assignedTo: selAssign.value, startedAt: new Date().toISOString().slice(0, 16) }];
+      await fetch(API + "/bugs", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+      qTitle.value = ""; loadBugs();
+    }
+    async function submitBulk() {
+      const lines = bPaste.value.trim().split("\n");
+      const data = lines.map(l => {
+        const p = l.split("|");
+        return { project: selProj.value, assignedTo: selAssign.value, title: p[0].trim(), task: p[1]?.trim() || "", targetDate: p[2]?.trim() || "", startedAt: new Date().toISOString().slice(0, 16) };
+      }).filter(x => x.title);
+      await fetch(API + "/bugs", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+      bPaste.value = ""; loadBugs();
+    }
+  </script>
 </body>
+
 </html>
