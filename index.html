@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Webenoid Tracker - Tester Dashboard</title>
+  <title>Webenoid Tracker</title>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
     rel="stylesheet">
   <style>
@@ -29,7 +29,6 @@
       overflow: hidden;
     }
 
-    /* HEADER */
     nav {
       height: 60px;
       background: var(--panel);
@@ -82,7 +81,7 @@
       overflow-y: auto;
     }
 
-    /* ROLE VISIBILITY */
+    /* ROLE VISIBILITY LOGIC */
     .tester-only {
       display: none;
     }
@@ -134,11 +133,11 @@
       cursor: pointer;
     }
 
-    /* TABLE */
+    /* TABLE STYLES */
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 1100px;
+      min-width: 1000px;
     }
 
     th {
@@ -196,14 +195,10 @@
     .grid-input {
       font-size: 11px;
       padding: 4px;
-      border: 1px solid transparent;
-      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 4px;
       width: 100%;
-    }
-
-    .grid-input:hover {
-      border-color: var(--border);
-      background: #fff;
+      background: transparent;
     }
 
     #notify {
@@ -232,7 +227,8 @@
   </style>
 </head>
 
-<body class="role-tester">
+<body>
+
   <nav>
     <div class="logo">WEBENOID <span>TRACKER</span></div>
     <div style="display: flex; align-items: center; gap: 20px;">
@@ -253,16 +249,19 @@
         <h3>Context Setup</h3>
         <input id="newProj" placeholder="Project Name">
         <button onclick="addProj()">Create Project</button>
-        <select id="selProj" onchange="loadBugs()"></select>
-        <input id="newTask" placeholder="Task Name">
-        <button onclick="addTask()">Link Task</button>
       </div>
 
-      <div style="margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px;">
+      <h3 style="margin-top: 20px;">View Filters</h3>
+      <select id="selProj" onchange="loadBugs()">
+        <option value="">All Projects</option>
+      </select>
+      <select id="selAssign" onchange="loadBugs()">
+        <option value="">All Developers</option>
+      </select>
+
+      <div class="tester-only" style="margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px;">
         <h3>Quick Entry</h3>
-        <select id="qProj"></select>
         <input id="qTitle" placeholder="Defect Title">
-        <select id="qAssign"></select>
         <button onclick="submitSingle()">Create Bug</button>
       </div>
     </aside>
@@ -270,16 +269,12 @@
     <main>
       <div class="card tester-only">
         <h3>Bulk Copy-Paste</h3>
-        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-          <select id="bProj"></select>
-          <select id="bAssign"></select>
-        </div>
         <textarea id="bPaste" rows="3" placeholder="Paste rows: Title | Target Date (YYYY-MM-DD)"></textarea>
         <button onclick="submitBulk()" style="width: auto; padding: 10px 30px;">🚀 Process Batch List</button>
       </div>
 
       <div class="card" style="padding:0; overflow-x:auto">
-        <h3>Active Defect List</h3>
+        <h3 style="padding: 20px 20px 0 20px;">Defect List</h3>
         <table>
           <thead>
             <tr>
@@ -287,7 +282,6 @@
               <th>Defect Details</th>
               <th>Assignee</th>
               <th style="width:100px">Status</th>
-              <th>Started At</th>
               <th>Target Fix</th>
               <th>Work Done</th>
             </tr>
@@ -299,13 +293,13 @@
   </div>
 
   <script>
-    const API = window.location.origin; // Dynamically set API URL
+    const API = "http://localhost:3000"; // Localhost for development
     const user = localStorage.getItem("user");
-    const role = localStorage.getItem("role")?.toLowerCase() || "tester";
+    const role = localStorage.getItem("role")?.toLowerCase() || "developer";
 
     // --- INITIALIZE UI ---
     document.body.className = `role-${role}`;
-    document.getElementById('userLabel').innerText = `Logged in: ${user} (${role})`;
+    document.getElementById('userLabel').innerText = `${user} (${role})`;
 
     if (!localStorage.getItem("webenoid_session")) window.location.href = "login.html";
 
@@ -317,55 +311,46 @@
       setTimeout(() => n.style.display = "none", 3000);
     }
 
-    // --- UNIVERSAL NOTIFICATION HELPER ---
-    async function sendNotify(recipient, message) {
-      await fetch(API + "/notify", {
-        method: "POST",
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user: recipient, message, time: new Date().toLocaleString() })
-      });
-    }
-
     // --- DATA LOADING ---
     async function loadData() {
-      // Load Projects
+      // 1. Fetch Projects for the dropdown
       const projects = await (await fetch(API + "/projects")).json();
-      ['selProj', 'qProj', 'bProj'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-          el.innerHTML = (id === 'selProj') ? '<option value="">All Projects</option>' : '';
-          projects.forEach(p => el.innerHTML += `<option value="${p.name}">${p.name}</option>`);
-        }
-      });
+      const selP = document.getElementById('selProj');
+      projects.forEach(p => selP.innerHTML += `<option value="${p.name}">${p.name}</option>`);
 
-      // Load Team (Only for Testers)
-      if (role === 'tester') {
-        const team = await (await fetch(API + "/team")).json();
-        ['qAssign', 'bAssign'].forEach(id => {
-          const el = document.getElementById(id);
-          if (el) {
-            el.innerHTML = "";
-            team.forEach(t => el.innerHTML += `<option value="${t.name}">${t.name}</option>`);
-          }
-        });
+      // 2. Fetch Team Members for the dropdown
+      const team = await (await fetch(API + "/team")).json();
+      const selA = document.getElementById('selAssign');
+      team.forEach(t => selA.innerHTML += `<option value="${t.name}">${t.name}</option>`);
+
+      // Auto-select logged-in developer
+      if (role === 'developer') {
+        selA.value = user;
       }
+
       loadBugs();
     }
 
-    // --- BUG MANAGEMENT ---
     async function loadBugs() {
       const project = document.getElementById('selProj').value;
+      const assignee = document.getElementById('selAssign').value;
+
       const params = new URLSearchParams();
-      if (role === 'developer') params.append('assignedTo', user);
       if (project) params.append('project', project);
+      if (assignee) params.append('assignedTo', assignee);
 
       const res = await fetch(`${API}/bugs?${params.toString()}`);
       const bugs = await res.json();
+
       const body = document.getElementById('bugList');
       body.innerHTML = "";
 
+      if (bugs.length === 0) {
+        body.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px;">No defects found for this selection.</td></tr>';
+        return;
+      }
+
       bugs.forEach((b, i) => {
-        const dateVal = b.targetDate ? b.targetDate.split('T')[0] : '';
         body.innerHTML += `
         <tr>
             <td style="text-align:center">${i + 1}</td>
@@ -377,12 +362,15 @@
                     <option ${b.status == 'Fixed' ? 'selected' : ''}>Fixed</option>
                 </select>
             </td>
-            <td><input type="datetime-local" class="grid-input" value="${b.startedAt || ''}" onchange="patch('${b._id}','startedAt',this.value,'${b.assignedTo}')"></td>
-            <td><input type="date" class="grid-input" value="${dateVal}" onchange="patch('${b._id}','targetDate',this.value,'${b.assignedTo}')"></td>
+            <td>
+                <input type="date" class="grid-input" value="${b.targetDate || ''}" 
+                       onchange="patch('${b._id}','targetDate',this.value,'${b.assignedTo}')">
+            </td>
             <td>
                 <div class="progress-container">
-                    <input type="range" min="0" max="100" value="${b.completion || 0}" onchange="patch('${b._id}','completion',this.value,'${b.assignedTo}')">
-                    <span style="font-weight:700; font-size:11px">${b.completion || 0}%</span>
+                    <input type="range" min="0" max="100" value="${b.completion || 0}" 
+                           onchange="patch('${b._id}','completion',this.value,'${b.assignedTo}')">
+                    <span style="font-weight:700">${b.completion || 0}%</span>
                 </div>
             </td>
         </tr>`;
@@ -390,63 +378,66 @@
     }
 
     async function patch(id, field, value, assignee) {
-      const b = {}; b[field] = value;
-      await fetch(`${API}/bug/${id}`, { method: "PUT", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(b) });
+      const data = {}; data[field] = value;
+      await fetch(`${API}/bug/${id}`, {
+        method: "PUT",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
 
+      // Create notification
       const recipient = (role === 'tester') ? assignee : 'Tester';
-      await sendNotify(recipient, `${user} updated ${field} to ${value} on bug ID: ${id}`);
+      await fetch(API + "/notify", {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user: recipient,
+          message: `${user} updated ${field} to ${value} on bug ID: ${id}`,
+          time: new Date().toLocaleString()
+        })
+      });
 
-      notify(`Update Saved: ${recipient} notified`);
+      notify(`${recipient} notified of the update.`);
       if (field === 'status') loadBugs();
+    }
+
+    // --- TESTER ACTIONS (WRAPPED IN CLASS CHECK) ---
+    async function addProj() {
+      const name = document.getElementById('newProj').value;
+      await fetch(API + "/project", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) });
+      document.getElementById('newProj').value = ""; loadData(); notify("Project Created");
+    }
+
+    async function addDev() {
+      const name = document.getElementById('newDev').value;
+      await fetch(API + "/team", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) });
+      document.getElementById('newDev').value = ""; loadData(); notify("Developer Added");
     }
 
     async function submitSingle() {
       const data = [{
-        project: qProj.value || "General",
-        title: qTitle.value,
-        assignedTo: qAssign.value,
-        status: "Queue",
-        completion: 0,
-        startedAt: new Date().toISOString().slice(0, 16)
+        project: document.getElementById('selProj').value || "General",
+        title: document.getElementById('qTitle').value,
+        assignedTo: document.getElementById('selAssign').value
       }];
       await fetch(API + "/bugs", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-      await sendNotify(qAssign.value, `New Bug Assigned: ${qTitle.value}`);
-      qTitle.value = ""; loadBugs(); notify("Defect Created!");
+      document.getElementById('qTitle').value = ""; loadBugs(); notify("Defect Created!");
     }
 
     async function submitBulk() {
-      const lines = bPaste.value.trim().split("\n");
+      const lines = document.getElementById('bPaste').value.trim().split("\n");
       const data = lines.map(l => {
         const p = l.split("|");
         return {
-          project: bProj.value,
+          project: document.getElementById('selProj').value,
           title: p[0].trim(),
-          assignedTo: bAssign.value,
-          status: "Queue",
-          completion: 0,
-          startedAt: new Date().toISOString().slice(0, 16),
+          assignedTo: document.getElementById('selAssign').value,
           targetDate: p[1]?.trim() || ""
         };
       }).filter(x => x.title);
 
       await fetch(API + "/bugs", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-      await sendNotify(bAssign.value, `Batch Assigned: ${data.length} new defects`);
-      bPaste.value = ""; loadBugs(); notify(`Batch Logged and ${bAssign.value} notified`);
-    }
-
-    // --- PROJECT HELPERS ---
-    async function addProj() {
-      const name = newProj.value;
-      await fetch(API + "/project", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) });
-      await sendNotify("All", `New Project Created: ${name}`);
-      newProj.value = ""; loadData(); notify("Project Created");
-    }
-
-    async function addDev() {
-      const name = newDev.value;
-      await fetch(API + "/team", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) });
-      await sendNotify("All", `New Team Member Added: ${name}`);
-      newDev.value = ""; loadData(); notify("Member Added");
+      document.getElementById('bPaste').value = ""; loadBugs(); notify("Batch list processed!");
     }
 
     loadData();
