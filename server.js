@@ -61,6 +61,11 @@ const Notify = mongoose.model("Notify", {
   read: { type: Boolean, default: false }
 });
 
+const Team = mongoose.model("Team", {
+  name: String
+});
+
+
 
 // =====================================================
 // PROJECT ROUTES  (OLD – UNTOUCHED)
@@ -80,6 +85,15 @@ app.post("/project", async (req, res) => {
 // TASK ROUTES  (REQUIRED BY YOUR UI)
 // =====================================================
 
+app.get("/team", async (req, res) => {
+  res.json(await Team.find());
+});
+
+app.post("/team", async (req, res) => {
+  await Team.create(req.body);
+  res.json({ ok: 1 });
+});
+
 app.post("/task", async (req, res) => {
   await Task.create(req.body);
   res.json({ ok: 1 });
@@ -96,8 +110,17 @@ app.get("/tasks/:project", async (req, res) => {
 // =====================================================
 
 app.get("/bugs", async (req, res) => {
-  res.json(await Bug.find().sort({ _id: -1 }));
+
+  const filter = {};
+
+  if (req.query.project) filter.project = req.query.project;
+  if (req.query.assignedTo) filter.assignedTo = req.query.assignedTo;
+
+  const bugs = await Bug.find(filter).sort({ _id: -1 });
+  res.json(bugs);
+
 });
+
 
 
 // 🔥 FIXED INSERT WITH DATE FORMAT

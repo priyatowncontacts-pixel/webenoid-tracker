@@ -295,11 +295,20 @@
       team.forEach(t => qAssign.innerHTML += `<option value="${t.name}">${t.name}</option>`);
     }
 
+
     // --- LOAD BUGS ---
     async function loadBugs() {
       const project = document.getElementById("qProj").value;
       const assign = document.getElementById("qAssign").value;
-      let bugs = await (await fetch(API + "/bugs?project=" + project + "&assignedTo=" + assign)).json();
+      let bugs = await (await fetch(
+        API + "/bugs?project=" + project + "&assignedTo=" + assign,
+        {
+          headers: {
+            role: localStorage.getItem("role") || "tester"
+          }
+        }
+      )).json();
+
       const body = document.getElementById("bugList");
       body.innerHTML = "";
       bugs.forEach((b, i) => {
@@ -334,18 +343,28 @@ onchange="updateProgress('${b._id}', this.value)">
 
     // --- UPDATE LOGIC ---
     async function updateProgress(id, value) {
-      // Auto-change status if developer moves progress
       let newStatus = value > 0 ? "Review" : "Queue";
+
       await fetch(`${API}/bug/${id}`, {
         method: "PUT",
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ completion: value, status: newStatus })
+        headers: {
+          'Content-Type': 'application/json',
+          role: localStorage.getItem("role") || "tester"
+        },
+        body: JSON.stringify({
+          completion: value,
+          status: newStatus
+        })
       });
+
       loadBugs();
-      // Notify opposite role
-      if (userRole === "developer") notify("Tester notified: bug moved to Review");
-      else notify("Developer notified: progress updated");
+
+      if (userRole === "developer")
+        notify("Tester notified: bug moved to Review");
+      else
+        notify("Developer notified: progress updated");
     }
+
 
     async function updateStatus(id, value) {
       await fetch(`${API}/bug/${id}`, {
