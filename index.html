@@ -29,7 +29,6 @@
       overflow: hidden;
     }
 
-    /* HEADER */
     nav {
       height: 60px;
       background: var(--panel);
@@ -129,7 +128,6 @@
       overflow-y: auto;
     }
 
-    /* ROLE UI LOGIC */
     .tester-only {
       display: none;
     }
@@ -181,7 +179,6 @@
       cursor: pointer;
     }
 
-    /* TABLE */
     table {
       width: 100%;
       border-collapse: collapse;
@@ -204,7 +201,6 @@
       font-size: 13px;
     }
 
-    /* STATUS COLORS */
     select.Queue {
       background: #e0e7ff;
       color: #3730a3;
@@ -213,7 +209,6 @@
       font-weight: 700;
       border: none;
       font-size: 11px;
-      cursor: pointer;
     }
 
     select.Review {
@@ -224,7 +219,6 @@
       font-weight: 700;
       border: none;
       font-size: 11px;
-      cursor: pointer;
     }
 
     select.Fixed {
@@ -235,21 +229,6 @@
       font-weight: 700;
       border: none;
       font-size: 11px;
-      cursor: pointer;
-    }
-
-    .progress-container {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    input[type="range"] {
-      margin: 0;
-      cursor: pointer;
-      height: 6px;
-      accent-color: var(--brand);
-      width: 80px;
     }
 
     .grid-input {
@@ -258,11 +237,6 @@
       border: 1px solid transparent;
       background: transparent;
       width: 100%;
-    }
-
-    .grid-input:hover {
-      border-color: var(--border);
-      background: #fff;
     }
 
     #notify-toast {
@@ -281,7 +255,6 @@
 </head>
 
 <body>
-
   <nav>
     <div class="logo">WEBENOID <span>TRACKER</span></div>
     <div class="nav-right">
@@ -340,7 +313,7 @@
           <select id="bTask"></select>
           <select id="bAssign"></select>
         </div>
-        <textarea id="bPaste" rows="3" placeholder="Paste rows: Title | Target Date (YYYY-MM-DD)"></textarea>
+        <textarea id="bPaste" rows="3" placeholder="Paste rows: Title | Target Date"></textarea>
         <button onclick="submitBulk()" style="width: auto; padding: 10px 30px;">🚀 Process Batch List</button>
       </div>
 
@@ -368,27 +341,21 @@
     const user = localStorage.getItem("user");
     const role = localStorage.getItem("role")?.toLowerCase() || "developer";
     let unreadCount = 0;
-
     const notifSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
 
-    // AUTH GUARD
     const session = localStorage.getItem("webenoid_session");
     if (!session || session !== "active") window.location.href = "login.html";
     document.getElementById('userLabel').innerText = `${user} (${role})`;
     document.body.className = `role-${role}`;
 
-    window.onload = () => {
-      sendNotification("All", `${user} logged in.`);
-      loadData();
-    };
+    window.onload = () => { loadData(); sendNotification("All", `${user} logged in.`); };
 
     function logout() { localStorage.clear(); window.location.href = "login.html"; }
 
     function toggleBell() {
       const pane = document.getElementById('notifPane');
       pane.style.display = pane.style.display === 'block' ? 'none' : 'block';
-      unreadCount = 0;
-      document.getElementById('notifBadge').style.display = 'none';
+      unreadCount = 0; document.getElementById('notifBadge').style.display = 'none';
     }
 
     function sendNotification(target, message) {
@@ -396,8 +363,7 @@
       const list = document.getElementById('notifList');
       const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       list.insertAdjacentHTML('afterbegin', `<div class="notif-row"><b>${message}</b><br><small>${time}</small></div>`);
-      unreadCount++;
-      const badge = document.getElementById('notifBadge');
+      unreadCount++; const badge = document.getElementById('notifBadge');
       badge.innerText = unreadCount; badge.style.display = 'block';
       const toast = document.getElementById('notify-toast');
       toast.innerText = message; toast.style.display = 'block';
@@ -405,56 +371,80 @@
       fetch(API + "/notify", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user: target, message, time: new Date().toLocaleString() }) });
     }
 
-    // BATCH LIST FIX
-    async function submitBulk() {
-      const proj = document.getElementById('bProj').value;
-      const task = document.getElementById('bTask').value;
-      const assign = document.getElementById('bAssign').value;
-      const lines = document.getElementById('bPaste').value.trim().split("\n");
+    async function addDev() {
+      const name = document.getElementById('newDev').value.trim();
+      if (!name) return;
+      await fetch(API + "/team", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) });
+      document.getElementById('newDev').value = ""; loadData();
+    }
 
-      const data = lines.map(l => {
-        const p = l.split("|");
-        return {
-          project: proj,
-          task: task,
-          title: p[0].trim(),
-          assignedTo: assign,
-          status: "Queue",
-          completion: 0,
-          startedAt: new Date().toISOString().slice(0, 16),
-          targetDate: p[1]?.trim() || ""
-        };
-      }).filter(x => x.title);
+    async function addProj() {
+      await fetch(API + "/project", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: newProj.value }) });
+      newProj.value = ""; loadData();
+    }
 
-      if (data.length === 0) return;
-
-      await fetch(API + "/bugs", {
-        method: "POST",
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-
-      document.getElementById('bPaste').value = "";
-      loadBugs();
-      sendNotification("Tester", `Batch Logged: ${data.length} bugs`);
+    async function addTask() {
+      await fetch(API + "/task", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ project: selProj.value, name: newTask.value }) });
+      newTask.value = ""; loadData();
     }
 
     async function loadData() {
       const p = await (await fetch(API + "/projects")).json();
+      const t = await (await fetch(API + "/team")).json();
       [selProj, qProj, bProj, document.getElementById('fProj')].forEach(s => {
-        if (!s) return;
-        s.innerHTML = s.id === 'fProj' ? '<option value="">All Projects</option>' : '';
+        if (!s) return; s.innerHTML = s.id === 'fProj' ? '<option value="">All Projects</option>' : '';
         p.forEach(x => s.innerHTML += `<option value="${x.name}">${x.name}</option>`);
       });
-      updateDrops(); loadBugs();
+      [document.getElementById('qAssign'), document.getElementById('bAssign'), document.getElementById('fAssign')].forEach(s => {
+        if (!s) return; s.innerHTML = s.id === 'fAssign' ? '<option value="">All Assignees</option>' : '';
+        t.forEach(m => s.innerHTML += `<option value="${m.name}">${m.name}</option>`);
+      });
+      loadBugs();
     }
 
+    async function loadTasks() { /* Optional Side Panel Logic */ }
+    async function loadQTasks() {
+      const t = await (await fetch(API + "/tasks/" + document.getElementById('qProj').value)).json();
+      const qT = document.getElementById('qTask'); qT.innerHTML = "";
+      t.forEach(x => qT.innerHTML += `<option value="${x.name}">${x.name}</option>`);
+    }
     async function loadBTasks() {
       const t = await (await fetch(API + "/tasks/" + document.getElementById('bProj').value)).json();
       const bT = document.getElementById('bTask'); bT.innerHTML = "";
       t.forEach(x => bT.innerHTML += `<option value="${x.name}">${x.name}</option>`);
     }
-    // ... Remaining logic for loadBugs, patch, and dropdown updates ...
+
+    async function loadBugs() {
+      const bugs = await (await fetch(API + "/bugs")).json();
+      const pF = document.getElementById('fProj').value;
+      const aF = document.getElementById('fAssign').value;
+      const body = document.getElementById('bugList'); body.innerHTML = "";
+      bugs.filter(b => (!pF || b.project === pF) && (!aF || b.assignedTo === aF)).forEach((b, i) => {
+        let opts = role === 'developer' ? `<option value="Queue" ${b.status == 'Queue' ? 'selected' : ''}>Queue</option><option value="Review" ${b.status == 'Review' ? 'selected' : ''}>Review</option>` : `<option value="Queue" ${b.status == 'Queue' ? 'selected' : ''}>Queue</option><option value="Review" ${b.status == 'Review' ? 'selected' : ''}>Review</option><option value="Fixed" ${b.status == 'Fixed' ? 'selected' : ''}>Fixed</option>`;
+        body.innerHTML += `<tr><td style="text-align:center">${i + 1}</td><td><strong>${b.title}</strong><br><small>${b.project} / ${b.task}</small></td><td><strong>${b.assignedTo}</strong></td><td><select class="${b.status}" onchange="patch('${b._id}','status',this.value, this)">${opts}</select></td><td><input type="datetime-local" class="grid-input" value="${b.startedAt || ''}" onchange="patch('${b._id}','startedAt',this.value)"></td><td><input type="date" class="grid-input" value="${b.targetDate || ''}" onchange="patch('${b._id}','targetDate',this.value)"></td><td><input type="range" min="0" max="100" value="${b.completion || 0}" onchange="patch('${b._id}','completion',this.value)"> ${b.completion || 0}%</td></tr>`;
+      });
+    }
+
+    async function patch(id, field, value, el) {
+      if (el && field === 'status') el.className = value;
+      const u = {}; u[field] = value;
+      if (field === 'completion' && value == 100 && role === 'developer') u.status = "Review";
+      await fetch(`${API}/bug/${id}`, { method: "PUT", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(u) });
+      if (field === 'status' || (field === 'completion' && value == 100)) { sendNotification("Tester", `${user} updated status to ${value}`); loadBugs(); }
+    }
+
+    async function submitSingle() {
+      const data = [{ project: qProj.value, task: qTask.value, title: qTitle.value, assignedTo: qAssign.value, status: "Queue", completion: 0, startedAt: new Date().toISOString().slice(0, 16) }];
+      await fetch(API + "/bugs", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+      qTitle.value = ""; loadBugs(); sendNotification(qAssign.value, `New bug assigned: ${data[0].title}`);
+    }
+
+    async function submitBulk() {
+      const lines = document.getElementById('bPaste').value.trim().split("\n");
+      const data = lines.map(l => { const p = l.split("|"); return { project: bProj.value, task: bTask.value, title: p[0].trim(), assignedTo: bAssign.value, status: "Queue", completion: 0, startedAt: new Date().toISOString().slice(0, 16), targetDate: p[1]?.trim() || "" }; }).filter(x => x.title);
+      await fetch(API + "/bugs", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+      document.getElementById('bPaste').value = ""; loadBugs(); sendNotification("Tester", `Batch Logged: ${data.length} bugs`);
+    }
   </script>
 </body>
 
