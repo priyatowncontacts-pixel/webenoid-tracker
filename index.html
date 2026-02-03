@@ -239,6 +239,11 @@
       width: 100%;
     }
 
+    .grid-input:hover {
+      border-color: var(--border);
+      background: #fff;
+    }
+
     #notify-toast {
       position: fixed;
       top: 20px;
@@ -313,7 +318,7 @@
           <select id="bTask"></select>
           <select id="bAssign"></select>
         </div>
-        <textarea id="bPaste" rows="3" placeholder="Paste rows: Title | Target Date"></textarea>
+        <textarea id="bPaste" rows="3" placeholder="Paste rows: Title | Target Date (YYYY-MM-DD)"></textarea>
         <button onclick="submitBulk()" style="width: auto; padding: 10px 30px;">🚀 Process Batch List</button>
       </div>
 
@@ -402,12 +407,14 @@
       loadBugs();
     }
 
-    async function loadTasks() { /* Optional Side Panel Logic */ }
+    async function loadTasks() { } // Context helper
+
     async function loadQTasks() {
       const t = await (await fetch(API + "/tasks/" + document.getElementById('qProj').value)).json();
       const qT = document.getElementById('qTask'); qT.innerHTML = "";
       t.forEach(x => qT.innerHTML += `<option value="${x.name}">${x.name}</option>`);
     }
+
     async function loadBTasks() {
       const t = await (await fetch(API + "/tasks/" + document.getElementById('bProj').value)).json();
       const bT = document.getElementById('bTask'); bT.innerHTML = "";
@@ -419,9 +426,25 @@
       const pF = document.getElementById('fProj').value;
       const aF = document.getElementById('fAssign').value;
       const body = document.getElementById('bugList'); body.innerHTML = "";
+
       bugs.filter(b => (!pF || b.project === pF) && (!aF || b.assignedTo === aF)).forEach((b, i) => {
-        let opts = role === 'developer' ? `<option value="Queue" ${b.status == 'Queue' ? 'selected' : ''}>Queue</option><option value="Review" ${b.status == 'Review' ? 'selected' : ''}>Review</option>` : `<option value="Queue" ${b.status == 'Queue' ? 'selected' : ''}>Queue</option><option value="Review" ${b.status == 'Review' ? 'selected' : ''}>Review</option><option value="Fixed" ${b.status == 'Fixed' ? 'selected' : ''}>Fixed</option>`;
-        body.innerHTML += `<tr><td style="text-align:center">${i + 1}</td><td><strong>${b.title}</strong><br><small>${b.project} / ${b.task}</small></td><td><strong>${b.assignedTo}</strong></td><td><select class="${b.status}" onchange="patch('${b._id}','status',this.value, this)">${opts}</select></td><td><input type="datetime-local" class="grid-input" value="${b.startedAt || ''}" onchange="patch('${b._id}','startedAt',this.value)"></td><td><input type="date" class="grid-input" value="${b.targetDate || ''}" onchange="patch('${b._id}','targetDate',this.value)"></td><td><input type="range" min="0" max="100" value="${b.completion || 0}" onchange="patch('${b._id}','completion',this.value)"> ${b.completion || 0}%</td></tr>`;
+        // FIXED DATE FORMATTING FOR CONSOLE WARNINGS
+        const cleanStart = b.startedAt ? b.startedAt.slice(0, 16) : '';
+        const cleanTarget = b.targetDate ? b.targetDate.slice(0, 10) : '';
+
+        let opts = role === 'developer' ?
+          `<option value="Queue" ${b.status == 'Queue' ? 'selected' : ''}>Queue</option><option value="Review" ${b.status == 'Review' ? 'selected' : ''}>Review</option>` :
+          `<option value="Queue" ${b.status == 'Queue' ? 'selected' : ''}>Queue</option><option value="Review" ${b.status == 'Review' ? 'selected' : ''}>Review</option><option value="Fixed" ${b.status == 'Fixed' ? 'selected' : ''}>Fixed</option>`;
+
+        body.innerHTML += `<tr>
+            <td style="text-align:center">${i + 1}</td>
+            <td><strong>${b.title}</strong><br><small>${b.project} / ${b.task}</small></td>
+            <td><strong>${b.assignedTo}</strong></td>
+            <td><select class="${b.status}" onchange="patch('${b._id}','status',this.value, this)">${opts}</select></td>
+            <td><input type="datetime-local" class="grid-input" value="${cleanStart}" onchange="patch('${b._id}','startedAt',this.value)"></td>
+            <td><input type="date" class="grid-input" value="${cleanTarget}" onchange="patch('${b._id}','targetDate',this.value)"></td>
+            <td><input type="range" min="0" max="100" value="${b.completion || 0}" onchange="patch('${b._id}','completion',this.value)"> ${b.completion || 0}%</td>
+        </tr>`;
       });
     }
 
@@ -430,7 +453,10 @@
       const u = {}; u[field] = value;
       if (field === 'completion' && value == 100 && role === 'developer') u.status = "Review";
       await fetch(`${API}/bug/${id}`, { method: "PUT", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(u) });
-      if (field === 'status' || (field === 'completion' && value == 100)) { sendNotification("Tester", `${user} updated status to ${value}`); loadBugs(); }
+      if (field === 'status' || (field === 'completion' && value == 100)) {
+        sendNotification("Tester", `${user} updated status to ${value}`);
+        loadBugs();
+      }
     }
 
     async function submitSingle() {
@@ -441,7 +467,19 @@
 
     async function submitBulk() {
       const lines = document.getElementById('bPaste').value.trim().split("\n");
-      const data = lines.map(l => { const p = l.split("|"); return { project: bProj.value, task: bTask.value, title: p[0].trim(), assignedTo: bAssign.value, status: "Queue", completion: 0, startedAt: new Date().toISOString().slice(0, 16), targetDate: p[1]?.trim() || "" }; }).filter(x => x.title);
+      const data = lines.map(l => {
+        const p = l.split("|");
+        return {
+          project: bProj.value,
+          task: bTask.value,
+          title: p[0].trim(),
+          assignedTo: bAssign.value,
+          status: "Queue",
+          completion: 0,
+          startedAt: new Date().toISOString().slice(0, 16),
+          targetDate: p[1]?.trim() || ""
+        };
+      }).filter(x => x.title);
       await fetch(API + "/bugs", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
       document.getElementById('bPaste').value = ""; loadBugs(); sendNotification("Tester", `Batch Logged: ${data.length} bugs`);
     }
