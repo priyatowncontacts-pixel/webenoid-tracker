@@ -438,8 +438,12 @@
                     <option ${b.status == 'Fixed' ? 'selected' : ''}>Fixed</option>
                 </select>
             </td>
-            <td><input type="datetime-local" class="grid-input" value="${b.startedAt || ''}" onchange="patch('${b._id}','startedAt',this.value)"></td>
-            <td><input type="date" class="grid-input" value="${b.targetDate || ''}" onchange="patch('${b._id}','targetDate',this.value)"></td>
+            <td>
+  <input type="datetime-local" class="grid-input"
+         value="${b.startedAt && b.startedAt.includes('T') ? b.startedAt : (b.startedAt ? b.startedAt + 'T00:00' : '')}"
+         onchange="patch('${b._id}','startedAt',this.value)">
+</td>
+
             <td>
                 <div class="progress-box">
                     <input type="range" min="0" max="100" value="${b.completion || 0}" 

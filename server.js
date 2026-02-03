@@ -28,7 +28,7 @@ mongoose
 
 
 // =====================================================
-// MODELS  (OLD + NEW TASK MODEL)
+// MODELS  (OLD + TASK MODEL)
 // =====================================================
 
 const Project = mongoose.model("Project", {
@@ -49,13 +49,11 @@ const Bug = mongoose.model("Bug", {
   completion: { type: Number, default: 0 }
 });
 
-// 🔥 NEW – TASK MODEL (THIS WAS MISSING)
 const Task = mongoose.model("Task", {
   project: String,
   name: String
 });
 
-// 🔔 NOTIFICATION MODEL
 const Notify = mongoose.model("Notify", {
   user: String,
   message: String,
@@ -79,7 +77,7 @@ app.post("/project", async (req, res) => {
 
 
 // =====================================================
-// 🔥 TASK ROUTES  (NEW – REQUIRED BY YOUR UI)
+// TASK ROUTES  (REQUIRED BY YOUR UI)
 // =====================================================
 
 app.post("/task", async (req, res) => {
@@ -94,22 +92,53 @@ app.get("/tasks/:project", async (req, res) => {
 
 
 // =====================================================
-// BUG ROUTES  (OLD – UNTOUCHED)
+// BUG ROUTES  (FIXED DATE FORMAT)
 // =====================================================
 
 app.get("/bugs", async (req, res) => {
   res.json(await Bug.find().sort({ _id: -1 }));
 });
 
+
+// 🔥 FIXED INSERT WITH DATE FORMAT
 app.post("/bugs", async (req, res) => {
-  await Bug.insertMany(req.body);
+
+  const data = req.body.map(b => ({
+
+    ...b,
+
+    startedAt: b.startedAt && !b.startedAt.includes("T")
+      ? b.startedAt + "T00:00"
+      : b.startedAt,
+
+    targetDate: b.targetDate && !b.targetDate.includes("T")
+      ? b.targetDate + "T00:00"
+      : b.targetDate
+
+  }));
+
+  await Bug.insertMany(data);
   res.json({ success: true });
 });
 
+
+// 🔥 FIXED UPDATE WITH DATE FORMAT
 app.put("/bug/:id", async (req, res) => {
-  await Bug.findByIdAndUpdate(req.params.id, req.body);
+
+  let body = { ...req.body };
+
+  if (body.startedAt && !body.startedAt.includes("T")) {
+    body.startedAt = body.startedAt + "T00:00";
+  }
+
+  if (body.targetDate && !body.targetDate.includes("T")) {
+    body.targetDate = body.targetDate + "T00:00";
+  }
+
+  await Bug.findByIdAndUpdate(req.params.id, body);
   res.json({ success: true });
 });
+
 
 app.delete("/bug/:id", async (req, res) => {
   await Bug.findByIdAndDelete(req.params.id);
@@ -118,7 +147,7 @@ app.delete("/bug/:id", async (req, res) => {
 
 
 // =====================================================
-// NOTIFICATION ROUTES  (ALREADY USED BY YOUR UI)
+// NOTIFICATION ROUTES (KEPT SAME)
 // =====================================================
 
 app.post("/notify", async (req, res) => {
