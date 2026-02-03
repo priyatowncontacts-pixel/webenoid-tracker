@@ -153,6 +153,7 @@
       padding: 4px 8px;
       border-radius: 6px;
       font-weight: 700;
+      border: none;
       font-size: 11px;
     }
 
@@ -162,6 +163,7 @@
       padding: 4px 8px;
       border-radius: 6px;
       font-weight: 700;
+      border: none;
       font-size: 11px;
     }
 
@@ -171,6 +173,7 @@
       padding: 4px 8px;
       border-radius: 6px;
       font-weight: 700;
+      border: none;
       font-size: 11px;
     }
 
@@ -215,7 +218,7 @@
       </div>
 
       <h3 style="margin-top:20px">Filter View</h3>
-      <select id="selProj" onchange="loadBugs()">
+      <select id="selProj" onchange="loadDataUpdate()">
         <option value="">Select Project</option>
       </select>
       <select id="selAssign" onchange="loadBugs()">
@@ -234,21 +237,21 @@
 
     <main>
       <div class="card tester-only">
-        <h3>Bulk Log</h3>
+        <h3>Bulk Entry</h3>
         <textarea id="bPaste" rows="3" placeholder="Title | Task Name | YYYY-MM-DD"></textarea>
         <button onclick="submitBulk()" style="width: auto; padding: 12px 40px;">🚀 Process Batch</button>
       </div>
 
       <div class="card" style="padding:0; overflow-x:auto">
-        <h3 style="padding: 20px 20px 0 20px;">Defect Management</h3>
+        <h3 style="padding: 20px 20px 0 20px;">Bug Management</h3>
         <table>
           <thead>
             <tr>
               <th>#</th>
-              <th>Project/Task</th>
+              <th>Project / Task</th>
               <th>Details</th>
               <th>Assignee</th>
-              <th>Status</th>
+              <th style="width:120px">Status</th>
               <th>Started At</th>
               <th>Target Fix</th>
               <th>Progress</th>
@@ -281,6 +284,9 @@
     }
 
     async function loadData() {
+      // TRIGGER LOGIN NOTIFICATION
+      sendNotify("All", `${user} (${role}) opened the website.`);
+
       const projs = await (await fetch(API + "/projects")).json();
       const selP = document.getElementById('selProj');
       projs.forEach(p => selP.innerHTML += `<option value="${p.name}">${p.name}</option>`);
@@ -293,17 +299,20 @@
       loadBugs();
     }
 
-    async function loadBugs() {
+    async function loadDataUpdate() {
       const proj = document.getElementById('selProj').value;
-      const assign = document.getElementById('selAssign').value;
-
       if (proj && role === 'tester') {
         const tasks = await (await fetch(API + "/tasks/" + proj)).json();
         const qT = document.getElementById('qTask');
         qT.innerHTML = '<option value="">Select Task</option>';
         tasks.forEach(t => qT.innerHTML += `<option value="${t.name}">${t.name}</option>`);
       }
+      loadBugs();
+    }
 
+    async function loadBugs() {
+      const proj = document.getElementById('selProj').value;
+      const assign = document.getElementById('selAssign').value;
       const params = new URLSearchParams();
       if (proj) params.append("project", proj);
       if (assign) params.append("assignedTo", assign);
@@ -336,24 +345,27 @@
 
     async function handleProgress(id, value, assignee) {
       let updateData = { completion: value };
-      if (value == 100 && role === 'developer') { updateData.status = "Review"; notify("Moved to Review!"); }
+      if (value == 100 && role === 'developer') {
+        updateData.status = "Review";
+        notify("100% Work Progress! Status changed to Review.");
+      }
       await fetch(`${API}/bug/${id}`, { method: "PUT", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updateData) });
       const recipient = (role === 'tester') ? assignee : 'Tester';
-      await sendNotify(recipient, `${user} progress: ${value}%`);
+      await sendNotify(recipient, `${user} updated progress to ${value}%`);
       loadBugs();
     }
 
     async function patch(id, field, value, assignee) {
       await fetch(`${API}/bug/${id}`, { method: "PUT", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ [field]: value }) });
       const recipient = (role === 'tester') ? assignee : 'Tester';
-      await sendNotify(recipient, `${user} updated ${field}`);
+      await sendNotify(recipient, `${user} updated ${field} to ${value}`);
       notify(`${recipient} notified!`);
       if (field === 'status') loadBugs();
     }
 
-    // Tester Functions
+    // TESTER ACTIONS
     async function addProj() { await fetch(API + "/project", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: newProj.value }) }); newProj.value = ""; loadData(); }
-    async function addTask() { await fetch(API + "/task", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ project: selProj.value, name: newTask.value }) }); newTask.value = ""; loadBugs(); }
+    async function addTask() { await fetch(API + "/task", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ project: selProj.value, name: newTask.value }) }); newTask.value = ""; loadDataUpdate(); }
     async function submitSingle() {
       const data = [{ project: selProj.value, task: qTask.value, title: qTitle.value, assignedTo: selAssign.value, startedAt: new Date().toISOString().slice(0, 16) }];
       await fetch(API + "/bugs", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
