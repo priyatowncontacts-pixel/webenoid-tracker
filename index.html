@@ -399,8 +399,15 @@
     // --- TEAM MANAGEMENT ---
     let team = JSON.parse(localStorage.getItem("team_list")) || ["Assignee"];
     function addDev() {
-      const name = document.getElementById('newDev').value.trim();
-      if (name) { team.push(name); localStorage.setItem("team_list", JSON.stringify(team)); updateDrops(); notify(`Added ${name} to team`); }
+      const box = document.getElementById('newDev');
+      const name = box.value.trim();
+      if (!name) return;
+
+      team.push(name);
+      localStorage.setItem("team_list", JSON.stringify(team));
+      updateDrops();
+      box.value = "";
+      notify(`Added ${name} to team`);
     }
     function updateDrops() {
       [document.getElementById('qAssign'), document.getElementById('bAssign')].forEach(s => {
@@ -438,14 +445,21 @@
                     <option ${b.status == 'Fixed' ? 'selected' : ''}>Fixed</option>
                 </select>
             </td>
-            <td>
+           <td>
   <input type="datetime-local" class="grid-input"
-         value="${b.startedAt && b.startedAt.includes('T') ? b.startedAt : (b.startedAt ? b.startedAt + 'T00:00' : '')}"
-         onchange="patch('${b._id}','startedAt',this.value)">
+    value="${b.startedAt && b.startedAt.includes('T') ? b.startedAt : (b.startedAt ? b.startedAt + 'T00:00' : '')}"
+    onchange="patch('${b._id}','startedAt',this.value)">
 </td>
 
-            <td>
-                <div class="progress-box">
+<td>
+  <input type="date" class="grid-input"
+    value="${b.targetDate || ''}"
+    onchange="patch('${b._id}','targetDate',this.value)">
+</td>
+
+<td>
+  <div class="progress-box">
+
                     <input type="range" min="0" max="100" value="${b.completion || 0}" 
                            style="accent-color: ${progColor}"
                            oninput="document.getElementById('p-${b._id}').innerText=this.value+'%'" 
@@ -482,7 +496,13 @@
       [selProj, qProj, bProj].forEach(s => { s.innerHTML = ""; p.forEach(x => s.innerHTML += `<option value="${x.name}">${x.name}</option>`); });
       loadTasks(); loadQTasks(); loadBTasks();
     }
-    async function loadTasks() { try { await (await fetch(API + "/tasks/" + selProj.value)).json(); } catch (e) { } }
+    async function loadTasks() {
+      const t = await (await fetch(API + "/tasks/" + selProj.value)).json();
+      const sel = document.getElementById("qTask");
+      sel.innerHTML = "";
+      t.forEach(x => sel.innerHTML += `<option value="${x.name}">${x.name}</option>`);
+    }
+
     async function loadQTasks() { const t = await (await fetch(API + "/tasks/" + qProj.value)).json(); qTask.innerHTML = ""; t.forEach(x => qTask.innerHTML += `<option value="${x.name}">${x.name}</option>`); }
     async function loadBTasks() { const t = await (await fetch(API + "/tasks/" + bProj.value)).json(); bTask.innerHTML = ""; t.forEach(x => bTask.innerHTML += `<option value="${x.name}">${x.name}</option>`); }
 
