@@ -4,8 +4,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Webenoid | Professional Tracker</title>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap"
+  <title>Webenoid | Tester Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
     rel="stylesheet">
   <style>
     :root {
@@ -40,6 +40,26 @@
       flex-shrink: 0;
     }
 
+    .logo {
+      font-weight: 800;
+      color: var(--brand);
+      font-size: 20px;
+    }
+
+    .logo span {
+      color: var(--text);
+    }
+
+    .logout-btn {
+      background: #fff;
+      color: #ef4444;
+      border: 1px solid #fee2e2;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
     .wrapper {
       display: flex;
       flex: 1;
@@ -47,124 +67,141 @@
     }
 
     aside {
-      width: 280px;
+      width: 300px;
       background: var(--panel);
       border-right: 1px solid var(--border);
-      padding: 20px;
+      padding: 24px;
       overflow-y: auto;
-      flex-shrink: 0;
     }
 
     main {
       flex: 1;
-      padding: 20px;
+      padding: 20px 32px;
       overflow-y: auto;
       background: #f1f5f9;
     }
 
-    /* Top Action Bar (Bulk Entry) */
-    .action-card {
-      background: white;
+    h3 {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--text-light);
+      margin-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 5px;
+    }
+
+    .card {
+      background: var(--panel);
       border-radius: var(--radius);
       border: 1px solid var(--border);
       padding: 20px;
-      margin-bottom: 20px;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-    }
-
-    .grid-entry {
-      display: grid;
-      grid-template-columns: 2fr 1fr 1fr 1fr;
-      gap: 15px;
-      align-items: end;
-    }
-
-    /* Table Styling */
-    .table-container {
-      background: white;
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
-      overflow: hidden;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 1300px;
-    }
-
-    th {
-      text-align: left;
-      padding: 16px;
-      font-size: 11px;
-      color: var(--text-light);
-      border-bottom: 1px solid var(--border);
-      background: #fcfcfd;
-      text-transform: uppercase;
-    }
-
-    td {
-      padding: 12px 16px;
-      border-bottom: 1px solid var(--border);
-      font-size: 13px;
-      background: white;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      margin-bottom: 24px;
     }
 
     input,
     select,
     textarea {
       width: 100%;
-      padding: 10px;
+      padding: 10px 12px;
       border: 1px solid var(--border);
       border-radius: 8px;
       font-family: inherit;
       font-size: 13px;
-      box-sizing: border-box;
+      margin-bottom: 10px;
+      outline: none;
     }
 
-    .btn {
+    button {
+      width: 100%;
       background: var(--brand);
       color: white;
       border: none;
-      padding: 10px 20px;
+      padding: 12px;
       border-radius: 8px;
       font-weight: 600;
       cursor: pointer;
-      transition: 0.2s;
     }
 
-    .btn:hover {
-      opacity: 0.9;
+    /* TABLE */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 1200px;
     }
 
-    .btn-bulk {
-      background: #0f172a;
-      margin-top: 10px;
-    }
-
-    .status-tag {
-      padding: 6px 10px;
-      border-radius: 6px;
-      font-weight: 700;
+    th {
+      text-align: left;
+      padding: 12px;
       font-size: 11px;
-      border: 1px solid rgba(0, 0, 0, 0.05);
-      width: auto;
+      text-transform: uppercase;
+      color: var(--text-light);
+      border-bottom: 1px solid var(--border);
+      background: #fcfcfd;
+    }
+
+    td {
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      background: white;
     }
 
     .Queue {
       background: #e0e7ff;
       color: #3730a3;
-    }
-
-    .Review {
-      background: #fef9c3;
-      color: #854d0e;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-weight: 700;
+      border: none;
+      font-size: 11px;
     }
 
     .Fixed {
       background: #dcfce7;
       color: #166534;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-weight: 700;
+      border: none;
+      font-size: 11px;
+    }
+
+    .progress-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    input[type="range"] {
+      margin: 0;
+      cursor: pointer;
+      height: 6px;
+      accent-color: var(--brand);
+      width: 80px;
+    }
+
+    .date-input {
+      font-family: inherit;
+      font-size: 12px;
+      padding: 5px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      width: 130px;
+    }
+
+    #notify {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #0f172a;
+      color: white;
+      padding: 14px 24px;
+      border-radius: 8px;
+      display: none;
+      z-index: 10000;
+      font-weight: 600;
     }
   </style>
 </head>
@@ -172,66 +209,68 @@
 <body>
 
   <nav>
-    <div style="font-weight:800; color:var(--brand); font-size: 20px;">WEBENOID <span
-        style="color:var(--text)">SYSTEM</span></div>
-    <div style="display:flex; align-items:center; gap:20px">
-      <span id="userLabel" style="font-size:12px; font-weight:700; color:var(--text-light)"></span>
-      <button class="btn" onclick="logout()"
-        style="background:#fee2e2; color:#ef4444; border: 1px solid #fecaca;">Logout</button>
+    <div class="logo">WEBENOID <span>TRACKER</span></div>
+    <div style="display: flex; align-items: center; gap: 20px;">
+      <span id="userLabel" style="font-weight: 600; font-size: 13px; color: var(--text-light);"></span>
+      <button class="logout-btn" onclick="logout()">Logout</button>
     </div>
   </nav>
 
+  <div id="notify"></div>
+
   <div class="wrapper">
     <aside>
-      <h3 style="font-size:12px; color:var(--brand)">FILTERS</h3>
-      <label style="font-size:11px; font-weight:700">Project</label>
-      <select id="selProj" onchange="loadBugs()" style="margin-bottom:15px"></select>
+      <h3>Configuration</h3>
+      <label style="font-size:10px">Active Project</label>
+      <select id="selProj" onchange="loadData()"></select>
 
-      <label style="font-size:11px; font-weight:700">Developer</label>
-      <select id="selDev" onchange="loadBugs()" style="margin-bottom:15px"></select>
+      <input id="newProj" placeholder="New Project Name">
+      <button onclick="addProj()" style="background: #0f172a; margin-bottom: 10px;">Create Project</button>
 
-      <div id="setupArea" style="display:none; margin-top:20px; border-top:1px solid var(--border); padding-top:20px;">
-        <h3 style="font-size:12px; color:var(--brand)">ADMIN SETUP</h3>
-        <input id="inProj" placeholder="New Project Name" style="margin-bottom:8px">
-        <button class="btn" onclick="addProject()" style="width:100%">Add Project</button>
-        <input id="inTeam" placeholder="New Member Name" style="margin-top:10px; margin-bottom:8px">
-        <button class="btn" onclick="addMember()" style="width:100%">Add Member</button>
+      <input id="newTask" placeholder="Task/Module Name">
+      <button onclick="addTask()">Link Task</button>
+
+      <div style="margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px;">
+        <h3>Directory</h3>
+        <input id="newDev" placeholder="Developer Name">
+        <button onclick="addDev()">Add Member</button>
       </div>
     </aside>
 
     <main>
-      <div id="entryArea" class="action-card" style="display:none">
-        <h3 style="font-size:12px; margin-top:0; color:var(--brand)">QUICK & BULK DEFECT ENTRY</h3>
-        <div class="grid-entry">
+      <div class="card">
+        <h3 style="color:var(--brand)">Bulk Defect Entry</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 10px;">
           <div>
-            <label style="font-size:10px; font-weight:700">TASK TITLES (One per line for Bulk)</label>
-            <textarea id="bulkText" rows="2" placeholder="Example:&#10;Fix login button&#10;Update logo"></textarea>
+            <label style="font-size:10px">Select Project</label>
+            <select id="bProj" onchange="loadBTasks()"></select>
           </div>
           <div>
-            <label style="font-size:10px; font-weight:700">START DATE</label>
-            <input type="date" id="qStart">
+            <label style="font-size:10px">Select Task</label>
+            <select id="bTask"></select>
           </div>
           <div>
-            <label style="font-size:10px; font-weight:700">TARGET DATE</label>
-            <input type="date" id="qEnd">
+            <label style="font-size:10px">Assign To</label>
+            <select id="bAssign"></select>
           </div>
-          <button class="btn" onclick="submitBulk()" style="height:42px">Save Defects</button>
         </div>
+        <textarea id="bPaste" rows="3" placeholder="Paste rows: Defect Title | Target Date (YYYY-MM-DD)"></textarea>
+        <button onclick="submitBulk()" style="width: auto; padding: 10px 40px; background:var(--text)">🚀 Process Batch
+          List</button>
       </div>
 
-      <div class="table-container">
+      <div class="card" style="padding:0; overflow-x:auto">
         <table>
           <thead>
             <tr>
-              <th width="40">#</th>
+              <th style="width:40px; text-align:center">#</th>
               <th>Defect Summary</th>
               <th>Assignee</th>
-              <th>Reported</th>
-              <th>Started Date</th>
-              <th>Target Date</th>
-              <th>Status</th>
+              <th>Reported Date</th>
+              <th>Started Work</th>
+              <th>Target Fix</th>
+              <th style="width:100px">Status</th>
               <th>Progress</th>
-              <th>History</th>
             </tr>
           </thead>
           <tbody id="bugList"></tbody>
@@ -242,140 +281,112 @@
 
   <script>
     const API = "http://localhost:3000";
-    const role = localStorage.getItem("role");
-    const user = localStorage.getItem("user");
 
-    if (!user) window.location.href = "login.html";
-    document.getElementById('userLabel').innerText = `${user.toUpperCase()} (${role})`;
+    // --- AUTH & NOTIFY ---
+    const user = localStorage.getItem("user") || "Tester";
+    document.getElementById('userLabel').innerText = `Logged in: ${user}`;
 
-    if (role === "Admin") document.getElementById('setupArea').style.display = "block";
-    if (role === "Admin" || role === "Tester") document.getElementById('entryArea').style.display = "block";
+    function notify(msg) {
+      const n = document.getElementById('notify');
+      n.innerText = msg; n.style.display = "block";
+      setTimeout(() => n.style.display = "none", 3000);
+    }
 
-    async function loadData() {
-      const p = await fetch(`${API}/projects`).then(r => r.json());
-      const t = await fetch(`${API}/team`).then(r => r.json());
+    function logout() { localStorage.clear(); window.location.href = "login.html"; }
 
-      document.getElementById('selProj').innerHTML = p.map(x => `<option value="${x.name}">${x.name}</option>`).join("");
-      document.getElementById('selDev').innerHTML = t.map(m => `<option value="${m.name}">${m.name}</option>`).join("");
+    // --- DATA MANAGEMENT ---
+    let team = JSON.parse(localStorage.getItem("team_list")) || ["Assignee"];
 
-      if (role === "Developer") {
-        document.getElementById('selDev').value = user;
-        document.getElementById('selDev').disabled = true;
-      }
-      loadBugs();
+    function updateDrops() {
+      const drop = document.getElementById('bAssign');
+      drop.innerHTML = "";
+      team.forEach(t => drop.innerHTML += `<option value="${t}">${t}</option>`);
+    }
+
+    async function addDev() {
+      const name = document.getElementById('newDev').value.trim();
+      if (name) { team.push(name); localStorage.setItem("team_list", JSON.stringify(team)); updateDrops(); notify(`Added ${name}`); }
+    }
+
+    async function submitBulk() {
+      const lines = bPaste.value.trim().split("\n");
+      const data = lines.map(l => {
+        const parts = l.split("|");
+        return {
+          project: bProj.value,
+          task: bTask.value,
+          title: parts[0].trim(),
+          assignedTo: bAssign.value,
+          status: "Queue",
+          completion: 0,
+          createdAt: new Date().toISOString(), // Reported Date
+          startedAt: "",
+          targetDate: parts[1]?.trim() || ""
+        };
+      }).filter(x => x.title);
+
+      await fetch(API + "/bugs", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+      bPaste.value = ""; notify(`Batch Logged: ${data.length} bugs`); loadBugs();
+    }
+
+    async function patch(id, field, value) {
+      await fetch(`${API}/bug/${id}`, { method: "PUT", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ [field]: value }) });
+      if (field === 'status') loadBugs();
     }
 
     async function loadBugs() {
-      const bugs = await fetch(`${API}/bugs`).then(r => r.json());
-      const activeProj = document.getElementById('selProj').value;
-      const activeDev = document.getElementById('selDev').value;
+      const res = await fetch(API + "/bugs");
+      const bugs = await res.json();
       const body = document.getElementById('bugList');
+      body.innerHTML = "";
 
-      const filtered = bugs.filter(b => b.project === activeProj && b.assignedTo === activeDev);
-      body.innerHTML = filtered.length ? "" : "<tr><td colspan='9' style='text-align:center; padding:50px; color:var(--text-light)'>No defects found for this selection.</td></tr>";
-
-      filtered.forEach((b, i) => {
-        const reportedDate = b.createdAt ? new Date(b.createdAt).toLocaleDateString() : '-';
-        // Clean the date values for the input fields
+      bugs.forEach((b, i) => {
+        const reported = b.createdAt ? new Date(b.createdAt).toLocaleDateString() : '-';
         const cleanStart = b.startedAt ? b.startedAt.split('T')[0] : '';
         const cleanTarget = b.targetDate ? b.targetDate.split('T')[0] : '';
 
         body.innerHTML += `
-            <tr>
-                <td>${i + 1}</td>
-                <td><strong style="color:var(--text)">${b.title}</strong></td>
-                <td><span style="color:var(--text-light); font-size:12px">${b.assignedTo}</span></td>
-                <td><span style="color:var(--text-light)">${reportedDate}</span></td>
-                <td>
-                    <input type="date" value="${cleanStart}" 
-                           onchange="updateField('${b._id}', 'startedAt', this.value)" 
-                           style="width:135px; padding:5px">
-                </td>
-                <td>
-                    <input type="date" value="${cleanTarget}" 
-                           onchange="updateField('${b._id}', 'targetDate', this.value)" 
-                           style="width:135px; padding:5px; border-color: #fee2e2">
-                </td>
-                <td>
-                    <select class="status-tag ${b.status}" onchange="updateField('${b._id}', 'status', this.value)">
-                        <option value="Queue" ${b.status == 'Queue' ? 'selected' : ''}>Queue</option>
-                        <option value="Review" ${b.status == 'Review' ? 'selected' : ''}>Review</option>
-                        ${role !== 'Developer' ? `<option value="Fixed" ${b.status == 'Fixed' ? 'selected' : ''}>Fixed</option>` : ''}
-                    </select>
-                </td>
-                <td>
-                    <div style="display:flex; align-items:center; gap:8px">
-                        <input type="range" min="0" max="100" step="10" value="${b.completion || 0}" 
-                               onchange="handleProg('${b._id}', this.value)" style="width:60px">
-                        <span style="font-weight:bold; font-size:11px">${b.completion || 0}%</span>
-                    </div>
-                </td>
-                <td style="text-align:center"><button onclick="viewHistory('${b._id}')" style="background:none; border:none; font-size:18px; cursor:pointer">📜</button></td>
-            </tr>`;
+        <tr>
+            <td style="text-align:center">${i + 1}</td>
+            <td><strong>${b.title}</strong><br><small>${b.project} / ${b.task}</small></td>
+            <td><span style="font-weight:600">${b.assignedTo}</span></td>
+            <td><span style="color:var(--text-light)">${reported}</span></td>
+            <td><input type="date" class="date-input" value="${cleanStart}" onchange="patch('${b._id}','startedAt',this.value)"></td>
+            <td><input type="date" class="date-input" value="${cleanTarget}" onchange="patch('${b._id}','targetDate',this.value)" style="border-color:#fecaca"></td>
+            <td>
+                <select class="${b.status}" onchange="patch('${b._id}','status',this.value)">
+                    <option ${b.status == 'Queue' ? 'selected' : ''}>Queue</option>
+                    <option ${b.status == 'Fixed' ? 'selected' : ''}>Fixed</option>
+                </select>
+            </td>
+            <td>
+                <div class="progress-container">
+                    <input type="range" min="0" max="100" value="${b.completion || 0}" onchange="patch('${b._id}','completion',this.value)">
+                    <span style="font-weight:700; font-size:11px">${b.completion || 0}%</span>
+                </div>
+            </td>
+        </tr>`;
       });
     }
 
-    async function updateField(id, field, value) {
-      await fetch(`${API}/bug/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ [field]: value })
-      });
-      loadBugs();
+    // --- HELPERS ---
+    async function addProj() { await fetch(API + "/project", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: newProj.value }) }); newProj.value = ""; loadData(); }
+    async function addTask() { await fetch(API + "/task", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ project: selProj.value, name: newTask.value }) }); newTask.value = ""; loadData(); }
+
+    async function loadData() {
+      const p = await (await fetch(API + "/projects")).json();
+      [selProj, bProj].forEach(s => { s.innerHTML = ""; p.forEach(x => s.innerHTML += `<option value="${x.name}">${x.name}</option>`); });
+      loadBTasks();
     }
 
-    async function handleProg(id, val) {
-      const completion = parseInt(val);
-      const now = new Date().toISOString();
-      let payload = { completion, updatedAt: now, historyEntry: { percentage: completion, timestamp: now } };
-      if (completion === 100) payload.status = "Review";
-      await fetch(`${API}/bug/${id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-      loadBugs();
+    async function loadBTasks() {
+      const t = await (await fetch(API + "/tasks/" + bProj.value)).json();
+      const bTask = document.getElementById('bTask');
+      bTask.innerHTML = "";
+      t.forEach(x => bTask.innerHTML += `<option value="${x.name}">${x.name}</option>`);
     }
 
-    async function submitBulk() {
-      const text = document.getElementById('bulkText').value.trim();
-      if (!text) return alert("Please enter at least one defect title.");
-
-      const lines = text.split('\n').filter(l => l.trim() !== "");
-      const bugs = lines.map(line => ({
-        project: document.getElementById('selProj').value,
-        assignedTo: document.getElementById('selDev').value,
-        title: line.trim(),
-        createdAt: new Date().toISOString(),
-        startedAt: document.getElementById('qStart').value,
-        targetDate: document.getElementById('qEnd').value,
-        status: "Queue", completion: 0
-      }));
-
-      await fetch(`${API}/bugs`, { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(bugs) });
-      document.getElementById('bulkText').value = "";
-      loadBugs();
-    }
-
-    async function addProject() {
-      const name = document.getElementById('inProj').value;
-      if (!name) return;
-      await fetch(`${API}/projects`, { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) });
-      document.getElementById('inProj').value = "";
-      loadData();
-    }
-
-    async function addMember() {
-      const name = document.getElementById('inTeam').value;
-      if (!name) return;
-      await fetch(`${API}/team`, { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) });
-      document.getElementById('inTeam').value = "";
-      loadData();
-    }
-
-    async function viewHistory(id) {
-      const bug = await fetch(`${API}/bug/${id}`).then(r => r.json());
-      alert(bug.history ? bug.history.map(h => `[${new Date(h.timestamp).toLocaleString()}] -> ${h.percentage}%`).join("\n") : "No history.");
-    }
-
-    function logout() { localStorage.clear(); window.location.href = "login.html"; }
-    loadData();
+    loadData(); loadBugs(); updateDrops();
   </script>
 </body>
 
