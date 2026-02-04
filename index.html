@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Webenoid | Command Center Pro</title>
+  <title>Webenoid | Professional Tracker</title>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap"
     rel="stylesheet">
   <style>
@@ -47,96 +47,109 @@
     }
 
     aside {
-      width: 320px;
+      width: 280px;
       background: var(--panel);
       border-right: 1px solid var(--border);
       padding: 20px;
       overflow-y: auto;
+      flex-shrink: 0;
     }
 
     main {
       flex: 1;
       padding: 20px;
       overflow-y: auto;
-    }
-
-    .sidebar-box {
       background: #f1f5f9;
-      padding: 15px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      border: 1px solid var(--border);
     }
 
-    h3 {
-      font-size: 13px;
-      margin-bottom: 12px;
-      color: var(--brand);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .card {
+    /* Top Action Bar (Bulk Entry) */
+    .action-card {
       background: white;
       border-radius: var(--radius);
       border: 1px solid var(--border);
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+
+    .grid-entry {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 15px;
+      align-items: end;
+    }
+
+    /* Table Styling */
+    .table-container {
+      background: white;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      overflow: hidden;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 1200px;
+      min-width: 1300px;
     }
 
     th {
       text-align: left;
-      padding: 12px;
+      padding: 16px;
       font-size: 11px;
       color: var(--text-light);
       border-bottom: 1px solid var(--border);
       background: #fcfcfd;
-      white-space: nowrap;
+      text-transform: uppercase;
     }
 
     td {
-      padding: 12px;
+      padding: 12px 16px;
       border-bottom: 1px solid var(--border);
       font-size: 13px;
-      vertical-align: middle;
+      background: white;
     }
 
     input,
     select,
     textarea {
       width: 100%;
-      padding: 8px;
+      padding: 10px;
       border: 1px solid var(--border);
-      border-radius: 6px;
-      margin-bottom: 8px;
+      border-radius: 8px;
       font-family: inherit;
-      font-size: 12px;
+      font-size: 13px;
       box-sizing: border-box;
     }
 
-    button {
+    .btn {
       background: var(--brand);
       color: white;
       border: none;
-      padding: 10px;
-      border-radius: 6px;
+      padding: 10px 20px;
+      border-radius: 8px;
       font-weight: 600;
       cursor: pointer;
-      width: 100%;
-      margin-top: 5px;
+      transition: 0.2s;
+    }
+
+    .btn:hover {
+      opacity: 0.9;
+    }
+
+    .btn-bulk {
+      background: #0f172a;
+      margin-top: 10px;
     }
 
     .status-tag {
-      padding: 4px 8px;
+      padding: 6px 10px;
       border-radius: 6px;
       font-weight: 700;
       font-size: 11px;
-      border: 1px solid rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      width: auto;
     }
 
     .Queue {
@@ -153,86 +166,72 @@
       background: #dcfce7;
       color: #166534;
     }
-
-    #notify {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: #0f172a;
-      color: white;
-      padding: 12px 20px;
-      border-radius: 8px;
-      display: none;
-      z-index: 9999;
-    }
   </style>
 </head>
 
 <body>
 
   <nav>
-    <div style="font-weight:800; color:var(--brand); font-size: 18px;">WEBENOID <span
+    <div style="font-weight:800; color:var(--brand); font-size: 20px;">WEBENOID <span
         style="color:var(--text)">SYSTEM</span></div>
-    <div style="display:flex; align-items:center; gap:15px">
-      <span id="userLabel" style="font-size:12px; font-weight:700;"></span>
-      <button onclick="logout()"
-        style="width:auto; background:white; color:red; border:1px solid #fee2e2; padding:5px 12px; margin:0">Logout</button>
+    <div style="display:flex; align-items:center; gap:20px">
+      <span id="userLabel" style="font-size:12px; font-weight:700; color:var(--text-light)"></span>
+      <button class="btn" onclick="logout()"
+        style="background:#fee2e2; color:#ef4444; border: 1px solid #fecaca;">Logout</button>
     </div>
   </nav>
 
-  <div id="notify"></div>
-
   <div class="wrapper">
     <aside>
-      <div class="sidebar-box">
-        <h3>Navigation</h3>
-        <label style="font-size:10px; font-weight: bold;">Project Environment</label>
-        <select id="selProj" onchange="loadBugs()"></select>
+      <h3 style="font-size:12px; color:var(--brand)">FILTERS</h3>
+      <label style="font-size:11px; font-weight:700">Project</label>
+      <select id="selProj" onchange="loadBugs()" style="margin-bottom:15px"></select>
 
-        <label style="font-size:10px; font-weight: bold; margin-top: 5px; display: block;">Filter Developer</label>
-        <select id="selDev" onchange="loadBugs()"></select>
-      </div>
+      <label style="font-size:11px; font-weight:700">Developer</label>
+      <select id="selDev" onchange="loadBugs()" style="margin-bottom:15px"></select>
 
-      <div id="setupArea" style="display:none">
-        <div class="sidebar-box">
-          <h3>🛠️ Setup</h3>
-          <input id="inProj" placeholder="New Project">
-          <button onclick="addProject()">Add Project</button>
-          <input id="inTeam" placeholder="New Member" style="margin-top:10px">
-          <button onclick="addMember()">Add Member</button>
-        </div>
-      </div>
-
-      <div id="entryArea" style="display:none">
-        <div class="sidebar-box">
-          <h3>🐛 Defect Entry</h3>
-          <input id="qTitle" placeholder="Bug Summary">
-          <label style="font-size:10px">Target Date</label>
-          <input type="date" id="qEnd">
-          <button onclick="submitBug()">Add Bug</button>
-
-          <label style="font-size:10px; margin-top:10px; display:block">Bulk (one per line)</label>
-          <textarea id="bulkText" rows="3" placeholder="Enter multiple bugs..."></textarea>
-          <button style="background:#0f172a" onclick="submitBulk()">Add Bulk</button>
-        </div>
+      <div id="setupArea" style="display:none; margin-top:20px; border-top:1px solid var(--border); padding-top:20px;">
+        <h3 style="font-size:12px; color:var(--brand)">ADMIN SETUP</h3>
+        <input id="inProj" placeholder="New Project Name" style="margin-bottom:8px">
+        <button class="btn" onclick="addProject()" style="width:100%">Add Project</button>
+        <input id="inTeam" placeholder="New Member Name" style="margin-top:10px; margin-bottom:8px">
+        <button class="btn" onclick="addMember()" style="width:100%">Add Member</button>
       </div>
     </aside>
 
     <main>
-      <div class="card">
+      <div id="entryArea" class="action-card" style="display:none">
+        <h3 style="font-size:12px; margin-top:0; color:var(--brand)">QUICK & BULK DEFECT ENTRY</h3>
+        <div class="grid-entry">
+          <div>
+            <label style="font-size:10px; font-weight:700">TASK TITLES (One per line for Bulk)</label>
+            <textarea id="bulkText" rows="2" placeholder="Example:&#10;Fix login button&#10;Update logo"></textarea>
+          </div>
+          <div>
+            <label style="font-size:10px; font-weight:700">START DATE</label>
+            <input type="date" id="qStart">
+          </div>
+          <div>
+            <label style="font-size:10px; font-weight:700">TARGET DATE</label>
+            <input type="date" id="qEnd">
+          </div>
+          <button class="btn" onclick="submitBulk()" style="height:42px">Save Defects</button>
+        </div>
+      </div>
+
+      <div class="table-container">
         <table>
           <thead>
             <tr>
-              <th>#</th>
+              <th width="40">#</th>
               <th>Defect Summary</th>
               <th>Assignee</th>
-              <th>Reported Date</th>
+              <th>Reported</th>
               <th>Started Date</th>
               <th>Target Date</th>
               <th>Status</th>
               <th>Progress</th>
               <th>History</th>
-              <th>Action</th>
             </tr>
           </thead>
           <tbody id="bugList"></tbody>
@@ -247,7 +246,7 @@
     const user = localStorage.getItem("user");
 
     if (!user) window.location.href = "login.html";
-    document.getElementById('userLabel').innerText = `${user} (${role})`;
+    document.getElementById('userLabel').innerText = `${user.toUpperCase()} (${role})`;
 
     if (role === "Admin") document.getElementById('setupArea').style.display = "block";
     if (role === "Admin" || role === "Tester") document.getElementById('entryArea').style.display = "block";
@@ -273,45 +272,55 @@
       const body = document.getElementById('bugList');
 
       const filtered = bugs.filter(b => b.project === activeProj && b.assignedTo === activeDev);
-      body.innerHTML = filtered.length ? "" : "<tr><td colspan='10' style='text-align:center; padding:30px'>No records found.</td></tr>";
+      body.innerHTML = filtered.length ? "" : "<tr><td colspan='9' style='text-align:center; padding:50px; color:var(--text-light)'>No defects found for this selection.</td></tr>";
 
       filtered.forEach((b, i) => {
         const reportedDate = b.createdAt ? new Date(b.createdAt).toLocaleDateString() : '-';
+        // Clean the date values for the input fields
+        const cleanStart = b.startedAt ? b.startedAt.split('T')[0] : '';
+        const cleanTarget = b.targetDate ? b.targetDate.split('T')[0] : '';
+
         body.innerHTML += `
-                <tr>
-                    <td>${i + 1}</td>
-                    <td><strong>${b.title}</strong></td>
-                    <td style="color:var(--text-light)">${b.assignedTo}</td>
-                    <td>${reportedDate}</td>
-                    <td>
-                        <input type="date" value="${b.startedAt || ''}" 
-                               onchange="updateField('${b._id}', 'startedAt', this.value)" 
-                               style="width:120px; margin:0; padding:4px">
-                    </td>
-                    <td style="color:#ef4444; font-weight:600">${b.targetDate || '-'}</td>
-                    <td>
-                        <select class="status-tag ${b.status}" onchange="updateField('${b._id}', 'status', this.value)">
-                            <option value="Queue" ${b.status == 'Queue' ? 'selected' : ''}>Queue</option>
-                            <option value="Review" ${b.status == 'Review' ? 'selected' : ''}>Review</option>
-                            ${role !== 'Developer' ? `<option value="Fixed" ${b.status == 'Fixed' ? 'selected' : ''}>Fixed</option>` : ''}
-                        </select>
-                    </td>
-                    <td>
-                        <div style="display:flex; align-items:center; gap:8px">
-                            <input type="range" min="0" max="100" step="10" value="${b.completion || 0}" 
-                                   onchange="handleProg('${b._id}', this.value)" style="width:60px">
-                            <span style="font-weight:bold">${b.completion || 0}%</span>
-                        </div>
-                    </td>
-                    <td style="text-align:center"><button onclick="viewHistory('${b._id}')" style="width:auto; background:none; color:blue; font-size:16px; padding:0">📜</button></td>
-                    <td>${role === 'Admin' ? `<button onclick="deleteBug('${b._id}')" style="background:none; color:red; width:auto; font-size:10px; padding:0">Del</button>` : '-'}</td>
-                </tr>`;
+            <tr>
+                <td>${i + 1}</td>
+                <td><strong style="color:var(--text)">${b.title}</strong></td>
+                <td><span style="color:var(--text-light); font-size:12px">${b.assignedTo}</span></td>
+                <td><span style="color:var(--text-light)">${reportedDate}</span></td>
+                <td>
+                    <input type="date" value="${cleanStart}" 
+                           onchange="updateField('${b._id}', 'startedAt', this.value)" 
+                           style="width:135px; padding:5px">
+                </td>
+                <td>
+                    <input type="date" value="${cleanTarget}" 
+                           onchange="updateField('${b._id}', 'targetDate', this.value)" 
+                           style="width:135px; padding:5px; border-color: #fee2e2">
+                </td>
+                <td>
+                    <select class="status-tag ${b.status}" onchange="updateField('${b._id}', 'status', this.value)">
+                        <option value="Queue" ${b.status == 'Queue' ? 'selected' : ''}>Queue</option>
+                        <option value="Review" ${b.status == 'Review' ? 'selected' : ''}>Review</option>
+                        ${role !== 'Developer' ? `<option value="Fixed" ${b.status == 'Fixed' ? 'selected' : ''}>Fixed</option>` : ''}
+                    </select>
+                </td>
+                <td>
+                    <div style="display:flex; align-items:center; gap:8px">
+                        <input type="range" min="0" max="100" step="10" value="${b.completion || 0}" 
+                               onchange="handleProg('${b._id}', this.value)" style="width:60px">
+                        <span style="font-weight:bold; font-size:11px">${b.completion || 0}%</span>
+                    </div>
+                </td>
+                <td style="text-align:center"><button onclick="viewHistory('${b._id}')" style="background:none; border:none; font-size:18px; cursor:pointer">📜</button></td>
+            </tr>`;
       });
     }
 
     async function updateField(id, field, value) {
-      let data = { [field]: value };
-      await fetch(`${API}/bug/${id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
+      await fetch(`${API}/bug/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ [field]: value })
+      });
       loadBugs();
     }
 
@@ -324,32 +333,21 @@
       loadBugs();
     }
 
-    async function submitBug() {
-      const title = document.getElementById('qTitle').value;
-      if (!title) return;
-      const bug = {
-        project: document.getElementById('selProj').value,
-        assignedTo: document.getElementById('selDev').value,
-        title: title,
-        createdAt: new Date().toISOString(), // REPORTED DATE
-        targetDate: document.getElementById('qEnd').value,
-        status: "Queue", completion: 0
-      };
-      await fetch(`${API}/bugs`, { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify([bug]) });
-      document.getElementById('qTitle').value = "";
-      loadBugs();
-    }
-
     async function submitBulk() {
-      const lines = document.getElementById('bulkText').value.split('\n').filter(l => l.trim() !== "");
+      const text = document.getElementById('bulkText').value.trim();
+      if (!text) return alert("Please enter at least one defect title.");
+
+      const lines = text.split('\n').filter(l => l.trim() !== "");
       const bugs = lines.map(line => ({
         project: document.getElementById('selProj').value,
         assignedTo: document.getElementById('selDev').value,
         title: line.trim(),
-        createdAt: new Date().toISOString(), // REPORTED DATE
+        createdAt: new Date().toISOString(),
+        startedAt: document.getElementById('qStart').value,
         targetDate: document.getElementById('qEnd').value,
         status: "Queue", completion: 0
       }));
+
       await fetch(`${API}/bugs`, { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(bugs) });
       document.getElementById('bulkText').value = "";
       loadBugs();
@@ -357,6 +355,7 @@
 
     async function addProject() {
       const name = document.getElementById('inProj').value;
+      if (!name) return;
       await fetch(`${API}/projects`, { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) });
       document.getElementById('inProj').value = "";
       loadData();
@@ -364,6 +363,7 @@
 
     async function addMember() {
       const name = document.getElementById('inTeam').value;
+      if (!name) return;
       await fetch(`${API}/team`, { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) });
       document.getElementById('inTeam').value = "";
       loadData();
@@ -374,12 +374,7 @@
       alert(bug.history ? bug.history.map(h => `[${new Date(h.timestamp).toLocaleString()}] -> ${h.percentage}%`).join("\n") : "No history.");
     }
 
-    async function deleteBug(id) {
-      if (confirm("Delete?")) { await fetch(`${API}/bug/${id}`, { method: "DELETE" }); loadBugs(); }
-    }
-
     function logout() { localStorage.clear(); window.location.href = "login.html"; }
-
     loadData();
   </script>
 </body>
