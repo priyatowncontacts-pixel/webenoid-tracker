@@ -57,7 +57,6 @@
       margin-left: 10px;
     }
 
-    /* FIXED SIDEBAR LAYOUT */
     .wrapper {
       display: flex;
       flex: 1;
@@ -127,6 +126,10 @@
       transition: 0.2s;
     }
 
+    button:hover {
+      opacity: 0.9;
+    }
+
     .table-wrap {
       background: white;
       border-radius: var(--radius);
@@ -183,17 +186,19 @@
       width: 130px;
     }
 
-    #notify {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: #0f172a;
-      color: white;
-      padding: 14px 24px;
-      border-radius: 8px;
-      display: none;
-      z-index: 10000;
-      font-weight: 600;
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      text-align: center;
     }
   </style>
 </head>
@@ -212,13 +217,26 @@
     </div>
   </nav>
 
-  <div id="notify"></div>
-
   <div class="wrapper">
     <aside id="sidebarContent">
     </aside>
 
     <main>
+      <div id="adminHero" style="display:none" class="stat-grid">
+        <div class="stat-card">
+          <div style="font-size:10px; color:var(--text-light)">TOTAL DEFECTS</div>
+          <div id="countTotal" style="font-size:20px; font-weight:800">0</div>
+        </div>
+        <div class="stat-card" style="border-bottom: 3px solid #ef4444">
+          <div style="font-size:10px; color:var(--text-light)">OPEN QUEUE</div>
+          <div id="countQueue" style="font-size:20px; font-weight:800">0</div>
+        </div>
+        <div class="stat-card" style="border-bottom: 3px solid #22c55e">
+          <div style="font-size:10px; color:var(--text-light)">FIXED</div>
+          <div id="countFixed" style="font-size:20px; font-weight:800">0</div>
+        </div>
+      </div>
+
       <div id="testerBulk" style="display:none" class="card">
         <h3 style="margin-top:0; color:var(--brand)">Bulk Defect Entry</h3>
         <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; margin-bottom:10px">
@@ -226,7 +244,7 @@
           <select id="bTask"></select>
           <select id="bAssign"></select>
         </div>
-        <textarea id="bPaste" rows="3" placeholder="Paste: Title | Target Date (YYYY-MM-DD)"></textarea>
+        <textarea id="bPaste" rows="3" placeholder="Format: Title | Target Date (YYYY-MM-DD)"></textarea>
         <button onclick="submitBulk()" style="background:#0f172a; width:auto; padding:10px 40px">🚀 Batch
           Process</button>
       </div>
@@ -250,12 +268,6 @@
     document.getElementById('userName').innerText = user;
     document.getElementById('roleDisplay').innerText = role;
 
-    function notify(msg) {
-      const n = document.getElementById('notify');
-      n.innerText = msg; n.style.display = "block";
-      setTimeout(() => n.style.display = "none", 3000);
-    }
-
     function setupUI() {
       const sidebar = document.getElementById('sidebarContent');
       const headers = document.getElementById('tableHeaders');
@@ -264,15 +276,12 @@
         document.getElementById('testerBulk').style.display = "block";
         sidebar.innerHTML = `
             <h3>Directory</h3>
-            <input id="newDev" placeholder="Add New Developer">
-            <button onclick="addDev()">Add Member</button>
+            <input id="newDev" placeholder="Developer Name"><button onclick="addDev()">Add Member</button>
             <h3>Context</h3>
-            <input id="newProj" placeholder="Project Name">
-            <button onclick="addProj()">Create Project</button>
-            <input id="newTask" placeholder="Task Name" style="margin-top:10px">
-            <button onclick="addTask()">Link Task</button>
+            <input id="newProj" placeholder="Project Name"><button onclick="addProj()">Create Project</button>
+            <input id="newTask" placeholder="Task Name" style="margin-top:10px"><button onclick="addTask()">Link Task</button>
             <h3>Navigation</h3>
-            <label style="font-size:10px">Filter Project View</label>
+            <label style="font-size:10px">Select Project View</label>
             <select id="fProj" onchange="loadBugs()"></select>
         `;
       } else if (role === "Developer") {
@@ -282,58 +291,50 @@
                 <label style="font-size:10px; font-weight:700">PROJECT NAME</label>
                 <select id="fProj" onchange="loadBugs()"></select>
                 <label style="font-size:10px; font-weight:700; margin-top:10px; display:block">DEVELOPER NAME</label>
-                <select id="fDev" disabled>
-                    <option value="${user}">${user}</option>
-                </select>
+                <select id="fDev" onchange="loadBugs()"></select>
+                <p style="font-size:11px; color:var(--text-light); margin-top:15px">Only showing defects assigned to the selected developer.</p>
             </div>
         `;
-      } else {
+      } else { // Admin Dashboard
+        document.getElementById('adminHero').style.display = "grid";
         sidebar.innerHTML = `<h3>Admin Control</h3><select id="fProj" onchange="loadBugs()"></select>`;
       }
 
       headers.innerHTML = `
-        <th width="40">#</th>
-        <th>Defect Summary</th>
+        <th width="40">#</th><th>Summary</th>
         ${role !== 'Developer' ? '<th>Assignee</th>' : ''}
-        <th>Reported</th>
-        <th>Started Date</th>
-        <th>Target Date</th>
-        <th>Status</th>
-        <th>Progress</th>
+        <th>Reported</th><th>Started</th><th>Target</th><th>Status</th><th>Work</th>
     `;
     }
 
-    // --- MISSING FUNCTIONS RESTORED ---
+    // RESTORED: Load tasks for the bulk entry dropdown
     async function loadBTasks() {
       const proj = document.getElementById('bProj').value;
       const res = await fetch(`${API}/tasks/${proj}`);
       const tasks = await res.json();
-      const taskSelect = document.getElementById('bTask');
-      if (taskSelect) {
-        taskSelect.innerHTML = "";
-        tasks.forEach(t => taskSelect.innerHTML += `<option value="${t.name}">${t.name}</option>`);
-      }
+      const ts = document.getElementById('bTask');
+      if (ts) { ts.innerHTML = ""; tasks.forEach(t => ts.innerHTML += `<option value="${t.name}">${t.name}</option>`); }
     }
 
-    async function addTask() {
-      const proj = document.getElementById('fProj')?.value || document.getElementById('bProj')?.value;
-      const name = document.getElementById('newTask').value;
-      await fetch(API + "/task", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ project: proj, name }) });
-      document.getElementById('newTask').value = "";
-      notify("Task Linked!");
-      loadBTasks();
-    }
-
-    // --- CORE LOGIC ---
     async function loadBugs() {
       const res = await fetch(API + "/bugs");
       let bugs = await res.json();
-      const filterProj = document.getElementById('fProj') ? document.getElementById('fProj').value : "";
+      const filterProj = document.getElementById('fProj').value;
+
+      // Check developer dropdown in sidebar
+      const filterDev = document.getElementById('fDev') ? document.getElementById('fDev').value : user;
 
       if (role === "Developer") {
-        bugs = bugs.filter(b => b.assignedTo === user && b.project === filterProj);
+        bugs = bugs.filter(b => b.assignedTo === filterDev && b.project === filterProj);
       } else if (filterProj) {
         bugs = bugs.filter(b => b.project === filterProj);
+      }
+
+      // Admin Stats
+      if (role === "Admin") {
+        document.getElementById('countTotal').innerText = bugs.length;
+        document.getElementById('countQueue').innerText = bugs.filter(x => x.status === "Queue").length;
+        document.getElementById('countFixed').innerText = bugs.filter(x => x.status === "Fixed").length;
       }
 
       const body = document.getElementById('bugList');
@@ -342,11 +343,10 @@
         const reported = b.createdAt ? new Date(b.createdAt).toLocaleDateString() : '-';
         const start = b.startedAt ? b.startedAt.split('T')[0] : '';
         const target = b.targetDate ? b.targetDate.split('T')[0] : '';
-
         body.innerHTML += `
             <tr>
                 <td>${i + 1}</td>
-                <td><strong>${b.title}</strong><br><small style="color:var(--text-light)">${b.project} / ${b.task || 'General'}</small></td>
+                <td><strong>${b.title}</strong><br><small style="color:var(--text-light)">${b.project} / ${b.task || ''}</small></td>
                 ${role !== 'Developer' ? `<td>${b.assignedTo}</td>` : ''}
                 <td>${reported}</td>
                 <td><input type="date" class="date-pick" value="${start}" onchange="patch('${b._id}','startedAt',this.value)"></td>
@@ -357,20 +357,14 @@
                         <option value="Fixed" ${b.status == 'Fixed' ? 'selected' : ''}>Fixed</option>
                     </select>
                 </td>
-                <td>
-                    <div style="display:flex; align-items:center; gap:8px">
-                        <input type="range" min="0" max="100" value="${b.completion || 0}" onchange="patch('${b._id}','completion',this.value)">
-                        <span style="font-weight:700">${b.completion || 0}%</span>
-                    </div>
-                </td>
-            </tr>
-        `;
+                <td><input type="range" min="0" max="100" value="${b.completion || 0}" onchange="patch('${b._id}','completion',this.value)"></td>
+            </tr>`;
       });
     }
 
     async function patch(id, field, value) {
       await fetch(`${API}/bug/${id}`, { method: "PUT", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ [field]: value }) });
-      if (field === 'status') loadBugs();
+      loadBugs();
     }
 
     async function submitBulk() {
@@ -378,30 +372,28 @@
       const data = lines.map(l => {
         const p = l.split("|");
         return {
-          project: document.getElementById('bProj').value,
-          task: document.getElementById('bTask').value,
-          title: p[0].trim(),
-          assignedTo: document.getElementById('bAssign').value,
-          status: "Queue", completion: 0,
-          createdAt: new Date().toISOString(),
-          targetDate: p[1]?.trim() || ""
+          project: document.getElementById('bProj').value, task: document.getElementById('bTask').value,
+          title: p[0].trim(), assignedTo: document.getElementById('bAssign').value,
+          status: "Queue", completion: 0, createdAt: new Date().toISOString(), targetDate: p[1]?.trim() || ""
         };
       }).filter(x => x.title);
       await fetch(API + "/bugs", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-      document.getElementById('bPaste').value = "";
-      loadBugs();
-      notify(`Batch Logged: ${data.length} bugs`);
+      document.getElementById('bPaste').value = ""; loadBugs();
     }
 
     async function addProj() {
-      const name = document.getElementById('newProj').value;
-      await fetch(API + "/project", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) });
+      await fetch(API + "/project", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: document.getElementById('newProj').value }) });
       location.reload();
     }
 
     async function addDev() {
-      const name = document.getElementById('newDev').value;
-      await fetch(API + "/team", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) });
+      await fetch(API + "/team", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: document.getElementById('newDev').value }) });
+      location.reload();
+    }
+
+    async function addTask() {
+      const proj = document.getElementById('fProj').value;
+      await fetch(API + "/task", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ project: proj, name: document.getElementById('newTask').value }) });
       location.reload();
     }
 
@@ -410,21 +402,23 @@
       const p = await (await fetch(API + "/projects")).json();
       const t = await (await fetch(API + "/team")).json();
 
+      // Fill Project Dropdowns
       ['fProj', 'bProj'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) p.forEach(x => el.innerHTML += `<option value="${x.name}">${x.name}</option>`);
+      });
+
+      // Fill Developer Dropdowns
+      const devSelects = ['fDev', 'bAssign'];
+      devSelects.forEach(id => {
         const el = document.getElementById(id);
         if (el) {
           el.innerHTML = "";
-          p.forEach(x => el.innerHTML += `<option value="${x.name}">${x.name}</option>`);
+          t.forEach(x => el.innerHTML += `<option value="${x.name}" ${x.name === user ? 'selected' : ''}>${x.name}</option>`);
         }
       });
 
-      const bAssign = document.getElementById('bAssign');
-      if (bAssign) {
-        bAssign.innerHTML = "";
-        t.forEach(x => bAssign.innerHTML += `<option value="${x.name}">${x.name}</option>`);
-      }
-
-      await loadBTasks();
+      if (role === "Tester") await loadBTasks();
       loadBugs();
     }
 
