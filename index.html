@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Webenoid | Command Center Pro</title>
+  <title>Webenoid | Ultimate Tracker</title>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap"
     rel="stylesheet">
   <style>
@@ -47,10 +47,10 @@
     }
 
     aside {
-      width: 300px;
+      width: 320px;
       background: var(--panel);
       border-right: 1px solid var(--border);
-      padding: 24px;
+      padding: 20px;
       overflow-y: auto;
     }
 
@@ -60,92 +60,62 @@
       overflow-y: auto;
     }
 
-    /* Admin UI Components */
-    .admin-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 15px;
-      margin-bottom: 24px;
-    }
-
-    .kpi-card {
-      background: var(--brand);
-      color: white;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.1);
-    }
-
-    .kpi-card h4 {
-      margin: 0;
-      font-size: 11px;
-      text-transform: uppercase;
-      opacity: 0.8;
-    }
-
-    .kpi-card .value {
-      font-size: 24px;
-      font-weight: 800;
-    }
-
-    #pulseFeed {
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
+    .admin-section {
+      background: #f1f5f9;
       padding: 15px;
-      margin-bottom: 24px;
-      max-height: 200px;
-      overflow-y: auto;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border: 1px solid var(--border);
     }
 
-    .pulse-item {
-      padding: 8px 0;
-      border-bottom: 1px solid #f1f5f9;
-      font-size: 12px;
-      display: flex;
-      justify-content: space-between;
+    h3 {
+      font-size: 14px;
+      margin-bottom: 12px;
+      color: var(--brand);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
-    /* Table & Cards */
+    /* Table Styling */
     .card {
       background: white;
       border-radius: var(--radius);
       border: 1px solid var(--border);
-      padding: 20px;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 1000px;
+      min-width: 1100px;
     }
 
     th {
       text-align: left;
-      padding: 12px;
+      padding: 14px;
       font-size: 11px;
       color: var(--text-light);
       border-bottom: 1px solid var(--border);
       background: #fcfcfd;
+      white-space: nowrap;
     }
 
     td {
-      padding: 12px;
+      padding: 14px;
       border-bottom: 1px solid var(--border);
       font-size: 13px;
     }
 
-    /* Form Elements */
     input,
-    select {
+    select,
+    textarea {
       width: 100%;
-      padding: 10px;
+      padding: 8px;
       border: 1px solid var(--border);
-      border-radius: 8px;
-      margin-bottom: 12px;
+      border-radius: 6px;
+      margin-bottom: 8px;
       font-family: inherit;
-      font-size: 13px;
+      font-size: 12px;
       box-sizing: border-box;
     }
 
@@ -153,21 +123,24 @@
       background: var(--brand);
       color: white;
       border: none;
-      padding: 12px;
-      border-radius: 8px;
+      padding: 10px;
+      border-radius: 6px;
       font-weight: 600;
       cursor: pointer;
       width: 100%;
-      margin-bottom: 10px;
+      margin-top: 5px;
+      font-size: 12px;
     }
 
-    /* Status Tags */
+    .btn-alt {
+      background: #0f172a;
+    }
+
     .status-tag {
-      padding: 4px 10px;
+      padding: 4px 8px;
       border-radius: 6px;
       font-weight: 700;
       font-size: 11px;
-      border: 1px solid rgba(0, 0, 0, 0.05);
     }
 
     .Queue {
@@ -187,7 +160,7 @@
 
     #notify {
       position: fixed;
-      top: 20px;
+      bottom: 20px;
       right: 20px;
       background: #0f172a;
       color: white;
@@ -195,7 +168,6 @@
       border-radius: 8px;
       display: none;
       z-index: 9999;
-      box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
     }
   </style>
 </head>
@@ -203,12 +175,12 @@
 <body>
 
   <nav>
-    <div style="font-weight:800; color:var(--brand); font-size: 20px;">WEBENOID <span
-        style="color:var(--text)">COMMAND</span></div>
-    <div style="display:flex; align-items:center; gap:20px">
-      <span id="userLabel" style="font-size:12px; font-weight:700; color: var(--text-light);"></span>
+    <div style="font-weight:800; color:var(--brand); font-size: 18px;">WEBENOID <span
+        style="color:var(--text)">SYSTEM</span></div>
+    <div style="display:flex; align-items:center; gap:15px">
+      <span id="userLabel" style="font-size:12px; font-weight:700;"></span>
       <button onclick="logout()"
-        style="width:auto; background:white; color:#ef4444; border:1px solid #fee2e2; padding:6px 15px; margin:0">Logout</button>
+        style="width:auto; background:white; color:red; border:1px solid #fee2e2; padding:5px 12px;">Logout</button>
     </div>
   </nav>
 
@@ -216,57 +188,71 @@
 
   <div class="wrapper">
     <aside>
-      <h3>Navigation</h3>
-      <label style="font-size:11px; font-weight:bold;">Project Environment</label>
-      <select id="selProj" onchange="loadBugs()"></select>
+      <div id="setupArea" style="display:none">
+        <div class="admin-section">
+          <h3>🛠️ Setup Management</h3>
+          <input id="inProj" placeholder="New Project Name">
+          <button onclick="addProject()">Add Project</button>
+          <div style="margin-top:10px"></div>
+          <input id="inTeam" placeholder="New Team Member">
+          <button onclick="addMember()">Add Member</button>
+        </div>
+      </div>
 
-      <div id="testerPanel">
-        <hr style="margin: 20px 0; border: 0; border-top: 1px solid var(--border);">
-        <h3>Report Defect</h3>
-        <input id="qTitle" placeholder="Defect Summary">
-        <label style="font-size:11px">Assigned To</label>
-        <select id="qAssign"></select>
-        <label style="font-size:11px">Start Date</label>
-        <input id="qStart" type="date">
-        <label style="font-size:11px">Target Date</label>
-        <input id="qTarget" type="date">
-        <button onclick="submitBug()">Add to Tracker</button>
+      <div id="entryArea">
+        <div class="admin-section">
+          <h3>🐛 Bug Entry</h3>
+          <label style="font-size:10px">Project Environment</label>
+          <select id="selProj" onchange="loadBugs()"></select>
+
+          <label style="font-size:10px">Assign Developer</label>
+          <select id="selDev" onchange="loadBugs()"></select>
+
+          <hr style="opacity:0.1; margin:15px 0">
+
+          <input id="qTitle" placeholder="Quick Bug Title">
+          <label style="font-size:10px">Timeline</label>
+          <div style="display:flex; gap:5px">
+            <input type="date" id="qStart">
+            <input type="date" id="qEnd">
+          </div>
+          <button onclick="submitBug()">Add Quick Bug</button>
+
+          <hr style="opacity:0.1; margin:15px 0">
+
+          <label style="font-size:10px">Bulk Defects (Title per line)</label>
+          <textarea id="bulkText" rows="3" placeholder="Login Fail&#10;Logo Missing"></textarea>
+          <button class="btn-alt" onclick="submitBulk()">Add Bulk Defects</button>
+        </div>
       </div>
     </aside>
 
     <main>
-      <div id="adminHero" style="display:none">
-        <div class="admin-grid">
-          <div class="kpi-card">
-            <h4>System Total</h4>
-            <div id="kpiTotal" class="value">0</div>
+      <div id="adminHero" style="display:none; margin-bottom: 20px;">
+        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:15px">
+          <div class="card" style="padding:15px">
+            <div style="color:var(--text-light); font-size:11px">TOTAL DEFECTS</div>
+            <div id="kpiTotal" style="font-size:24px; font-weight:800">0</div>
           </div>
-          <div class="kpi-card" style="background:#f59e0b">
-            <h4>Pending Review</h4>
-            <div id="kpiQueue" class="value">0</div>
+          <div class="card" style="padding:15px; border-left: 4px solid orange">
+            <div style="color:var(--text-light); font-size:11px">PENDING REVIEW</div>
+            <div id="kpiReview" style="font-size:24px; font-weight:800">0</div>
           </div>
-          <div class="kpi-card" style="background:#10b981">
-            <h4>Resolved</h4>
-            <div id="kpiFixed" class="value">0</div>
+          <div class="card" style="padding:15px; border-left: 4px solid green">
+            <div style="color:var(--text-light); font-size:11px">RESOLVED</div>
+            <div id="kpiFixed" style="font-size:24px; font-weight:800">0</div>
           </div>
-          <div class="kpi-card" style="background:#6366f1">
-            <h4>Team Members</h4>
-            <div id="kpiTeam" class="value">0</div>
-          </div>
-        </div>
-        <div id="pulseFeed">
-          <h4 style="margin:0 0 10px 0; font-size:11px; letter-spacing: 1px;">⚡ LIVE SYSTEM ACTIVITY</h4>
-          <div id="feedList">Listening for progress...</div>
         </div>
       </div>
 
-      <div class="card" style="padding:0; overflow-x:auto">
+      <div class="card" style="overflow-x:auto">
         <table>
           <thead>
             <tr>
               <th>#</th>
-              <th>Defect Details</th>
-              <th>Schedule</th>
+              <th>Defect Summary</th>
+              <th>Started Date</th>
+              <th>Target Date</th>
               <th>Status</th>
               <th>Work Progress</th>
               <th>History</th>
@@ -285,177 +271,142 @@
     const user = localStorage.getItem("user");
 
     if (!user) window.location.href = "login.html";
-    document.getElementById('userLabel').innerText = `${user.toUpperCase()} | ${role}`;
+    document.getElementById('userLabel').innerText = `${user} (${role})`;
 
-    // Hide features based on role
-    if (role === "Developer") document.getElementById('testerPanel').style.display = "none";
-    if (role === "Admin") document.getElementById('adminHero').style.display = "block";
+    // Permission Logic
+    if (role === "Admin") {
+      document.getElementById('setupArea').style.display = "block";
+      document.getElementById('adminHero').style.display = "block";
+    }
+    if (role === "Developer") {
+      document.getElementById('entryArea').style.display = "none";
+    }
 
     async function loadData() {
-      try {
-        const p = await fetch(`${API}/projects`).then(r => r.json());
-        const t = await fetch(`${API}/team`).then(r => r.json());
+      const p = await fetch(`${API}/projects`).then(r => r.json());
+      const t = await fetch(`${API}/team`).then(r => r.json());
 
-        document.getElementById('selProj').innerHTML = p.map(x => `<option value="${x.name}">${x.name}</option>`).join("");
-        const qAssign = document.getElementById('qAssign');
-        if (qAssign) qAssign.innerHTML = t.map(m => `<option value="${m.name}">${m.name}</option>`).join("");
+      document.getElementById('selProj').innerHTML = p.map(x => `<option value="${x.name}">${x.name}</option>`).join("");
+      document.getElementById('selDev').innerHTML = t.map(m => `<option value="${m.name}">${m.name}</option>`).join("");
 
-        loadBugs();
-      } catch (err) { console.error("Data Load Error:", err); }
+      if (role === "Developer") {
+        document.getElementById('selDev').value = user;
+        document.getElementById('selDev').disabled = true;
+      }
+      loadBugs();
     }
 
     async function loadBugs() {
       const bugs = await fetch(`${API}/bugs`).then(r => r.json());
-      const activeProject = document.getElementById('selProj').value;
+      const activeProj = document.getElementById('selProj').value;
+      const activeDev = document.getElementById('selDev').value;
       const body = document.getElementById('bugList');
 
       if (role === "Admin") {
         document.getElementById('kpiTotal').innerText = bugs.length;
-        document.getElementById('kpiQueue').innerText = bugs.filter(b => b.status === "Review").length;
+        document.getElementById('kpiReview').innerText = bugs.filter(b => b.status === "Review").length;
         document.getElementById('kpiFixed').innerText = bugs.filter(b => b.status === "Fixed").length;
-        document.getElementById('kpiTeam').innerText = (await fetch(`${API}/team`).then(r => r.json())).length;
       }
 
-      // FILTER: Developer sees ONLY their own. Admin/Tester see all in project.
-      let filtered = bugs.filter(b => b.project === activeProject);
-      if (role === "Developer") {
-        filtered = filtered.filter(b => b.assignedTo === user);
-      }
-
-      body.innerHTML = filtered.length ? "" : "<tr><td colspan='7' style='text-align:center; padding:40px; color:#94a3b8;'>No defects recorded for this project view.</td></tr>";
+      const filtered = bugs.filter(b => b.project === activeProj && b.assignedTo === activeDev);
+      body.innerHTML = filtered.length ? "" : "<tr><td colspan='8' style='text-align:center; padding:30px'>No records found.</td></tr>";
 
       filtered.forEach((b, i) => {
-        const lastTime = b.updatedAt ? new Date(b.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'No Update';
         body.innerHTML += `
                 <tr>
                     <td>${i + 1}</td>
-                    <td><strong>${b.title}</strong><br><small style="color:var(--text-light)">Dev: ${b.assignedTo}</small></td>
-                    <td><small>Start: ${b.startedAt || '-'}<br>End: ${b.targetDate || '-'}</small></td>
-                    <td>
+                    <td><strong>${b.title}</strong></td>
+                    <td style="color:var(--brand); font-weight:600">${b.startedAt || '-'}</td> <td style="color:#ef4444; font-weight:600">${b.targetDate || '-'}</td>  <td>
                         <select class="status-tag ${b.status}" onchange="updateStatus('${b._id}', this.value)">
                             <option value="Queue" ${b.status == 'Queue' ? 'selected' : ''}>Queue</option>
                             <option value="Review" ${b.status == 'Review' ? 'selected' : ''}>Review</option>
-                            ${(role === 'Admin' || role === 'Tester') ? `<option value="Fixed" ${b.status == 'Fixed' ? 'selected' : ''}>Fixed</option>` : ''}
+                            ${role !== 'Developer' ? `<option value="Fixed" ${b.status == 'Fixed' ? 'selected' : ''}>Fixed</option>` : ''}
                         </select>
                     </td>
                     <td>
                         <div style="display:flex; align-items:center; gap:8px">
-                            <input type="range" min="0" max="100" step="10" value="${b.completion || 0}" 
-                                   onchange="handleProg('${b._id}', this.value)" style="width:80px">
-                            <span style="font-weight:bold; width:30px">${b.completion || 0}%</span>
+                            <input type="range" min="0" max="100" step="10" value="${b.completion || 0}" onchange="handleProg('${b._id}', this.value)" style="width:70px">
+                            <span>${b.completion || 0}%</span>
                         </div>
-                        <div style="font-size:9px; color:var(--text-light); margin-top:4px">Last: ${lastTime}</div>
                     </td>
-                    <td style="text-align:center"><button onclick="viewHistory('${b._id}')" style="width:auto; background:none; font-size:18px; padding:0; margin:0">📜</button></td>
-                    <td>${(role === 'Admin') ? `<button onclick="deleteBug('${b._id}')" style="background:none; color:#ef4444; width:auto; font-size:11px; padding:0; margin:0">Delete</button>` : '-'}</td>
+                    <td style="text-align:center"><button onclick="viewHistory('${b._id}')" style="width:auto; background:none; color:blue; font-size:16px">📜</button></td>
+                    <td>${role === 'Admin' ? `<button onclick="deleteBug('${b._id}')" style="background:none; color:red; width:auto; font-size:10px">Del</button>` : '-'}</td>
                 </tr>`;
       });
     }
 
-    async function updateStatus(id, val) {
-      await fetch(`${API}/bug/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: val })
-      });
-      showNotify(`Updated to ${val}`);
+    async function submitBug() {
+      const title = document.getElementById('qTitle').value;
+      if (!title) return;
+      const bug = {
+        project: document.getElementById('selProj').value,
+        assignedTo: document.getElementById('selDev').value,
+        title: title,
+        startedAt: document.getElementById('qStart').value,
+        targetDate: document.getElementById('qEnd').value,
+        status: "Queue", completion: 0
+      };
+      await fetch(`${API}/bugs`, { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify([bug]) });
+      document.getElementById('qTitle').value = "";
+      loadBugs();
+    }
+
+    async function submitBulk() {
+      const lines = document.getElementById('bulkText').value.split('\n').filter(l => l.trim() !== "");
+      const bugs = lines.map(line => ({
+        project: document.getElementById('selProj').value,
+        assignedTo: document.getElementById('selDev').value,
+        title: line.trim(),
+        startedAt: document.getElementById('qStart').value,
+        targetDate: document.getElementById('qEnd').value,
+        status: "Queue", completion: 0
+      }));
+      await fetch(`${API}/bugs`, { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(bugs) });
+      document.getElementById('bulkText').value = "";
       loadBugs();
     }
 
     async function handleProg(id, val) {
-      const completionValue = parseInt(val);
+      const completion = parseInt(val);
       const now = new Date().toISOString();
+      let payload = { completion, updatedAt: now, historyEntry: { percentage: completion, timestamp: now } };
+      if (completion === 100) payload.status = "Review";
 
-      let payload = {
-        completion: completionValue,
-        updatedAt: now,
-        historyEntry: { percentage: completionValue, timestamp: now }
-      };
-
-      // AUTO-REVIEW LOGIC
-      if (completionValue === 100) payload.status = "Review";
-
-      await fetch(`${API}/bug/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-
-      // LOG ACTIVITY FOR ADMIN
-      let activity = `${user} updated ${val}%`;
-      if (completionValue === 100) activity = `🚀 ${user} COMPLETED task! (Sent to Review)`;
-
-      await fetch(`${API}/notify`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user: "Admin", message: activity, time: now })
-      });
-
-      showNotify(completionValue === 100 ? "Review Requested!" : "Progress Updated");
+      await fetch(`${API}/bug/${id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       loadBugs();
+    }
+
+    async function addProject() {
+      const name = document.getElementById('inProj').value;
+      await fetch(`${API}/projects`, { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) });
+      document.getElementById('inProj').value = "";
+      loadData();
+    }
+
+    async function addMember() {
+      const name = document.getElementById('inTeam').value;
+      await fetch(`${API}/team`, { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) });
+      document.getElementById('inTeam').value = "";
+      loadData();
     }
 
     async function viewHistory(id) {
       const bug = await fetch(`${API}/bug/${id}`).then(r => r.json());
-      if (!bug.history || bug.history.length === 0) return alert("No historical data found.");
-
-      const log = bug.history.map(h => `[${new Date(h.timestamp).toLocaleString()}] -> Progress: ${h.percentage}%`).join("\n");
-      alert(`AUDIT TRAIL: ${bug.title}\n\n${log}`);
+      alert(bug.history ? bug.history.map(h => `[${new Date(h.timestamp).toLocaleString()}] -> ${h.percentage}%`).join("\n") : "No history.");
     }
 
-    async function updateLiveFeed() {
-      if (role !== "Admin") return;
-      const notifs = await fetch(`${API}/notify/Admin`).then(r => r.json());
-      const feed = document.getElementById('feedList');
-      feed.innerHTML = notifs.slice(-5).reverse().map(n => `
-                <div class="pulse-item">
-                    <span>${n.message}</span>
-                    <small style="color:var(--text-light)">${new Date(n.time).toLocaleTimeString()}</small>
-                </div>`).join("");
-    }
-
-    async function submitBug() {
-      const title = document.getElementById('qTitle').value;
-      if (!title) return showNotify("Title required!");
-
-      const data = [{
-        project: document.getElementById('selProj').value,
-        assignedTo: document.getElementById('qAssign').value,
-        title: title,
-        startedAt: document.getElementById('qStart').value,
-        targetDate: document.getElementById('qTarget').value,
-        status: "Queue",
-        completion: 0
-      }];
-
-      await fetch(`${API}/bugs`, {
-        method: "POST",
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-
-      document.getElementById('qTitle').value = "";
-      showNotify("Defect Added Successfully");
+    async function updateStatus(id, val) {
+      await fetch(`${API}/bug/${id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: val }) });
       loadBugs();
     }
 
     async function deleteBug(id) {
-      if (!confirm("Permanently delete this record?")) return;
-      await fetch(`${API}/bug/${id}`, { method: "DELETE" });
-      loadBugs();
-    }
-
-    function showNotify(msg) {
-      const n = document.getElementById('notify');
-      n.innerText = msg; n.style.display = "block";
-      setTimeout(() => n.style.display = "none", 2500);
+      if (confirm("Delete?")) { await fetch(`${API}/bug/${id}`, { method: "DELETE" }); loadBugs(); }
     }
 
     function logout() { localStorage.clear(); window.location.href = "login.html"; }
 
-    // Start App
     loadData();
-    if (role === "Admin") setInterval(updateLiveFeed, 5000);
   </script>
 </body>
 
