@@ -1,310 +1,131 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Webenoid | Enterprise Tracker</title>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
-    rel="stylesheet">
-  <style>
-    :root {
-      --brand: #2563eb;
-      --bg: #f1f5f9;
-      --panel: #ffffff;
-      --text: #0f172a;
-      --text-light: #64748b;
-      --border: #e2e8f0;
-      --radius: 12px;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webenoid | Enterprise Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --brand: #2563eb; --bg: #f1f5f9; --panel: #ffffff; --text: #0f172a; --text-light: #64748b; --border: #e2e8f0; --radius: 12px; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        
+        nav { height: 64px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 32px; flex-shrink: 0; }
+        .logo { font-weight: 800; color: var(--brand); font-size: 22px; }
+        .role-badge { background: #eff6ff; color: var(--brand); padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; margin-left: 10px; }
 
-    body {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      margin: 0;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      overflow: hidden;
-    }
+        .wrapper { display: flex; flex: 1; overflow: hidden; }
+        aside { width: 300px; background: var(--panel); border-right: 1px solid var(--border); padding: 24px; overflow-y: auto; }
+        main { flex: 1; padding: 24px; overflow-y: auto; }
 
-    /* HEADER */
-    nav {
-      height: 64px;
-      background: var(--panel);
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 32px;
-      flex-shrink: 0;
-      z-index: 100;
-    }
+        h3 { font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-light); margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
+        .card { background: var(--panel); border-radius: var(--radius); border: 1px solid var(--border); padding: 20px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); margin-bottom: 24px; }
+        
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 13px; margin-bottom: 10px; outline: none; }
+        button { width: 100%; background: var(--brand); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        button:hover { opacity: 0.9; }
 
-    .logo {
-      font-weight: 800;
-      color: var(--brand);
-      font-size: 22px;
-    }
+        .table-wrap { background: white; border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; min-width: 1100px; }
+        th { text-align: left; padding: 14px; font-size: 11px; text-transform: uppercase; color: var(--text-light); border-bottom: 1px solid var(--border); background: #fcfcfd; }
+        td { padding: 14px; border-bottom: 1px solid var(--border); font-size: 13px; background: white; }
+        
+        .status-pill { padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; border: none; }
+        .Queue { background: #fee2e2; color: #991b1b; }
+        .Fixed { background: #dcfce7; color: #166534; }
+        .date-pick { border: 1px solid var(--border); border-radius: 4px; padding: 4px; font-size: 12px; width: 130px; }
 
-    .role-badge {
-      background: #eff6ff;
-      color: var(--brand);
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      margin-left: 10px;
-    }
-
-    .wrapper {
-      display: flex;
-      flex: 1;
-      overflow: hidden;
-    }
-
-    aside {
-      width: 280px;
-      background: var(--panel);
-      border-right: 1px solid var(--border);
-      padding: 24px;
-      overflow-y: auto;
-    }
-
-    main {
-      flex: 1;
-      padding: 24px;
-      overflow-y: auto;
-    }
-
-    /* UI COMPONENTS */
-    .card {
-      background: var(--panel);
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
-      padding: 20px;
-      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-      margin-bottom: 24px;
-    }
-
-    .stat-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 20px;
-      margin-bottom: 24px;
-    }
-
-    .stat-card {
-      background: white;
-      padding: 20px;
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
-    }
-
-    input,
-    select,
-    textarea {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-family: inherit;
-      font-size: 13px;
-      margin-bottom: 10px;
-    }
-
-    button {
-      width: 100%;
-      background: var(--brand);
-      color: white;
-      border: none;
-      padding: 12px;
-      border-radius: 8px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-
-    button:hover {
-      opacity: 0.9;
-      transform: translateY(-1px);
-    }
-
-    .btn-black {
-      background: #0f172a;
-    }
-
-    /* TABLE */
-    .table-wrap {
-      background: white;
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
-      overflow: hidden;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 1100px;
-    }
-
-    th {
-      text-align: left;
-      padding: 14px;
-      font-size: 11px;
-      text-transform: uppercase;
-      color: var(--text-light);
-      border-bottom: 1px solid var(--border);
-      background: #fcfcfd;
-    }
-
-    td {
-      padding: 14px;
-      border-bottom: 1px solid var(--border);
-      font-size: 13px;
-      background: white;
-    }
-
-    .status-pill {
-      padding: 4px 10px;
-      border-radius: 6px;
-      font-weight: 700;
-      font-size: 11px;
-      border: none;
-      cursor: pointer;
-    }
-
-    .Queue {
-      background: #fee2e2;
-      color: #991b1b;
-    }
-
-    .Review {
-      background: #fef9c3;
-      color: #854d0e;
-    }
-
-    .Fixed {
-      background: #dcfce7;
-      color: #166534;
-    }
-
-    .date-pick {
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      padding: 4px;
-      font-size: 12px;
-      width: 130px;
-    }
-  </style>
+        #notify { position: fixed; top: 20px; right: 20px; background: #0f172a; color: white; padding: 14px 24px; border-radius: 8px; display: none; z-index: 10000; font-weight: 600; }
+    </style>
 </head>
-
 <body>
 
-  <nav>
+<nav>
     <div style="display:flex; align-items:center">
-      <div class="logo">WEBENOID</div>
-      <div id="roleDisplay" class="role-badge"></div>
+        <div class="logo">WEBENOID</div>
+        <div id="roleDisplay" class="role-badge"></div>
     </div>
     <div style="display: flex; align-items: center; gap: 20px;">
-      <span id="userName" style="font-weight: 700; font-size: 13px;"></span>
-      <button onclick="logout()"
-        style="width:auto; padding:6px 15px; background:#fff; color:red; border:1px solid #fee2e2">Logout</button>
+        <span id="userName" style="font-weight: 700; font-size: 13px;"></span>
+        <button onclick="logout()" style="width:auto; padding:6px 15px; background:#fff; color:red; border:1px solid #fee2e2">Logout</button>
     </div>
-  </nav>
+</nav>
 
-  <div class="wrapper">
+<div id="notify"></div>
+
+<div class="wrapper">
     <aside id="sidebarContent"></aside>
 
     <main>
-      <div id="adminHero" style="display:none" class="stat-grid">
-        <div class="stat-card">
-          <div style="font-size:11px; color:var(--text-light)">TOTAL DEFECTS</div>
-          <div id="countTotal" style="font-size:24px; font-weight:800">0</div>
+        <div id="testerBulk" style="display:none" class="card">
+            <h3 style="margin-top:0; color:var(--brand)">Bulk Defect Entry</h3>
+            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; margin-bottom:10px">
+                <select id="bProj" onchange="loadBTasks()"></select>
+                <select id="bTask"></select>
+                <select id="bAssign"></select>
+            </div>
+            <textarea id="bPaste" rows="3" placeholder="Paste: Title | Target Date (YYYY-MM-DD)"></textarea>
+            <button onclick="submitBulk()" style="background:#0f172a; width:auto; padding:10px 40px">🚀 Batch Process</button>
         </div>
-        <div class="stat-card" style="border-left: 4px solid #ef4444">
-          <div style="font-size:11px; color:var(--text-light)">OPEN QUEUE</div>
-          <div id="countQueue" style="font-size:24px; font-weight:800">0</div>
-        </div>
-        <div class="stat-card" style="border-left: 4px solid #eab308">
-          <div style="font-size:11px; color:var(--text-light)">IN REVIEW</div>
-          <div id="countReview" style="font-size:24px; font-weight:800">0</div>
-        </div>
-        <div class="stat-card" style="border-left: 4px solid #22c55e">
-          <div style="font-size:11px; color:var(--text-light)">FIXED</div>
-          <div id="countFixed" style="font-size:24px; font-weight:800">0</div>
-        </div>
-      </div>
 
-      <div id="testerBulk" style="display:none" class="card">
-        <h3 style="margin-top:0; color:var(--brand); font-size:12px">BULK DEFECT LOGGING</h3>
-        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; margin-bottom:10px">
-          <select id="bProj"></select>
-          <select id="bAssign"></select>
-          <input type="date" id="bTarget">
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr id="tableHeaders"></tr>
+                </thead>
+                <tbody id="bugList"></tbody>
+            </table>
         </div>
-        <textarea id="bText" rows="3" placeholder="Paste Bug Titles here (One per line)"></textarea>
-        <button onclick="submitBulk()" class="btn-black" style="width:auto; padding:10px 40px">🚀 Batch Process</button>
-      </div>
-
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr id="tableHeaders"></tr>
-          </thead>
-          <tbody id="bugList"></tbody>
-        </table>
-      </div>
     </main>
-  </div>
+</div>
 
-  <script>
-    const API = "http://localhost:3000";
-    const role = localStorage.getItem("role") || "Developer"; // Default for safety
-    const user = localStorage.getItem("user") || "Unknown";
+<script>
+const API = "http://localhost:3000";
+const role = localStorage.getItem("role") || "Developer"; 
+const user = localStorage.getItem("user") || "Unknown";
 
-    document.getElementById('userName').innerText = user;
-    document.getElementById('roleDisplay').innerText = role;
+document.getElementById('userName').innerText = user;
+document.getElementById('roleDisplay').innerText = role;
 
-    // 1. GENERATE UI BASED ON ROLE
-    function setupUI() {
-      const sidebar = document.getElementById('sidebarContent');
-      const headers = document.getElementById('tableHeaders');
+function notify(msg) {
+    const n = document.getElementById('notify');
+    n.innerText = msg; n.style.display = "block";
+    setTimeout(() => n.style.display = "none", 3000);
+}
 
-      if (role === "Admin") {
-        document.getElementById('adminHero').style.display = "grid";
-        sidebar.innerHTML = `
-            <h3>Project Control</h3>
-            <input id="newP" placeholder="New Project">
-            <button onclick="addProject()">Create</button>
-            <h3 style="margin-top:20px">Team Sync</h3>
-            <input id="newD" placeholder="New Developer">
-            <button onclick="addMember()" class="btn-black">Add Dev</button>
-            <h3 style="margin-top:20px">Global Filter</h3>
-            <select id="fProj" onchange="loadBugs()"></select>
-        `;
-      } else if (role === "Tester") {
+function setupUI() {
+    const sidebar = document.getElementById('sidebarContent');
+    const headers = document.getElementById('tableHeaders');
+
+    if (role === "Tester") {
         document.getElementById('testerBulk').style.display = "block";
         sidebar.innerHTML = `
-            <h3>Navigation</h3>
-            <label style="font-size:10px">Filter View</label>
+            <h3>Directory</h3>
+            <input id="newDev" placeholder="Add New Developer">
+            <button onclick="addDev()">Add Member</button>
+            <h3 style="margin-top:24px">Context</h3>
+            <input id="newProj" placeholder="Project Name">
+            <button onclick="addProj()">Create Project</button>
+            <h3 style="margin-top:24px">Navigation</h3>
+            <label style="font-size:10px">Filter Project View</label>
             <select id="fProj" onchange="loadBugs()"></select>
         `;
-      } else { // Developer
+    } else if (role === "Developer") {
         sidebar.innerHTML = `
-            <div style="padding:15px; background:#f8fafc; border-radius:8px">
-                <h3 style="color:var(--brand)">Personal Workspace</h3>
-                <label style="font-size:10px">Project</label>
+            <div style="padding:15px; background:#f8fafc; border:1px solid var(--border); border-radius:8px">
+                <h3 style="color:var(--brand)">My Workspace</h3>
+                <label style="font-size:10px; font-weight:700">PROJECT NAME</label>
                 <select id="fProj" onchange="loadBugs()"></select>
-                <div style="margin-top:10px; font-size:12px"><b>Viewing:</b> Tasks assigned to <b>${user}</b></div>
+                <label style="font-size:10px; font-weight:700; margin-top:10px; display:block">DEVELOPER NAME</label>
+                <select id="fDev" disabled>
+                    <option value="${user}">${user}</option>
+                </select>
             </div>
         `;
-      }
+    } else { // Admin Dashboard
+        sidebar.innerHTML = `<h3>Admin Control</h3><select id="fProj" onchange="loadBugs()"></select>`;
+    }
 
-      // Common Headers with Started/Target Dates
-      headers.innerHTML = `
+    headers.innerHTML = `
         <th width="40">#</th>
         <th>Defect Summary</th>
         ${role !== 'Developer' ? '<th>Assignee</th>' : ''}
@@ -312,123 +133,99 @@
         <th>Started Date</th>
         <th>Target Date</th>
         <th>Status</th>
-        <th>Work Progress</th>
-        ${role === 'Admin' ? '<th>Action</th>' : ''}
+        <th>Progress</th>
     `;
-    }
+}
 
-    // 2. DATA LOADERS
-    async function init() {
-      setupUI();
-      const p = await (await fetch(API + "/projects")).json();
-      const t = await (await fetch(API + "/team")).json();
+async function loadBugs() {
+    const res = await fetch(API+"/bugs");
+    let bugs = await res.json();
+    const filterProj = document.getElementById('fProj').value;
 
-      const dropdowns = ['fProj', 'bProj'];
-      dropdowns.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) p.forEach(x => el.innerHTML += `<option value="${x.name}">${x.name}</option>`);
-      });
-
-      const bAssign = document.getElementById('bAssign');
-      if (bAssign) t.forEach(x => bAssign.innerHTML += `<option value="${x.name}">${x.name}</option>`);
-
-      loadBugs();
-    }
-
-    async function loadBugs() {
-      const res = await fetch(API + "/bugs");
-      let bugs = await res.json();
-      const filterProj = document.getElementById('fProj').value;
-
-      // RESTRICT DEVELOPER VIEW
-      if (role === "Developer") {
+    if(role === "Developer") {
         bugs = bugs.filter(b => b.assignedTo === user && b.project === filterProj);
-      } else if (filterProj) {
+    } else if (filterProj) {
         bugs = bugs.filter(b => b.project === filterProj);
-      }
+    }
 
-      // UPDATE ADMIN STATS
-      if (role === "Admin") {
-        document.getElementById('countTotal').innerText = bugs.length;
-        document.getElementById('countQueue').innerText = bugs.filter(b => b.status === "Queue").length;
-        document.getElementById('countReview').innerText = bugs.filter(b => b.status === "Review").length;
-        document.getElementById('countFixed').innerText = bugs.filter(b => b.status === "Fixed").length;
-      }
-
-      const body = document.getElementById('bugList');
-      body.innerHTML = bugs.length ? "" : "<tr><td colspan='9' style='text-align:center; padding:40px'>No data available.</td></tr>";
-
-      bugs.forEach((b, i) => {
+    const body = document.getElementById('bugList');
+    body.innerHTML = "";
+    bugs.forEach((b, i) => {
         const reported = b.createdAt ? new Date(b.createdAt).toLocaleDateString() : '-';
         const start = b.startedAt ? b.startedAt.split('T')[0] : '';
         const target = b.targetDate ? b.targetDate.split('T')[0] : '';
 
         body.innerHTML += `
             <tr>
-                <td>${i + 1}</td>
+                <td>${i+1}</td>
                 <td><strong>${b.title}</strong><br><small style="color:var(--text-light)">${b.project}</small></td>
                 ${role !== 'Developer' ? `<td>${b.assignedTo}</td>` : ''}
                 <td>${reported}</td>
-                <td><input type="date" class="date-pick" value="${start}" onchange="updateBug('${b._id}','startedAt',this.value)"></td>
-                <td><input type="date" class="date-pick" value="${target}" onchange="updateBug('${b._id}','targetDate',this.value)" style="border-color:#fca5a5"></td>
+                <td><input type="date" class="date-pick" value="${start}" onchange="patch('${b._id}','startedAt',this.value)"></td>
+                <td><input type="date" class="date-pick" value="${target}" onchange="patch('${b._id}','targetDate',this.value)"></td>
                 <td>
-                    <select class="status-pill ${b.status}" onchange="updateBug('${b._id}','status',this.value)">
-                        <option value="Queue" ${b.status == 'Queue' ? 'selected' : ''}>Queue</option>
-                        <option value="Review" ${b.status == 'Review' ? 'selected' : ''}>Review</option>
-                        ${role !== 'Developer' ? `<option value="Fixed" ${b.status == 'Fixed' ? 'selected' : ''}>Fixed</option>` : ''}
+                    <select class="status-pill ${b.status}" onchange="patch('${b._id}','status',this.value)">
+                        <option value="Queue" ${b.status=='Queue'?'selected':''}>Queue</option>
+                        <option value="Fixed" ${b.status=='Fixed'?'selected':''}>Fixed</option>
                     </select>
                 </td>
                 <td>
-                    <div style="display:flex; align-items:center; gap:10px">
-                        <input type="range" min="0" max="100" step="10" value="${b.completion || 0}" onchange="updateBug('${b._id}','completion',this.value)">
-                        <span style="font-weight:700">${b.completion || 0}%</span>
+                    <div style="display:flex; align-items:center; gap:8px">
+                        <input type="range" min="0" max="100" value="${b.completion||0}" onchange="patch('${b._id}','completion',this.value)">
+                        <span style="font-weight:700">${b.completion||0}%</span>
                     </div>
                 </td>
-                ${role === 'Admin' ? `<td><button onclick="delBug('${b._id}')" style="background:none; color:red; font-size:10px; padding:0">Delete</button></td>` : ''}
             </tr>
         `;
-      });
-    }
+    });
+}
 
-    // 3. ACTIONS
-    async function updateBug(id, field, value) {
-      await fetch(`${API}/bug/${id}`, { method: "PUT", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ [field]: value }) });
-      if (field === 'status') loadBugs();
-    }
+// Actions
+async function patch(id, field, value) {
+    await fetch(`${API}/bug/${id}`, {method:"PUT", headers:{'Content-Type':'application/json'}, body:JSON.stringify({[field]:value})});
+    if(field === 'status') loadBugs();
+}
 
-    async function submitBulk() {
-      const titles = document.getElementById('bText').value.trim().split("\n");
-      const payload = titles.map(t => ({
-        title: t.trim(),
-        project: document.getElementById('bProj').value,
-        assignedTo: document.getElementById('bAssign').value,
-        targetDate: document.getElementById('bTarget').value,
-        createdAt: new Date().toISOString(),
-        status: "Queue", completion: 0
-      })).filter(x => x.title);
+async function submitBulk() {
+    const lines = bPaste.value.trim().split("\n");
+    const data = lines.map(l => {
+        const p = l.split("|");
+        return { project: bProj.value, task: bTask.value, title: p[0].trim(), assignedTo: bAssign.value, status: "Queue", completion: 0, createdAt: new Date().toISOString(), targetDate: p[1]?.trim() || "" };
+    }).filter(x => x.title);
+    await fetch(API+"/bugs", {method:"POST", headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)});
+    bPaste.value = ""; loadBugs(); notify(`Batch Logged: ${data.length} bugs`);
+}
 
-      await fetch(API + "/bugs", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-      document.getElementById('bText').value = "";
-      loadBugs();
-    }
+async function addProj() { 
+    const name = document.getElementById('newProj').value;
+    await fetch(API+"/project", {method:"POST", headers:{'Content-Type':'application/json'}, body:JSON.stringify({name})});
+    location.reload(); 
+}
 
-    async function addProject() {
-      const name = document.getElementById('newP').value;
-      await fetch(API + "/project", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) });
-      location.reload();
-    }
+async function addDev() {
+    const name = document.getElementById('newDev').value;
+    await fetch(API+"/team", {method:"POST", headers:{'Content-Type':'application/json'}, body:JSON.stringify({name})});
+    location.reload();
+}
 
-    async function addMember() {
-      const name = document.getElementById('newD').value;
-      await fetch(API + "/team", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) });
-      location.reload();
-    }
+async function init() {
+    setupUI();
+    const p = await (await fetch(API+"/projects")).json();
+    const t = await (await fetch(API+"/team")).json();
+    
+    ['fProj', 'bProj'].forEach(id => {
+        const el = document.getElementById(id);
+        if(el) p.forEach(x => el.innerHTML += `<option value="${x.name}">${x.name}</option>`);
+    });
 
-    async function delBug(id) { if (confirm("Delete?")) { await fetch(`${API}/bug/${id}`, { method: "DELETE" }); loadBugs(); } }
-    function logout() { localStorage.clear(); window.location.href = "login.html"; }
+    const bAssign = document.getElementById('bAssign');
+    if(bAssign) t.forEach(x => bAssign.innerHTML += `<option value="${x.name}">${x.name}</option>`);
+    
+    loadBugs();
+}
 
-    init();
-  </script>
+function logout() { localStorage.clear(); window.location.href = "login.html"; }
+init();
+</script>
 </body>
-
 </html>
