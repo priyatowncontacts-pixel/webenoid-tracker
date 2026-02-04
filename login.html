@@ -5,62 +5,87 @@
     <title>Login | Webenoid</title>
     <style>
         body {
-            font-family: sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background: #f8fafc;
+            background: #f1f5f9;
             margin: 0;
         }
 
         .card {
             background: white;
             padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, .1);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, .05);
             text-align: center;
-            width: 320px;
+            width: 340px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .logo-text {
+            color: #2563eb;
+            margin-bottom: 5px;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        p {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 25px;
         }
 
         input,
         select {
             width: 100%;
             padding: 12px;
-            margin: 10px 0;
-            border: 1px solid #e2e8f0;
+            margin: 8px 0;
+            border: 1px solid #cbd5e1;
             border-radius: 8px;
             box-sizing: border-box;
+            outline-color: #2563eb;
         }
 
         button {
             width: 100%;
-            padding: 12px;
+            padding: 13px;
             background: #2563eb;
             color: white;
             border: none;
             border-radius: 8px;
             cursor: pointer;
-            font-weight: bold;
+            font-weight: 600;
+            margin-top: 15px;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            background: #1d4ed8;
         }
 
         .error {
-            color: red;
+            color: #ef4444;
             font-size: 13px;
-            margin-top: 8px;
+            margin-top: 12px;
+            font-weight: 500;
+            min-height: 15px;
         }
     </style>
 </head>
 
 <body>
     <div class="card">
-        <h2 style="color:#2563eb; margin-bottom: 20px;">WEBENOID LOGIN</h2>
+        <h2 class="logo-text">WEBENOID</h2>
+        <p>Bug Tracking Command Center</p>
 
         <input id="u" placeholder="Username">
         <input id="p" type="password" placeholder="Password">
 
         <select id="r">
-            <option value="">Select Role</option>
+            <option value="">Select Your Role</option>
+            <option value="Admin">Administrator</option>
             <option value="Developer">Developer</option>
             <option value="Tester">Tester</option>
         </select>
@@ -72,47 +97,53 @@
 
     <script>
         function handleLogin() {
-
             const user = u.value.trim();
             const pass = p.value.trim();
             const role = r.value;
+            const errDiv = document.getElementById('err');
 
-            err.innerText = "";
+            errDiv.innerText = "";
 
-            if (!user || !pass) {
-                err.innerText = "Please enter username and password";
+            // 1. Basic Validation
+            if (!user || !pass || !role) {
+                errDiv.innerText = "All fields are required";
                 return;
             }
 
-            if (!role) {
-                err.innerText = "Please select a role";
-                return;
+            // 2. Credential Logic
+            let accessGranted = false;
+
+            if (role === "Admin") {
+                // Admin specific credentials
+                if (user === "Admin" && pass === "Admin789") {
+                    accessGranted = true;
+                }
+            } else {
+                // Developer and Tester use standard credentials
+                if (user === "Webenoid" && pass === "Webenoid123") {
+                    accessGranted = true;
+                }
             }
 
-            // ---- CREDENTIAL CHECK ----
-            if (user === "Webenoid" && pass === "Webenoid123") {
-
+            // 3. Session Handling
+            if (accessGranted) {
                 localStorage.setItem("user", user);
                 localStorage.setItem("role", role);
                 localStorage.setItem("webenoid_session", "active");
                 localStorage.setItem("login_time", new Date().toISOString());
 
-                // ✅ IMPORTANT → open tracker page
+                // Redirect to the main dashboard
                 window.location.href = "index.html";
-
-
-
             } else {
-                err.innerText = "Access Denied: Invalid Credentials";
+                errDiv.innerText = "Invalid credentials for selected role";
             }
         }
 
         // Allow ENTER key login
-        document.addEventListener("keypress", function (e) {
+        document.addEventListener("keypress", (e) => {
             if (e.key === "Enter") handleLogin();
         });
     </script>
-
 </body>
 
 </html>
