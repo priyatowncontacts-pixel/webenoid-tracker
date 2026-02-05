@@ -126,10 +126,6 @@
       transition: 0.2s;
     }
 
-    button:hover {
-      opacity: 0.9;
-    }
-
     .table-wrap {
       background: white;
       border-radius: var(--radius);
@@ -185,21 +181,6 @@
       font-size: 12px;
       width: 130px;
     }
-
-    .stat-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 15px;
-      margin-bottom: 20px;
-    }
-
-    .stat-card {
-      background: white;
-      padding: 15px;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      text-align: center;
-    }
   </style>
 </head>
 
@@ -218,25 +199,9 @@
   </nav>
 
   <div class="wrapper">
-    <aside id="sidebarContent">
-    </aside>
+    <aside id="sidebarContent"></aside>
 
     <main>
-      <div id="adminHero" style="display:none" class="stat-grid">
-        <div class="stat-card">
-          <div style="font-size:10px; color:var(--text-light)">TOTAL DEFECTS</div>
-          <div id="countTotal" style="font-size:20px; font-weight:800">0</div>
-        </div>
-        <div class="stat-card" style="border-bottom: 3px solid #ef4444">
-          <div style="font-size:10px; color:var(--text-light)">OPEN QUEUE</div>
-          <div id="countQueue" style="font-size:20px; font-weight:800">0</div>
-        </div>
-        <div class="stat-card" style="border-bottom: 3px solid #22c55e">
-          <div style="font-size:10px; color:var(--text-light)">FIXED</div>
-          <div id="countFixed" style="font-size:20px; font-weight:800">0</div>
-        </div>
-      </div>
-
       <div id="testerBulk" style="display:none" class="card">
         <h3 style="margin-top:0; color:var(--brand)">Bulk Defect Entry</h3>
         <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; margin-bottom:10px">
@@ -268,6 +233,7 @@
     document.getElementById('userName').innerText = user;
     document.getElementById('roleDisplay').innerText = role;
 
+    // 1. UPDATED UI: Added Developer Dropdown for Dev Dashboard
     function setupUI() {
       const sidebar = document.getElementById('sidebarContent');
       const headers = document.getElementById('tableHeaders');
@@ -281,7 +247,6 @@
             <input id="newProj" placeholder="Project Name"><button onclick="addProj()">Create Project</button>
             <input id="newTask" placeholder="Task Name" style="margin-top:10px"><button onclick="addTask()">Link Task</button>
             <h3>Navigation</h3>
-            <label style="font-size:10px">Select Project View</label>
             <select id="fProj" onchange="loadBugs()"></select>
         `;
       } else if (role === "Developer") {
@@ -291,50 +256,33 @@
                 <label style="font-size:10px; font-weight:700">PROJECT NAME</label>
                 <select id="fProj" onchange="loadBugs()"></select>
                 <label style="font-size:10px; font-weight:700; margin-top:10px; display:block">DEVELOPER NAME</label>
-                <select id="fDev" onchange="loadBugs()"></select>
-                <p style="font-size:11px; color:var(--text-light); margin-top:15px">Only showing defects assigned to the selected developer.</p>
+                <select id="fDev" onchange="loadBugs()">
+                    <option value="${user}">${user}</option>
+                </select>
             </div>
         `;
-      } else { // Admin Dashboard
-        document.getElementById('adminHero').style.display = "grid";
+      } else {
         sidebar.innerHTML = `<h3>Admin Control</h3><select id="fProj" onchange="loadBugs()"></select>`;
       }
 
       headers.innerHTML = `
-        <th width="40">#</th><th>Summary</th>
+        <th>#</th><th>Summary</th>
         ${role !== 'Developer' ? '<th>Assignee</th>' : ''}
         <th>Reported</th><th>Started</th><th>Target</th><th>Status</th><th>Work</th>
     `;
     }
 
-    // RESTORED: Load tasks for the bulk entry dropdown
-    async function loadBTasks() {
-      const proj = document.getElementById('bProj').value;
-      const res = await fetch(`${API}/tasks/${proj}`);
-      const tasks = await res.json();
-      const ts = document.getElementById('bTask');
-      if (ts) { ts.innerHTML = ""; tasks.forEach(t => ts.innerHTML += `<option value="${t.name}">${t.name}</option>`); }
-    }
-
+    // 2. UPDATED LOGIC: Strict filtering for Developer View
     async function loadBugs() {
       const res = await fetch(API + "/bugs");
       let bugs = await res.json();
       const filterProj = document.getElementById('fProj').value;
 
-      // Check developer dropdown in sidebar
-      const filterDev = document.getElementById('fDev') ? document.getElementById('fDev').value : user;
-
       if (role === "Developer") {
-        bugs = bugs.filter(b => b.assignedTo === filterDev && b.project === filterProj);
+        // Logic: even if they change the dropdown, we only filter by their logged-in 'user' variable for safety
+        bugs = bugs.filter(b => b.assignedTo === user && b.project === filterProj);
       } else if (filterProj) {
         bugs = bugs.filter(b => b.project === filterProj);
-      }
-
-      // Admin Stats
-      if (role === "Admin") {
-        document.getElementById('countTotal').innerText = bugs.length;
-        document.getElementById('countQueue').innerText = bugs.filter(x => x.status === "Queue").length;
-        document.getElementById('countFixed').innerText = bugs.filter(x => x.status === "Fixed").length;
       }
 
       const body = document.getElementById('bugList');
@@ -346,7 +294,7 @@
         body.innerHTML += `
             <tr>
                 <td>${i + 1}</td>
-                <td><strong>${b.title}</strong><br><small style="color:var(--text-light)">${b.project} / ${b.task || ''}</small></td>
+                <td><strong>${b.title}</strong><br><small>${b.project}</small></td>
                 ${role !== 'Developer' ? `<td>${b.assignedTo}</td>` : ''}
                 <td>${reported}</td>
                 <td><input type="date" class="date-pick" value="${start}" onchange="patch('${b._id}','startedAt',this.value)"></td>
@@ -360,6 +308,15 @@
                 <td><input type="range" min="0" max="100" value="${b.completion || 0}" onchange="patch('${b._id}','completion',this.value)"></td>
             </tr>`;
       });
+    }
+
+    // RESTORED MISSING FUNCTIONS
+    async function loadBTasks() {
+      const proj = document.getElementById('bProj').value;
+      const res = await fetch(`${API}/tasks/${proj}`);
+      const tasks = await res.json();
+      const ts = document.getElementById('bTask');
+      if (ts) { ts.innerHTML = ""; tasks.forEach(t => ts.innerHTML += `<option value="${t.name}">${t.name}</option>`); }
     }
 
     async function patch(id, field, value) {
@@ -401,22 +358,19 @@
       setupUI();
       const p = await (await fetch(API + "/projects")).json();
       const t = await (await fetch(API + "/team")).json();
-
-      // Fill Project Dropdowns
       ['fProj', 'bProj'].forEach(id => {
         const el = document.getElementById(id);
         if (el) p.forEach(x => el.innerHTML += `<option value="${x.name}">${x.name}</option>`);
       });
+      const bAssign = document.getElementById('bAssign');
+      if (bAssign) t.forEach(x => bAssign.innerHTML += `<option value="${x.name}">${x.name}</option>`);
 
-      // Fill Developer Dropdowns
-      const devSelects = ['fDev', 'bAssign'];
-      devSelects.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-          el.innerHTML = "";
-          t.forEach(x => el.innerHTML += `<option value="${x.name}" ${x.name === user ? 'selected' : ''}>${x.name}</option>`);
-        }
-      });
+      // Fill Dev dropdown if in Dev mode
+      const fDev = document.getElementById('fDev');
+      if (fDev) {
+        fDev.innerHTML = "";
+        t.forEach(x => fDev.innerHTML += `<option value="${x.name}" ${x.name === user ? 'selected' : ''}>${x.name}</option>`);
+      }
 
       if (role === "Tester") await loadBTasks();
       loadBugs();
