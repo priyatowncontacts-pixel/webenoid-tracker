@@ -232,6 +232,7 @@
     document.getElementById('userName').innerText = user;
     document.getElementById('roleDisplay').innerText = role;
 
+    // --- UI SETUP ---
     function setupUI() {
       const sidebar = document.getElementById('sidebarContent');
       const headers = document.getElementById('tableHeaders');
@@ -251,14 +252,15 @@
             <h3>Navigation</h3>
             <select id="fProj" onchange="loadBugs()"></select>
         `;
-      } else if (role === "Developer") {
+      } else {
         sidebar.innerHTML = `
             <div style="padding:15px; background:#f8fafc; border:1px solid var(--border); border-radius:8px">
-                <h3 style="color:var(--brand); margin-top:0">My Workspace</h3>
+                <h3 style="color:var(--brand); margin-top:0">Workspace</h3>
                 <label style="font-size:10px; font-weight:700">PROJECT</label>
                 <select id="fProj" onchange="loadBugs()"></select>
-                <label style="font-size:10px; font-weight:700; margin-top:10px; display:block">IDENTITY</label>
-                <select id="fDev" disabled><option value="${user}">${user}</option></select>
+                
+                <label style="font-size:10px; font-weight:700; margin-top:10px; display:block">IDENTIFY AS</label>
+                <select id="fDev" onchange="loadBugs()"></select>
             </div>
         `;
       }
@@ -266,13 +268,19 @@
       headers.innerHTML = `<th>#</th><th>Summary</th>${role !== 'Developer' ? '<th>Assignee</th>' : ''}<th>Reported</th><th>Started</th><th>Target</th><th>Status</th><th>Work</th>`;
     }
 
+    // --- DATA LOADING ---
     async function loadBugs() {
       const res = await fetch(API + "/bugs");
       let bugs = await res.json();
       const filterProj = document.getElementById('fProj').value;
 
+      // Logic: Look at the dropdown value first. If it's not there, use the logged-in user.
+      const devSelector = document.getElementById('fDev');
+      const selectedDev = devSelector ? devSelector.value : user;
+
       if (role === "Developer") {
-        bugs = bugs.filter(b => b.assignedTo === user && b.project === filterProj);
+        // Filter bugs specifically for the name selected in the dropdown
+        bugs = bugs.filter(b => b.assignedTo === selectedDev && b.project === filterProj);
       } else if (filterProj) {
         bugs = bugs.filter(b => b.project === filterProj);
       }
@@ -299,6 +307,40 @@
       });
     }
 
+    // --- INITIALIZATION ---
+    async function init() {
+      setupUI();
+      const p = await (await fetch(API + "/projects")).json();
+      const t = await (await fetch(API + "/team")).json();
+
+      // Fill Project Dropdowns
+      ['fProj', 'bProj'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) p.forEach(x => el.innerHTML += `<option value="${x.name}">${x.name}</option>`);
+      });
+
+      // Fill Developer Dropdown and Auto-Select the logged-in user
+      const fDev = document.getElementById('fDev');
+      const bAssign = document.getElementById('bAssign');
+
+      if (fDev) {
+        fDev.innerHTML = "";
+        t.forEach(member => {
+          const isMe = (member.name === user) ? "selected" : "";
+          fDev.innerHTML += `<option value="${member.name}" ${isMe}>${member.name}</option>`;
+        });
+      }
+
+      if (bAssign) {
+        bAssign.innerHTML = "";
+        t.forEach(member => bAssign.innerHTML += `<option value="${member.name}">${member.name}</option>`);
+      }
+
+      if (role === "Tester") await loadBTasks();
+      loadBugs();
+    }
+
+    // --- HELPER FUNCTIONS ---
     async function patch(id, field, value) {
       await fetch(`${API}/bug/${id}`, { method: "PUT", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ [field]: value }) });
       loadBugs();
@@ -312,9 +354,26 @@
     }
 
     async function removeDev() {
+      // For testers, we use the bAssign dropdown to pick who to delete
       const name = document.getElementById('bAssign').value;
-      if (!name || !confirm(`Remove developer "${name}"?`)) return;
+      if (!name || !confirm(`Remove developer "${name}" from the system?`)) return;
       await fetch(`${API}/team/${name}`, { method: "DELETE" });
+      location.reload();
+    }
+
+    async function addProj() {
+      await fetch(API + "/project", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: document.getElementById('newProj').value }) });
+      location.reload();
+    }
+
+    async function addDev() {
+      await fetch(API + "/team", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: document.getElementById('newDev').value }) });
+      location.reload();
+    }
+
+    async function addTask() {
+      const proj = document.getElementById('fProj').value;
+      await fetch(API + "/task", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ project: proj, name: document.getElementById('newTask').value }) });
       location.reload();
     }
 
@@ -338,37 +397,6 @@
       }).filter(x => x.title);
       await fetch(API + "/bugs", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
       document.getElementById('bPaste').value = ""; loadBugs();
-    }
-
-    async function addProj() {
-      await fetch(API + "/project", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: document.getElementById('newProj').value }) });
-      location.reload();
-    }
-
-    async function addDev() {
-      await fetch(API + "/team", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: document.getElementById('newDev').value }) });
-      location.reload();
-    }
-
-    async function addTask() {
-      const proj = document.getElementById('fProj').value;
-      await fetch(API + "/task", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ project: proj, name: document.getElementById('newTask').value }) });
-      location.reload();
-    }
-
-    async function init() {
-      setupUI();
-      const p = await (await fetch(API + "/projects")).json();
-      const t = await (await fetch(API + "/team")).json();
-      ['fProj', 'bProj'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) p.forEach(x => el.innerHTML += `<option value="${x.name}">${x.name}</option>`);
-      });
-      const bAssign = document.getElementById('bAssign');
-      if (bAssign) t.forEach(x => bAssign.innerHTML += `<option value="${x.name}">${x.name}</option>`);
-
-      if (role === "Tester") await loadBTasks();
-      loadBugs();
     }
 
     function logout() { localStorage.clear(); window.location.href = "login.html"; }
