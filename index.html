@@ -29,7 +29,6 @@
       overflow: hidden;
     }
 
-    /* HEADER */
     nav {
       height: 60px;
       background: var(--panel);
@@ -125,7 +124,6 @@
       cursor: pointer;
     }
 
-    /* TABLE */
     table {
       width: 100%;
       border-collapse: collapse;
@@ -192,11 +190,6 @@
       width: 100%;
     }
 
-    .grid-input:hover {
-      border-color: var(--border);
-      background: #fff;
-    }
-
     #notify {
       position: fixed;
       top: 20px;
@@ -208,17 +201,6 @@
       display: none;
       z-index: 10000;
       font-weight: 600;
-      animation: slideIn 0.3s ease;
-    }
-
-    @keyframes slideIn {
-      from {
-        transform: translateX(100%);
-      }
-
-      to {
-        transform: translateX(0);
-      }
     }
   </style>
 </head>
@@ -290,79 +272,39 @@
   </div>
 
   <script>
-    const API = "/api"; // Using relative path for Render stability
+    const API = "/api";
 
-    // --- AUTH & ROLE GUARD ---
+    // --- SESSION & ROLE ---
+    const user = localStorage.getItem("user") || "Guest";
+    const role = localStorage.getItem("role") || "Developer";
     const session = localStorage.getItem("webenoid_session");
-    const userRole = localStorage.getItem("role"); // Admin, Developer, or Tester
-    const userName = localStorage.getItem("user");
 
-    if (!session || session !== "active") window.location.href = "login.html";
-    document.getElementById('userLabel').innerText = `Logged in: ${userName} (${userRole})`;
+    if (!session) window.location.href = "login.html";
+    document.getElementById('userLabel').innerText = `Logged in: ${user} (${role})`;
 
-    // --- PRIVACY WALL LOGIC ---
-    // If the user is a Developer, hide the sidebar and bulk uploader cards
-    if (userRole === "Developer") {
+    // --- PRIVACY WALL ---
+    if (role === "Developer") {
       document.getElementById('sidebarUI').style.display = "none";
       document.getElementById('bulkUI').style.display = "none";
-      // Center the table for better developer experience
       document.getElementById('mainContainer').style.padding = "20px 10%";
     }
 
-    function logout() {
-      localStorage.clear();
-      window.location.href = "login.html";
-    }
+    function logout() { localStorage.clear(); window.location.href = "login.html"; }
+    function notify(msg) { const n = document.getElementById('notify'); n.innerText = msg; n.style.display = "block"; setTimeout(() => n.style.display = "none", 3000); }
 
-    function notify(msg) {
-      const n = document.getElementById('notify');
-      n.innerText = msg; n.style.display = "block";
-      setTimeout(() => n.style.display = "none", 3000);
-    }
-
-    // --- TEAM & DATA ---
-    let team = JSON.parse(localStorage.getItem("team_list")) || ["Assignee"];
-    function addDev() {
-      const name = document.getElementById('newDev').value.trim();
-      if (name) { team.push(name); localStorage.setItem("team_list", JSON.stringify(team)); updateDrops(); notify(`Added ${name}`); }
-    }
-    function updateDrops() {
-      [document.getElementById('qAssign'), document.getElementById('bAssign')].forEach(s => {
-        if (s) { s.innerHTML = ""; team.forEach(t => s.innerHTML += `<option value="${t}">${t}</option>`); }
-      });
-    }
-
-    // --- BUG MANAGEMENT ---
-    async function submitSingle() {
-      const data = [{ project: qProj.value, task: qTask.value, title: qTitle.value, assignedTo: qAssign.value, status: "Queue", completion: 0, startedAt: new Date().toISOString().slice(0, 16) }];
-      await fetch(API + "/bugs", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-      qTitle.value = ""; loadBugs(); notify("Defect Created!");
-    }
-
-    async function submitBulk() {
-      const lines = bPaste.value.trim().split("\n");
-      const data = lines.map(l => {
-        const p = l.split("|");
-        return { project: bProj.value, task: bTask.value, title: p[0].trim(), assignedTo: bAssign.value, status: "Queue", completion: 0, startedAt: new Date().toISOString().slice(0, 16), targetDate: p[1]?.trim() || "" };
-      }).filter(x => x.title);
-      await fetch(API + "/bugs", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-      bPaste.value = ""; loadBugs(); notify(`Batch Logged: ${data.length} bugs`);
-    }
-
-    async function patch(id, field, value) {
-      const b = {}; b[field] = value;
-      await fetch(`${API}/bug/${id}`, { method: "PUT", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(b) });
-      if (field === 'status') { loadBugs(); notify("Status Updated"); }
+    // Helper to fix the Date Format Error
+    function fmtDT(val) {
+      if (!val) return "";
+      return val.split('.')[0].slice(0, 16); // Removes milliseconds and Z
     }
 
     async function loadBugs() {
       const res = await fetch(API + "/bugs");
       let bugs = await res.json();
 
-      // --- DEVELOPER PRIVACY FILTER ---
-      // If user is a Developer, only show rows where assignedTo matches their name
-      if (userRole === "Developer") {
-        bugs = bugs.filter(b => b.assignedTo === userName);
+      // DEVELOPER IDENTITY FILTER
+      if (role === "Developer") {
+        bugs = bugs.filter(b => b.assignedTo === user);
       }
 
       const body = document.getElementById('bugList');
@@ -379,7 +321,7 @@
                     <option ${b.status == 'Fixed' ? 'selected' : ''}>Fixed</option>
                 </select>
             </td>
-            <td><input type="datetime-local" class="grid-input" value="${b.startedAt || ''}" onchange="patch('${b._id}','startedAt',this.value)"></td>
+            <td><input type="datetime-local" class="grid-input" value="${fmtDT(b.startedAt)}" onchange="patch('${b._id}','startedAt',this.value)"></td>
             <td><input type="date" class="grid-input" value="${b.targetDate || ''}" onchange="patch('${b._id}','targetDate',this.value)"></td>
             <td>
                 <div class="progress-container">
@@ -391,17 +333,47 @@
       });
     }
 
-    // --- PROJECT HELPERS ---
-    async function addProj() { await fetch(API + "/project", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: newProj.value }) }); newProj.value = ""; loadData(); }
-    async function addTask() { await fetch(API + "/task", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ project: selProj.value, name: newTask.value }) }); newTask.value = ""; loadData(); }
+    async function patch(id, field, value) {
+      const b = {}; b[field] = value;
+      await fetch(`${API}/bug/${id}`, {
+        method: "PUT",
+        headers: { 'Content-Type': 'application/json', 'email': user },
+        body: JSON.stringify(b)
+      });
+      if (field === 'status') { loadBugs(); notify("Status Updated"); }
+    }
+
     async function loadData() {
       const p = await (await fetch(API + "/projects")).json();
-      [selProj, qProj, bProj].forEach(s => { if (s) { s.innerHTML = ""; p.forEach(x => s.innerHTML += `<option value="${x.name}">${x.name}</option>`); } });
+      [selProj, qProj, bProj].forEach(s => { s.innerHTML = ""; p.forEach(x => s.innerHTML += `<option value="${x.name}">${x.name}</option>`); });
       loadTasks(); loadQTasks(); loadBTasks();
     }
-    async function loadTasks() { const t = await (await fetch(API + "/tasks/" + selProj.value)).json(); }
+
+    async function addProj() { await fetch(API + "/project", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: newProj.value }) }); newProj.value = ""; loadData(); }
+    async function addTask() { await fetch(API + "/task", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ project: selProj.value, name: newTask.value }) }); newTask.value = ""; loadData(); }
+    async function submitSingle() {
+      const data = [{ project: qProj.value, task: qTask.value, title: qTitle.value, assignedTo: qAssign.value, status: "Queue", completion: 0, startedAt: new Date().toISOString() }];
+      await fetch(API + "/bugs", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+      qTitle.value = ""; loadBugs(); notify("Defect Created!");
+    }
+
+    async function submitBulk() {
+      const lines = bPaste.value.trim().split("\n");
+      const data = lines.map(l => {
+        const p = l.split("|");
+        return { project: bProj.value, task: bTask.value, title: p[0].trim(), assignedTo: bAssign.value, status: "Queue", completion: 0, startedAt: new Date().toISOString(), targetDate: p[1]?.trim() || "" };
+      }).filter(x => x.title);
+      await fetch(API + "/bugs", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+      bPaste.value = ""; loadBugs(); notify(`Batch Logged!`);
+    }
+
+    async function loadTasks() { await fetch(API + "/tasks/" + selProj.value); }
     async function loadQTasks() { const t = await (await fetch(API + "/tasks/" + qProj.value)).json(); qTask.innerHTML = ""; t.forEach(x => qTask.innerHTML += `<option value="${x.name}">${x.name}</option>`); }
     async function loadBTasks() { const t = await (await fetch(API + "/tasks/" + bProj.value)).json(); bTask.innerHTML = ""; t.forEach(x => bTask.innerHTML += `<option value="${x.name}">${x.name}</option>`); }
+
+    let team = JSON.parse(localStorage.getItem("team_list")) || ["Assignee"];
+    function addDev() { const n = document.getElementById('newDev').value.trim(); if (n) { team.push(n); localStorage.setItem("team_list", JSON.stringify(team)); updateDrops(); } }
+    function updateDrops() { [qAssign, bAssign].forEach(s => { s.innerHTML = ""; team.forEach(t => s.innerHTML += `<option value="${t}">${t}</option>`); }); }
 
     loadData(); loadBugs(); updateDrops();
   </script>
