@@ -17,18 +17,10 @@ mongoose.connect(process.env.MONGO_URI || "mongodb+srv://Webenoid:Webenoid123@cl
 const Project = mongoose.model("Project", { name: String });
 const Task = mongoose.model("Task", { project: String, name: String });
 const Team = mongoose.model("Team", { name: String });
+const History = mongoose.model("History", { bugId: String, bugTitle: String, user: String, change: String, time: { type: Date, default: Date.now } });
 const Bug = mongoose.model("Bug", {
   project: String, title: String, task: String, startedAt: String, targetDate: String, assignedTo: String,
   status: { type: String, default: "Queue" }, completion: { type: Number, default: 0 }, createdAt: { type: Date, default: Date.now }
-});
-
-// HISTORY MODEL
-const History = mongoose.model("History", {
-  bugId: String,
-  bugTitle: String,
-  user: String,
-  change: String,
-  time: { type: Date, default: Date.now }
 });
 
 // ROUTES
@@ -50,25 +42,16 @@ app.post("/task", async (req, res) => { await Task.create(req.body); res.json({ 
 app.get("/bugs", async (req, res) => res.json(await Bug.find().sort({ createdAt: -1 })));
 app.post("/bugs", async (req, res) => { await Bug.insertMany(req.body); res.json({ success: true }); });
 
-// UPDATE BUG + LOG HISTORY
 app.put("/bug/:id", async (req, res) => {
-  const oldBug = await Bug.findById(req.params.id);
+  const old = await Bug.findById(req.params.id);
   await Bug.findByIdAndUpdate(req.params.id, req.body);
-
-  // Create history entry
   const field = Object.keys(req.body)[0];
-  const newVal = Object.values(req.body)[0];
-  await History.create({
-    bugId: req.params.id,
-    bugTitle: oldBug.title,
-    user: req.headers.user || "Unknown",
-    change: `Updated ${field} to: ${newVal}`
-  });
+  const val = Object.values(req.body)[0];
+  await History.create({ bugId: req.params.id, bugTitle: old.title, user: req.headers.user || "System", change: `Changed ${field} to ${val}` });
   res.json({ success: true });
 });
 
-// GET HISTORY
-app.get("/history", async (req, res) => res.json(await History.find().sort({ time: -1 }).limit(50)));
-
+app.get("/history", async (req, res) => res.json(await History.find().sort({ time: -1 }).limit(30)));
 app.get("*", (req, res) => res.sendFile(path.join(__dirname, "login.html")));
+
 app.listen(3000, () => console.log(`🚀 Engine Live on 3000`));

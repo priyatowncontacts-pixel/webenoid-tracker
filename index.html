@@ -12,6 +12,7 @@
       --bg: #f1f5f9;
       --panel: #ffffff;
       --border: #e2e8f0;
+      --text: #0f172a;
     }
 
     body {
@@ -32,6 +33,7 @@
       align-items: center;
       justify-content: space-between;
       padding: 0 30px;
+      flex-shrink: 0;
     }
 
     .wrapper {
@@ -46,12 +48,14 @@
       border-right: 1px solid var(--border);
       padding: 20px;
       overflow-y: auto;
+      flex-shrink: 0;
     }
 
     main {
       flex: 1;
       padding: 20px;
       overflow-y: auto;
+      background: var(--bg);
     }
 
     .card {
@@ -60,51 +64,19 @@
       border-radius: 12px;
       border: 1px solid var(--border);
       margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     }
 
-    table {
+    input,
+    select,
+    textarea {
       width: 100%;
-      border-collapse: collapse;
-      background: white;
+      padding: 10px;
+      border: 1px solid var(--border);
       border-radius: 8px;
-      overflow: hidden;
-    }
-
-    th,
-    td {
-      padding: 12px;
-      text-align: left;
-      border-bottom: 1px solid var(--border);
-      font-size: 13px;
-    }
-
-    th {
-      background: #f8fafc;
-      text-transform: uppercase;
-      font-size: 11px;
-      color: #64748b;
-    }
-
-    .history-item {
-      font-size: 12px;
-      padding: 8px;
-      border-bottom: 1px solid #eee;
-    }
-
-    .history-item small {
-      color: #888;
-    }
-
-    input[type="range"] {
-      width: 100px;
-      accent-color: var(--brand);
-    }
-
-    .prog-val {
-      font-size: 10px;
-      font-weight: bold;
-      color: var(--brand);
-      display: block;
+      margin-bottom: 10px;
+      font-family: inherit;
+      box-sizing: border-box;
     }
 
     button {
@@ -112,14 +84,65 @@
       background: var(--brand);
       color: white;
       border: none;
-      padding: 8px;
-      border-radius: 5px;
+      padding: 12px;
+      border-radius: 8px;
       width: 100%;
-      margin-top: 5px;
+      font-weight: 600;
     }
 
     .btn-del {
       background: #ef4444;
+      margin-top: 5px;
+      font-size: 11px;
+      padding: 8px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 800px;
+    }
+
+    th {
+      text-align: left;
+      padding: 12px;
+      background: #f8fafc;
+      font-size: 11px;
+      color: #64748b;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+
+    .history-log {
+      background: #1e293b;
+      color: #e2e8f0;
+      padding: 15px;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 12px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .log-entry {
+      margin-bottom: 5px;
+      border-bottom: 1px solid #334155;
+      padding-bottom: 5px;
+    }
+
+    .log-entry span {
+      color: #38bdf8;
+    }
+
+    input[type="range"] {
+      accent-color: var(--brand);
+      vertical-align: middle;
     }
   </style>
 </head>
@@ -127,26 +150,27 @@
 <body>
 
   <nav>
-    <div style="font-weight:800; color:var(--brand)">WEBENOID</div>
-    <div><span id="uName"></span> <button onclick="logout()"
-        style="width:auto; background:none; color:red">Logout</button></div>
+    <div style="font-weight:800; color:var(--brand); font-size: 20px;">WEBENOID</div>
+    <div style="font-size: 13px; font-weight: 600;"><span id="uInfo"></span> <button onclick="logout()"
+        style="width:auto; background:none; color:red; margin-left:15px; padding:0">Logout</button></div>
   </nav>
 
   <div class="wrapper">
     <aside id="sidebar"></aside>
+
     <main>
       <div id="testerUI" style="display:none" class="card">
-        <h3>Bulk Entry</h3>
-        <textarea id="bulkData" placeholder="Title | Date" style="width:100%; height:60px"></textarea>
-        <div style="display:flex; gap:10px; margin-top:10px">
+        <h3 style="margin-top:0">Bulk Defect Entry</h3>
+        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; margin-bottom:10px">
           <select id="bProj" onchange="loadTasks()"></select>
           <select id="bTask"></select>
           <select id="bDev"></select>
         </div>
-        <button onclick="submitBulk()">Submit Defects</button>
+        <textarea id="bulkData" placeholder="Title | Target Date (YYYY-MM-DD)" rows="2"></textarea>
+        <button onclick="submitBulk()">🚀 Batch Process</button>
       </div>
 
-      <div class="card">
+      <div class="card" style="overflow-x:auto">
         <table>
           <thead>
             <tr id="headers"></tr>
@@ -155,9 +179,9 @@
         </table>
       </div>
 
-      <div id="historySection" class="card" style="display:none">
-        <h3>System History (Logs)</h3>
-        <div id="historyList"></div>
+      <div id="historySection" style="display:none" class="card">
+        <h3>Activity History Log</h3>
+        <div id="historyList" class="history-log"></div>
       </div>
     </main>
   </div>
@@ -167,7 +191,7 @@
     const user = localStorage.getItem("user") || "Unknown";
     const role = localStorage.getItem("role") || "Developer";
 
-    document.getElementById('uName').innerText = `${user} (${role})`;
+    document.getElementById('uInfo').innerText = `${user} (${role})`;
 
     function setupUI() {
       const side = document.getElementById('sidebar');
@@ -180,18 +204,24 @@
             <h3>Admin Tools</h3>
             <input id="nP" placeholder="Project Name"><button onclick="addP()">Add Project</button>
             <button class="btn-del" onclick="delP()">Delete Project</button>
-            <input id="nD" placeholder="Dev Name" style="margin-top:10px"><button onclick="addD()">Add Dev</button>
-            <h3>Filter</h3>
+            <hr><input id="nD" placeholder="Dev Name"><button onclick="addD()">Add Dev</button>
+            <button class="btn-del" onclick="delD()">Remove Dev</button>
+            <hr><input id="nT" placeholder="Task Name"><button onclick="addT()">Link Task</button>
+            <h3>Navigation</h3>
             <select id="fP" onchange="loadBugs()"></select>
         `;
       } else {
         side.innerHTML = `
-            <h3>My Workspace</h3>
-            <select id="fP" onchange="loadBugs()"></select>
-            <select id="fD" disabled><option>${user}</option></select>
+            <div style="background:#f8fafc; padding:10px; border-radius:8px">
+                <h3 style="margin-top:0">My View</h3>
+                <label style="font-size:10px; font-weight:800">PROJECT</label>
+                <select id="fP" onchange="loadBugs()"></select>
+                <label style="font-size:10px; font-weight:800; display:block; margin-top:10px">LOGGED IN AS</label>
+                <select id="fD" disabled><option>${user}</option></select>
+            </div>
         `;
       }
-      head.innerHTML = `<th>Defect</th>${role === 'Tester' ? '<th>Dev</th>' : ''}<th>Status</th><th>Progress</th><th>Dates</th>`;
+      head.innerHTML = `<th>#</th><th>Defect</th>${role === 'Tester' ? '<th>Assignee</th>' : ''}<th>Status</th><th>Work Done</th><th>Dates</th>`;
     }
 
     async function loadBugs() {
@@ -207,9 +237,10 @@
 
       const list = document.getElementById('bugList');
       list.innerHTML = "";
-      bugs.forEach(b => {
+      bugs.forEach((b, i) => {
         list.innerHTML += `
             <tr>
+                <td>${i + 1}</td>
                 <td><b>${b.title}</b><br><small>${b.task}</small></td>
                 ${role === 'Tester' ? `<td>${b.assignedTo}</td>` : ''}
                 <td>
@@ -219,10 +250,10 @@
                     </select>
                 </td>
                 <td>
-                    <span class="prog-val">${b.completion}%</span>
-                    <input type="range" value="${b.completion}" onchange="patch('${b._id}', 'completion', this.value)">
+                    <input type="range" min="0" max="100" value="${b.completion}" onchange="patch('${b._id}', 'completion', this.value)">
+                    <span style="font-size:11px; font-weight:bold">${b.completion}%</span>
                 </td>
-                <td><small>Start: ${b.startedAt?.split('T')[0] || '-'}<br>End: ${b.targetDate || '-'}</small></td>
+                <td><small>Rep: ${b.createdAt?.split('T')[0]}<br>Tgt: ${b.targetDate || '-'}</small></td>
             </tr>`;
       });
       if (role === "Tester") loadHistory();
@@ -240,35 +271,50 @@
     async function loadHistory() {
       const res = await fetch(API + "/history");
       const logs = await res.json();
-      const container = document.getElementById('historyList');
-      container.innerHTML = logs.map(l => `
-        <div class="history-item">
-            <b>${l.user}</b> ${l.change} <br>
-            <small>Bug: ${l.bugTitle} | ${new Date(l.time).toLocaleString()}</small>
+      document.getElementById('historyList').innerHTML = logs.map(l => `
+        <div class="log-entry">
+            [${new Date(l.time).toLocaleTimeString()}] <span>${l.user}</span>: ${l.change} (<em>${l.bugTitle}</em>)
         </div>
     `).join('');
     }
 
-    // Initialization and Helpers (Add Project, Bulk, etc.)
+    // ALL HELPER FUNCTIONS RE-ADDED
     async function init() {
       setupUI();
       const projs = await (await fetch(API + "/projects")).json();
       const devs = await (await fetch(API + "/team")).json();
-
       ['fP', 'bProj'].forEach(id => {
         const el = document.getElementById(id);
         if (el) projs.forEach(p => el.innerHTML += `<option value="${p.name}">${p.name}</option>`);
       });
-
       const bDev = document.getElementById('bDev');
       if (bDev) devs.forEach(d => bDev.innerHTML += `<option value="${d.name}">${d.name}</option>`);
-
+      if (role === "Tester") await loadTasks();
       loadBugs();
+    }
+
+    async function loadTasks() {
+      const proj = document.getElementById('bProj').value;
+      const tasks = await (await fetch(`${API}/tasks/${proj}`)).json();
+      const ts = document.getElementById('bTask');
+      if (ts) { ts.innerHTML = ""; tasks.forEach(t => ts.innerHTML += `<option value="${t.name}">${t.name}</option>`); }
+    }
+
+    async function submitBulk() {
+      const lines = document.getElementById('bulkData').value.trim().split("\n");
+      const data = lines.map(l => {
+        const p = l.split("|");
+        return { project: document.getElementById('bProj').value, task: document.getElementById('bTask').value, title: p[0].trim(), assignedTo: document.getElementById('bDev').value, status: "Queue", completion: 0, targetDate: p[1]?.trim() || "" };
+      }).filter(x => x.title);
+      await fetch(API + "/bugs", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
+      document.getElementById('bulkData').value = ""; loadBugs();
     }
 
     async function addP() { await fetch(API + "/project", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: document.getElementById('nP').value }) }); location.reload(); }
     async function addD() { await fetch(API + "/team", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: document.getElementById('nD').value }) }); location.reload(); }
+    async function addT() { await fetch(API + "/task", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ project: document.getElementById('fP').value, name: document.getElementById('nT').value }) }); location.reload(); }
     async function delP() { await fetch(`${API}/project/${document.getElementById('fP').value}`, { method: "DELETE" }); location.reload(); }
+    async function delD() { await fetch(`${API}/team/${document.getElementById('bDev').value}`, { method: "DELETE" }); location.reload(); }
 
     function logout() { localStorage.clear(); window.location.href = "login.html"; }
     init();
