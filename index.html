@@ -3,7 +3,6 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Webenoid Bug Tracker</title>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
     rel="stylesheet">
@@ -44,21 +43,6 @@
       font-weight: 800;
       color: var(--brand);
       font-size: 20px;
-      letter-spacing: -0.5px;
-    }
-
-    .logo span {
-      color: var(--text);
-    }
-
-    .logout-btn {
-      background: #fff;
-      color: #ef4444;
-      border: 1px solid #fee2e2;
-      padding: 6px 14px;
-      border-radius: 6px;
-      font-weight: 600;
-      cursor: pointer;
     }
 
     .wrapper {
@@ -81,16 +65,6 @@
       overflow-y: auto;
     }
 
-    h3 {
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      color: var(--text-light);
-      margin-bottom: 12px;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 5px;
-    }
-
     .card {
       background: var(--panel);
       border-radius: var(--radius);
@@ -107,10 +81,8 @@
       padding: 10px 12px;
       border: 1px solid var(--border);
       border-radius: 8px;
-      font-family: inherit;
-      font-size: 13px;
       margin-bottom: 10px;
-      outline: none;
+      font-family: inherit;
     }
 
     button {
@@ -127,20 +99,12 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 1100px;
+      min-width: 1000px;
     }
 
-    th {
-      text-align: left;
-      padding: 12px;
-      font-size: 11px;
-      text-transform: uppercase;
-      color: var(--text-light);
-      border-bottom: 1px solid var(--border);
-      background: #fcfcfd;
-    }
-
+    th,
     td {
+      text-align: left;
       padding: 12px;
       border-bottom: 1px solid var(--border);
       font-size: 13px;
@@ -153,8 +117,6 @@
       border-radius: 6px;
       font-weight: 700;
       border: none;
-      font-size: 11px;
-      cursor: pointer;
     }
 
     .Fixed {
@@ -164,30 +126,6 @@
       border-radius: 6px;
       font-weight: 700;
       border: none;
-      font-size: 11px;
-      cursor: pointer;
-    }
-
-    .progress-container {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    input[type="range"] {
-      margin: 0;
-      cursor: pointer;
-      height: 6px;
-      accent-color: var(--brand);
-      width: 80px;
-    }
-
-    .grid-input {
-      font-size: 11px;
-      padding: 4px;
-      border: 1px solid transparent;
-      background: transparent;
-      width: 100%;
     }
 
     #notify {
@@ -200,7 +138,6 @@
       border-radius: 8px;
       display: none;
       z-index: 10000;
-      font-weight: 600;
     }
   </style>
 </head>
@@ -210,8 +147,9 @@
   <nav>
     <div class="logo">WEBENOID <span>TRACKER</span></div>
     <div style="display: flex; align-items: center; gap: 20px;">
-      <span id="userLabel" style="font-weight: 600; font-size: 13px; color: var(--text-light);"></span>
-      <button class="logout-btn" onclick="logout()">Logout</button>
+      <span id="userLabel" style="font-weight: 600; font-size: 13px;"></span>
+      <button onclick="logout()"
+        style="width:auto; background:none; color:#ef4444; border:1px solid #fee2e2; padding:6px 12px;">Logout</button>
     </div>
   </nav>
 
@@ -220,7 +158,8 @@
   <div class="wrapper">
     <aside id="sidebarUI">
       <h3>Directory</h3>
-      <input id="newDev" placeholder="Add New Developer">
+      <input id="newDev" placeholder="Developer Name">
+      <input id="newDevPass" type="password" placeholder="Set Password">
       <button onclick="addDev()" style="background: #0f172a; margin-bottom: 20px;">Add Member</button>
 
       <h3>Context</h3>
@@ -230,7 +169,7 @@
       <input id="newTask" placeholder="Task Name">
       <button onclick="addTask()">Link Task</button>
 
-      <div style="margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px;">
+      <div style="margin-top: 20px;">
         <h3>Quick Entry</h3>
         <select id="qProj" onchange="loadQTasks()"></select>
         <select id="qTask"></select>
@@ -242,27 +181,22 @@
 
     <main id="mainContainer">
       <div class="card" id="bulkUI">
-        <h3>Bulk Copy-Paste</h3>
-        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-          <select id="bProj" onchange="loadBTasks()"></select>
-          <select id="bTask"></select>
-          <select id="bAssign"></select>
-        </div>
-        <textarea id="bPaste" rows="3" placeholder="Paste rows: Title | Target Date (YYYY-MM-DD)"></textarea>
-        <button onclick="submitBulk()" style="width: auto; padding: 10px 30px;">🚀 Process Batch List</button>
+        <h3>Bulk Log</h3>
+        <select id="bAssign"></select>
+        <textarea id="bPaste" rows="3" placeholder="Title | YYYY-MM-DD"></textarea>
+        <button onclick="submitBulk()">Process List</button>
       </div>
 
       <div class="card" style="padding:0; overflow-x:auto">
         <table>
           <thead>
             <tr>
-              <th style="width:40px; text-align:center">#</th>
-              <th>Defect Details</th>
+              <th>Defect</th>
               <th>Assignee</th>
               <th style="width:100px">Status</th>
               <th>Started At</th>
-              <th>Target Fix</th>
-              <th>Work Done</th>
+              <th>Target</th>
+              <th>Progress</th>
             </tr>
           </thead>
           <tbody id="bugList"></tbody>
@@ -273,109 +207,77 @@
 
   <script>
     const API = "/api";
+    const userName = localStorage.getItem("user");
+    const userRole = localStorage.getItem("role");
 
-    // --- SESSION & ROLE ---
-    const user = localStorage.getItem("user") || "Guest";
-    const role = localStorage.getItem("role") || "Developer";
-    const session = localStorage.getItem("webenoid_session");
+    if (!localStorage.getItem("webenoid_session")) window.location.href = "login.html";
+    document.getElementById('userLabel').innerText = `${userName} (${userRole})`;
 
-    if (!session) window.location.href = "login.html";
-    document.getElementById('userLabel').innerText = `Logged in: ${user} (${role})`;
-
-    // --- PRIVACY WALL ---
-    if (role === "Developer") {
+    // PRIVACY WALL
+    if (userRole === "Developer") {
       document.getElementById('sidebarUI').style.display = "none";
       document.getElementById('bulkUI').style.display = "none";
       document.getElementById('mainContainer').style.padding = "20px 10%";
     }
 
     function logout() { localStorage.clear(); window.location.href = "login.html"; }
-    function notify(msg) { const n = document.getElementById('notify'); n.innerText = msg; n.style.display = "block"; setTimeout(() => n.style.display = "none", 3000); }
+    function notify(m) { const n = document.getElementById('notify'); n.innerText = m; n.style.display = "block"; setTimeout(() => n.style.display = "none", 3000); }
 
-    // Helper to fix the Date Format Error
-    function fmtDT(val) {
-      if (!val) return "";
-      return val.split('.')[0].slice(0, 16); // Removes milliseconds and Z
+    async function addDev() {
+      const name = newDev.value.trim(); const pass = newDevPass.value.trim();
+      if (!name || !pass) return;
+      await fetch(API + "/team", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, password: pass, role: "Developer" }) });
+      newDev.value = ""; newDevPass.value = ""; notify("Member Added"); loadData();
     }
 
     async function loadBugs() {
       const res = await fetch(API + "/bugs");
       let bugs = await res.json();
-
-      // DEVELOPER IDENTITY FILTER
-      if (role === "Developer") {
-        bugs = bugs.filter(b => b.assignedTo === user);
-      }
+      if (userRole === "Developer") bugs = bugs.filter(b => b.assignedTo === userName);
 
       const body = document.getElementById('bugList');
       body.innerHTML = "";
-      bugs.forEach((b, i) => {
+      bugs.forEach(b => {
         body.innerHTML += `
-        <tr>
-            <td style="text-align:center">${i + 1}</td>
-            <td><strong>${b.title}</strong><br><small>${b.project} / ${b.task}</small></td>
-            <td><strong>${b.assignedTo}</strong></td>
-            <td>
-                <select class="${b.status}" onchange="patch('${b._id}','status',this.value)">
-                    <option ${b.status == 'Queue' ? 'selected' : ''}>Queue</option>
-                    <option ${b.status == 'Fixed' ? 'selected' : ''}>Fixed</option>
-                </select>
-            </td>
-            <td><input type="datetime-local" class="grid-input" value="${fmtDT(b.startedAt)}" onchange="patch('${b._id}','startedAt',this.value)"></td>
-            <td><input type="date" class="grid-input" value="${b.targetDate || ''}" onchange="patch('${b._id}','targetDate',this.value)"></td>
-            <td>
-                <div class="progress-container">
-                    <input type="range" min="0" max="100" value="${b.completion || 0}" oninput="document.getElementById('p-${b._id}').innerText=this.value+'%'" onchange="patch('${b._id}','completion',this.value)">
-                    <span id="p-${b._id}" style="font-weight:700; font-size:11px">${b.completion || 0}%</span>
-                </div>
-            </td>
-        </tr>`;
+            <tr>
+                <td><strong>${b.title}</strong><br><small>${b.project}</small></td>
+                <td>${b.assignedTo}</td>
+                <td>
+                    <select class="${b.status}" onchange="patch('${b._id}','status',this.value)">
+                        <option ${b.status == 'Queue' ? 'selected' : ''}>Queue</option>
+                        <option ${b.status == 'Fixed' ? 'selected' : ''}>Fixed</option>
+                    </select>
+                </td>
+                <td><input type="datetime-local" style="width:140px; border:none;" value="${b.startedAt ? b.startedAt.slice(0, 16) : ''}" onchange="patch('${b._id}','startedAt',this.value)"></td>
+                <td><input type="date" style="border:none;" value="${b.targetDate || ''}" onchange="patch('${b._id}','targetDate',this.value)"></td>
+                <td><input type="range" value="${b.completion || 0}" onchange="patch('${b._id}','completion',this.value)"> ${b.completion || 0}%</td>
+            </tr>`;
       });
     }
 
-    async function patch(id, field, value) {
-      const b = {}; b[field] = value;
-      await fetch(`${API}/bug/${id}`, {
-        method: "PUT",
-        headers: { 'Content-Type': 'application/json', 'email': user },
-        body: JSON.stringify(b)
-      });
-      if (field === 'status') { loadBugs(); notify("Status Updated"); }
+    async function patch(id, f, v) {
+      await fetch(`${API}/bug/${id}`, { method: "PUT", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ [f]: v }) });
+      if (f === 'status') loadBugs();
     }
 
     async function loadData() {
       const p = await (await fetch(API + "/projects")).json();
-      [selProj, qProj, bProj].forEach(s => { s.innerHTML = ""; p.forEach(x => s.innerHTML += `<option value="${x.name}">${x.name}</option>`); });
-      loadTasks(); loadQTasks(); loadBTasks();
+      const t = await (await fetch(API + "/team")).json();
+      [selProj, qProj].forEach(s => { s.innerHTML = ""; p.forEach(x => s.innerHTML += `<option value="${x.name}">${x.name}</option>`); });
+      [qAssign, bAssign].forEach(s => { s.innerHTML = ""; t.forEach(x => s.innerHTML += `<option value="${x.name}">${x.name}</option>`); });
+      loadQTasks();
     }
 
     async function addProj() { await fetch(API + "/project", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: newProj.value }) }); newProj.value = ""; loadData(); }
-    async function addTask() { await fetch(API + "/task", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ project: selProj.value, name: newTask.value }) }); newTask.value = ""; loadData(); }
-    async function submitSingle() {
-      const data = [{ project: qProj.value, task: qTask.value, title: qTitle.value, assignedTo: qAssign.value, status: "Queue", completion: 0, startedAt: new Date().toISOString() }];
-      await fetch(API + "/bugs", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-      qTitle.value = ""; loadBugs(); notify("Defect Created!");
-    }
-
-    async function submitBulk() {
-      const lines = bPaste.value.trim().split("\n");
-      const data = lines.map(l => {
-        const p = l.split("|");
-        return { project: bProj.value, task: bTask.value, title: p[0].trim(), assignedTo: bAssign.value, status: "Queue", completion: 0, startedAt: new Date().toISOString(), targetDate: p[1]?.trim() || "" };
-      }).filter(x => x.title);
-      await fetch(API + "/bugs", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-      bPaste.value = ""; loadBugs(); notify(`Batch Logged!`);
-    }
-
-    async function loadTasks() { await fetch(API + "/tasks/" + selProj.value); }
+    async function addTask() { await fetch(API + "/task", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ project: selProj.value, name: newTask.value }) }); newTask.value = ""; }
     async function loadQTasks() { const t = await (await fetch(API + "/tasks/" + qProj.value)).json(); qTask.innerHTML = ""; t.forEach(x => qTask.innerHTML += `<option value="${x.name}">${x.name}</option>`); }
-    async function loadBTasks() { const t = await (await fetch(API + "/tasks/" + bProj.value)).json(); bTask.innerHTML = ""; t.forEach(x => bTask.innerHTML += `<option value="${x.name}">${x.name}</option>`); }
+    async function submitSingle() {
+      const data = [{ project: qProj.value, task: qTask.value, title: qTitle.value, assignedTo: qAssign.value, startedAt: new Date().toISOString() }];
+      await fetch(API + "/bugs", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+      qTitle.value = ""; loadBugs(); notify("Bug Logged");
+    }
 
-    let team = JSON.parse(localStorage.getItem("team_list")) || ["Assignee"];
-    function addDev() { const n = document.getElementById('newDev').value.trim(); if (n) { team.push(n); localStorage.setItem("team_list", JSON.stringify(team)); updateDrops(); } }
-    function updateDrops() { [qAssign, bAssign].forEach(s => { s.innerHTML = ""; team.forEach(t => s.innerHTML += `<option value="${t}">${t}</option>`); }); }
-
-    loadData(); loadBugs(); updateDrops();
+    loadData(); loadBugs();
   </script>
 </body>
 

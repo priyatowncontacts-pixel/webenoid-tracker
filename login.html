@@ -5,7 +5,7 @@
     <title>Login | Webenoid</title>
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -26,15 +26,8 @@
 
         .logo-text {
             color: #2563eb;
-            margin-bottom: 5px;
             font-weight: 800;
             letter-spacing: -1px;
-        }
-
-        p {
-            color: #64748b;
-            font-size: 14px;
-            margin-bottom: 25px;
         }
 
         input,
@@ -45,7 +38,6 @@
             border: 1px solid #cbd5e1;
             border-radius: 8px;
             box-sizing: border-box;
-            outline-color: #2563eb;
         }
 
         button {
@@ -58,18 +50,12 @@
             cursor: pointer;
             font-weight: 600;
             margin-top: 15px;
-            transition: 0.2s;
-        }
-
-        button:hover {
-            background: #1d4ed8;
         }
 
         .error {
             color: #ef4444;
             font-size: 13px;
             margin-top: 12px;
-            font-weight: 500;
             min-height: 15px;
         }
     </style>
@@ -79,70 +65,44 @@
     <div class="card">
         <h2 class="logo-text">WEBENOID</h2>
         <p>Bug Tracking Command Center</p>
-
-        <input id="u" placeholder="Username">
+        <input id="u" placeholder="Name">
         <input id="p" type="password" placeholder="Password">
-
         <select id="r">
-            <option value="">Select Your Role</option>
-            <option value="Admin">Administrator</option>
+            <option value="">Select Role</option>
+            <option value="Admin">Admin</option>
             <option value="Developer">Developer</option>
             <option value="Tester">Tester</option>
         </select>
-
         <button onclick="handleLogin()">Sign In</button>
-
         <div id="err" class="error"></div>
     </div>
 
     <script>
-        function handleLogin() {
+        async function handleLogin() {
             const user = u.value.trim();
             const pass = p.value.trim();
             const role = r.value;
             const errDiv = document.getElementById('err');
-
             errDiv.innerText = "";
 
-            // 1. Basic Validation
-            if (!user || !pass || !role) {
-                errDiv.innerText = "All fields are required";
-                return;
-            }
+            if (!user || !pass || !role) { errDiv.innerText = "All fields required"; return; }
 
-            // 2. Credential Logic
-            let accessGranted = false;
+            const res = await fetch("/api/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name: user, password: pass, role: role })
+            });
 
-            if (role === "Admin") {
-                // Admin specific credentials
-                if (user === "Admin" && pass === "Admin789") {
-                    accessGranted = true;
-                }
-            } else {
-                // Developer and Tester use standard credentials
-                if (user === "Webenoid" && pass === "Webenoid123") {
-                    accessGranted = true;
-                }
-            }
-
-            // 3. Session Handling
-            if (accessGranted) {
-                localStorage.setItem("user", user);
-                localStorage.setItem("role", role);
+            const data = await res.json();
+            if (res.ok) {
+                localStorage.setItem("user", data.user);
+                localStorage.setItem("role", data.role);
                 localStorage.setItem("webenoid_session", "active");
-                localStorage.setItem("login_time", new Date().toISOString());
-
-                // Redirect to the main dashboard
                 window.location.href = "index.html";
             } else {
-                errDiv.innerText = "Invalid credentials for selected role";
+                errDiv.innerText = "Invalid credentials";
             }
         }
-
-        // Allow ENTER key login
-        document.addEventListener("keypress", (e) => {
-            if (e.key === "Enter") handleLogin();
-        });
     </script>
 </body>
 
