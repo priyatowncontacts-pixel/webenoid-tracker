@@ -16,7 +16,6 @@ mongoose.connect(mongoURI).then(() => console.log("✅ MongoDB Connected"));
 const Project = mongoose.model("Project", { name: String });
 const Task = mongoose.model("Task", { project: String, name: String });
 
-// UPDATED TEAM SCHEMA
 const Team = mongoose.model("Team", {
   name: String,
   password: { type: String, required: true },
@@ -25,19 +24,21 @@ const Team = mongoose.model("Team", {
 
 const Bug = mongoose.model("Bug", {
   project: String, title: String, task: String, startedAt: String, targetDate: String,
-  assignedTo: String, status: { type: String, default: "Queue" },
+  assignedTo: String,
+  createdBy: String, // Tracks the Tester/Admin who logged it
+  status: { type: String, default: "Queue" },
   completion: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now }
 });
 
-// --- NEW LOGIN API ---
+// --- LOGIN API ---
 app.post("/api/login", async (req, res) => {
   const { name, password, role } = req.body;
-  // Check Master Admin first
-  if (name === "Admin" && password === "Admin789" && role === "Admin") {
-    return res.json({ ok: 1, user: "Admin", role: "Admin" });
-  }
-  // Check Team Collection
+
+  // Master Admin & Tester Bypass
+  if (name === "Admin" && password === "Admin789" && role === "Admin") return res.json({ ok: 1, user: "Admin", role: "Admin" });
+  if (name === "Webenoid" && password === "Webenoid123" && role === "Tester") return res.json({ ok: 1, user: "Webenoid", role: "Tester" });
+
   const person = await Team.findOne({ name, password, role });
   if (person) {
     res.json({ ok: 1, user: person.name, role: person.role });
@@ -46,7 +47,7 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
-// --- OTHER APIS ---
+// --- CRUD APIS ---
 app.get("/api/projects", async (req, res) => res.json(await Project.find()));
 app.post("/api/project", async (req, res) => { await Project.create(req.body); res.json({ ok: 1 }); });
 app.get("/api/team", async (req, res) => res.json(await Team.find()));
@@ -64,4 +65,4 @@ app.get("/", (req, res) => res.sendFile(path.join(__dirname, "index.html")));
 app.get("*", (req, res) => res.sendFile(path.join(__dirname, "login.html")));
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Live on ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Server on ${PORT}`));
