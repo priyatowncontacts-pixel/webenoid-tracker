@@ -126,6 +126,13 @@
       transition: 0.2s;
     }
 
+    .btn-del {
+      background: #dc2626;
+      margin-top: 5px;
+      font-size: 11px;
+      padding: 8px;
+    }
+
     .table-wrap {
       background: white;
       border-radius: var(--radius);
@@ -172,14 +179,6 @@
     .Fixed {
       background: #dcfce7;
       color: #166534;
-    }
-
-    .date-pick {
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      padding: 4px;
-      font-size: 12px;
-      width: 130px;
     }
   </style>
 </head>
@@ -233,7 +232,6 @@
     document.getElementById('userName').innerText = user;
     document.getElementById('roleDisplay').innerText = role;
 
-    // 1. UPDATED UI: Added Developer Dropdown for Dev Dashboard
     function setupUI() {
       const sidebar = document.getElementById('sidebarContent');
       const headers = document.getElementById('tableHeaders');
@@ -243,9 +241,13 @@
         sidebar.innerHTML = `
             <h3>Directory</h3>
             <input id="newDev" placeholder="Developer Name"><button onclick="addDev()">Add Member</button>
+            <button class="btn-del" onclick="removeDev()">Delete Selected Member</button>
+
             <h3>Context</h3>
             <input id="newProj" placeholder="Project Name"><button onclick="addProj()">Create Project</button>
+            <button class="btn-del" onclick="removeProj()">Delete Selected Project</button>
             <input id="newTask" placeholder="Task Name" style="margin-top:10px"><button onclick="addTask()">Link Task</button>
+
             <h3>Navigation</h3>
             <select id="fProj" onchange="loadBugs()"></select>
         `;
@@ -253,33 +255,23 @@
         sidebar.innerHTML = `
             <div style="padding:15px; background:#f8fafc; border:1px solid var(--border); border-radius:8px">
                 <h3 style="color:var(--brand); margin-top:0">My Workspace</h3>
-                <label style="font-size:10px; font-weight:700">PROJECT NAME</label>
+                <label style="font-size:10px; font-weight:700">PROJECT</label>
                 <select id="fProj" onchange="loadBugs()"></select>
-                <label style="font-size:10px; font-weight:700; margin-top:10px; display:block">DEVELOPER NAME</label>
-                <select id="fDev" onchange="loadBugs()">
-                    <option value="${user}">${user}</option>
-                </select>
+                <label style="font-size:10px; font-weight:700; margin-top:10px; display:block">IDENTITY</label>
+                <select id="fDev" disabled><option value="${user}">${user}</option></select>
             </div>
         `;
-      } else {
-        sidebar.innerHTML = `<h3>Admin Control</h3><select id="fProj" onchange="loadBugs()"></select>`;
       }
 
-      headers.innerHTML = `
-        <th>#</th><th>Summary</th>
-        ${role !== 'Developer' ? '<th>Assignee</th>' : ''}
-        <th>Reported</th><th>Started</th><th>Target</th><th>Status</th><th>Work</th>
-    `;
+      headers.innerHTML = `<th>#</th><th>Summary</th>${role !== 'Developer' ? '<th>Assignee</th>' : ''}<th>Reported</th><th>Started</th><th>Target</th><th>Status</th><th>Work</th>`;
     }
 
-    // 2. UPDATED LOGIC: Strict filtering for Developer View
     async function loadBugs() {
       const res = await fetch(API + "/bugs");
       let bugs = await res.json();
       const filterProj = document.getElementById('fProj').value;
 
       if (role === "Developer") {
-        // Logic: even if they change the dropdown, we only filter by their logged-in 'user' variable for safety
         bugs = bugs.filter(b => b.assignedTo === user && b.project === filterProj);
       } else if (filterProj) {
         bugs = bugs.filter(b => b.project === filterProj);
@@ -288,17 +280,14 @@
       const body = document.getElementById('bugList');
       body.innerHTML = "";
       bugs.forEach((b, i) => {
-        const reported = b.createdAt ? new Date(b.createdAt).toLocaleDateString() : '-';
-        const start = b.startedAt ? b.startedAt.split('T')[0] : '';
-        const target = b.targetDate ? b.targetDate.split('T')[0] : '';
         body.innerHTML += `
             <tr>
                 <td>${i + 1}</td>
                 <td><strong>${b.title}</strong><br><small>${b.project}</small></td>
                 ${role !== 'Developer' ? `<td>${b.assignedTo}</td>` : ''}
-                <td>${reported}</td>
-                <td><input type="date" class="date-pick" value="${start}" onchange="patch('${b._id}','startedAt',this.value)"></td>
-                <td><input type="date" class="date-pick" value="${target}" onchange="patch('${b._id}','targetDate',this.value)"></td>
+                <td>${b.createdAt ? new Date(b.createdAt).toLocaleDateString() : '-'}</td>
+                <td><input type="date" class="date-pick" value="${b.startedAt?.split('T')[0] || ''}" onchange="patch('${b._id}','startedAt',this.value)"></td>
+                <td><input type="date" class="date-pick" value="${b.targetDate?.split('T')[0] || ''}" onchange="patch('${b._id}','targetDate',this.value)"></td>
                 <td>
                     <select class="status-pill ${b.status}" onchange="patch('${b._id}','status',this.value)">
                         <option value="Queue" ${b.status == 'Queue' ? 'selected' : ''}>Queue</option>
@@ -310,18 +299,31 @@
       });
     }
 
-    // RESTORED MISSING FUNCTIONS
+    async function patch(id, field, value) {
+      await fetch(`${API}/bug/${id}`, { method: "PUT", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ [field]: value }) });
+      loadBugs();
+    }
+
+    async function removeProj() {
+      const name = document.getElementById('fProj').value;
+      if (!name || !confirm(`Delete project "${name}" and all its bugs?`)) return;
+      await fetch(`${API}/project/${name}`, { method: "DELETE" });
+      location.reload();
+    }
+
+    async function removeDev() {
+      const name = document.getElementById('bAssign').value;
+      if (!name || !confirm(`Remove developer "${name}"?`)) return;
+      await fetch(`${API}/team/${name}`, { method: "DELETE" });
+      location.reload();
+    }
+
     async function loadBTasks() {
       const proj = document.getElementById('bProj').value;
       const res = await fetch(`${API}/tasks/${proj}`);
       const tasks = await res.json();
       const ts = document.getElementById('bTask');
       if (ts) { ts.innerHTML = ""; tasks.forEach(t => ts.innerHTML += `<option value="${t.name}">${t.name}</option>`); }
-    }
-
-    async function patch(id, field, value) {
-      await fetch(`${API}/bug/${id}`, { method: "PUT", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ [field]: value }) });
-      loadBugs();
     }
 
     async function submitBulk() {
@@ -331,7 +333,7 @@
         return {
           project: document.getElementById('bProj').value, task: document.getElementById('bTask').value,
           title: p[0].trim(), assignedTo: document.getElementById('bAssign').value,
-          status: "Queue", completion: 0, createdAt: new Date().toISOString(), targetDate: p[1]?.trim() || ""
+          status: "Queue", completion: 0, targetDate: p[1]?.trim() || ""
         };
       }).filter(x => x.title);
       await fetch(API + "/bugs", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
@@ -364,13 +366,6 @@
       });
       const bAssign = document.getElementById('bAssign');
       if (bAssign) t.forEach(x => bAssign.innerHTML += `<option value="${x.name}">${x.name}</option>`);
-
-      // Fill Dev dropdown if in Dev mode
-      const fDev = document.getElementById('fDev');
-      if (fDev) {
-        fDev.innerHTML = "";
-        t.forEach(x => fDev.innerHTML += `<option value="${x.name}" ${x.name === user ? 'selected' : ''}>${x.name}</option>`);
-      }
 
       if (role === "Tester") await loadBTasks();
       loadBugs();

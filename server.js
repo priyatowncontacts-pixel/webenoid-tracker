@@ -9,6 +9,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname));
 
+// DB CONNECTION
 mongoose.connect(process.env.MONGO_URI || "mongodb+srv://Webenoid:Webenoid123@cluster0.syu48mi.mongodb.net/webenoidDB?retryWrites=true&w=majority")
   .then(() => console.log("✅ MongoDB Connected"))
   .catch(err => console.log("Mongo Error:", err));
@@ -20,22 +21,40 @@ const Team = mongoose.model("Team", { name: String });
 const Notify = mongoose.model("Notify", { user: String, message: String, time: String, read: { type: Boolean, default: false } });
 const Bug = mongoose.model("Bug", {
   project: String, title: String, task: String, startedAt: String, targetDate: String, assignedTo: String,
-  status: { type: String, default: "Queue" }, completion: { type: Number, default: 0 }
+  status: { type: String, default: "Queue" }, completion: { type: Number, default: 0 }, createdAt: { type: Date, default: Date.now }
 });
 
-// ROUTES
+// --- ROUTES ---
+
+// Projects
 app.get("/projects", async (req, res) => res.json(await Project.find()));
 app.post("/project", async (req, res) => { await Project.create(req.body); res.json({ success: true }); });
+app.delete("/project/:name", async (req, res) => {
+  const projName = req.params.name;
+  await Project.deleteOne({ name: projName });
+  await Bug.deleteMany({ project: projName });
+  await Task.deleteMany({ project: projName });
+  res.json({ success: true });
+});
+
+// Team
 app.get("/team", async (req, res) => res.json(await Team.find()));
 app.post("/team", async (req, res) => { await Team.create(req.body); res.json({ ok: 1 }); });
+app.delete("/team/:name", async (req, res) => {
+  await Team.deleteOne({ name: req.params.name });
+  res.json({ success: true });
+});
+
+// Tasks
 app.post("/task", async (req, res) => { await Task.create(req.body); res.json({ ok: 1 }); });
 app.get("/tasks/:project", async (req, res) => res.json(await Task.find({ project: req.params.project })));
 
+// Bugs
 app.get("/bugs", async (req, res) => {
   const filter = {};
   if (req.query.project) filter.project = req.query.project;
   if (req.query.assignedTo) filter.assignedTo = req.query.assignedTo;
-  res.json(await Bug.find(filter).sort({ _id: -1 }));
+  res.json(await Bug.find(filter).sort({ createdAt: -1 }));
 });
 
 app.post("/bugs", async (req, res) => {
@@ -49,8 +68,8 @@ app.put("/bug/:id", async (req, res) => {
   res.json({ success: true });
 });
 
+// Misc
 app.post("/notify", async (req, res) => { await Notify.create(req.body); res.json({ ok: 1 }); });
-
 app.get("*", (req, res) => res.sendFile(path.join(__dirname, "login.html")));
 
 app.listen(3000, () => console.log(`🚀 Engine Live on 3000`));
