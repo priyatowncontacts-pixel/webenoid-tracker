@@ -409,7 +409,9 @@
     }
 
     // --- DATA LOADERS ---
+    // --- DATA LOADERS ---
     let teamList = JSON.parse(localStorage.getItem("team_list")) || ["Assignee"];
+
     function addDev() {
       const name = document.getElementById('newDev').value.trim();
       if (name) {
@@ -420,30 +422,63 @@
         notify("Developer Added to Directory");
       }
     }
+
     function updateDrops() {
       const s = document.getElementById('bAssign');
-      s.innerHTML = ""; teamList.forEach(t => s.innerHTML += `<option value="${t}">${t}</option>`);
+      if (s) {
+        s.innerHTML = "";
+        teamList.forEach(t => s.innerHTML += `<option value="${t}">${t}</option>`);
+      }
     }
+
     async function addProj() {
-      await fetch(API + "/project", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: newProj.value }) });
-      newProj.value = ""; loadData(); notify("New Project Created");
+      const name = document.getElementById('newProj').value;
+      await fetch(API + "/project", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: name }) });
+      document.getElementById('newProj').value = "";
+      loadData();
+      notify("New Project Created");
     }
+
     async function addTask() {
       await fetch(API + "/task", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ project: selProj.value, name: newTask.value }) });
-      newTask.value = ""; loadData(); notify("Task Linked to Project");
+      newTask.value = "";
+      loadData();
+      notify("Task Linked to Project");
     }
+
+    // This handles the sidebar project dropdown error
+    async function loadTasks() {
+      console.log("Loading tasks for sidebar project:", selProj.value);
+      // Optional: If you add a sidebar task dropdown, update it here
+    }
+
     async function loadData() {
       const p = await (await fetch(API + "/projects")).json();
-      [selProj, bProj].forEach(s => { s.innerHTML = ""; p.forEach(x => s.innerHTML += `<option value="${x.name}">${x.name}</option>`); });
+      [selProj, bProj].forEach(s => {
+        if (s) {
+          s.innerHTML = "";
+          p.forEach(x => s.innerHTML += `<option value="${x.name}">${x.name}</option>`);
+        }
+      });
       loadBTasks();
     }
-    async function loadBTasks() {
-      const t = await (await fetch(API + "/tasks/" + bProj.value)).json();
-      bTask.innerHTML = ""; t.forEach(x => bTask.innerHTML += `<option value="${x.name}">${x.name}</option>`);
-    }
-    function logout() { localStorage.clear(); window.location.href = "login.html"; }
 
-    loadData(); loadBugs(); updateDrops();
+    async function loadBTasks() {
+      if (!bProj.value) return;
+      const t = await (await fetch(API + "/tasks/" + bProj.value)).json();
+      bTask.innerHTML = "";
+      t.forEach(x => bTask.innerHTML += `<option value="${x.name}">${x.name}</option>`);
+    }
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = "login.html";
+    }
+
+    // Initialize everything
+    loadData();
+    loadBugs();
+    updateDrops();
   </script>
 </body>
 
