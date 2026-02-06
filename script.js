@@ -107,7 +107,7 @@ function notify(msg) {
     n.innerText = msg;
     n.style.display = "block";
     const sound = document.getElementById('alertSound');
-    if (sound) { sound.currentTime = 0; sound.play().catch(() => {}); }
+    if (sound) { sound.currentTime = 0; sound.play().catch(() => { }); }
     setTimeout(() => { n.style.display = "none"; }, 5000);
 }
 
@@ -165,12 +165,19 @@ async function submitBulk() {
 
 async function loadData() {
     const p = await (await fetch(API + "/projects")).json();
+    // Define these inside the function so it knows what they are
     const selProj = document.getElementById('selProj');
     const bProj = document.getElementById('bProj');
+
     [selProj, bProj].forEach(s => {
         if (s) {
             s.innerHTML = "";
-            p.forEach(x => s.innerHTML += `<option value="${x.name}">${x.name}</option>`);
+            p.forEach(x => {
+                const opt = document.createElement('option');
+                opt.value = x.name;
+                opt.innerText = x.name;
+                s.appendChild(opt);
+            });
         }
     });
     loadBTasks();
