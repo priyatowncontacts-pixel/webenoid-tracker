@@ -10,89 +10,90 @@
 </head>
 
 <body>
-
   <div id="notify"></div>
 
   <nav>
-    <div style="font-weight:800; color:var(--brand); font-size:20px;">WEBENOID TRACKER</div>
-    <div style="display:flex; align-items:center; gap:20px;">
-      <span id="userLabel" style="font-size:13px; font-weight:600; color:var(--text-light)"></span>
-      <button onclick="logout()"
-        style="width:auto; background:#fee2e2; color:#ef4444; padding:6px 12px; font-size:12px;">Logout</button>
+    <div class="logo">WEBENOID TRACKER</div>
+    <div class="nav-right">
+      <span id="userLabel"></span>
+      <button class="btn-logout" onclick="logout()">Logout</button>
     </div>
   </nav>
 
   <div class="wrapper">
     <aside id="mgmtAside">
-      <h3>Directory</h3>
-      <input id="newDev" placeholder="Add New Developer">
-      <button onclick="addDev()" style="background: #0f172a; margin-bottom: 20px;">Add Member</button>
+      <section>
+        <h3>Directory</h3>
+        <input id="newDev" placeholder="Add New Developer">
+        <button class="btn-primary" onclick="addDev()">Add Member</button>
+      </section>
 
-      <h3>Context Management</h3>
-      <input id="newProj" placeholder="Project Name">
-      <button onclick="addProj()">Create Project</button>
-      <select id="selProj" onchange="loadTasks()" style="margin-top:10px"></select>
-      <input id="newTask" placeholder="Task Name">
-      <button onclick="addTask()">Link Task</button>
+      <section style="margin-top: 30px;">
+        <h3>Context Management</h3>
+        <input id="newProj" placeholder="Project Name">
+        <button class="btn-primary" onclick="addProj()">Create Project</button>
+        <select id="selProj" onchange="loadTasks()"></select>
+        <input id="newTask" placeholder="Task Name">
+        <button class="btn-primary" onclick="addTask()">Link Task</button>
+      </section>
     </aside>
 
     <main>
       <div class="stats-grid">
-        <div class="stat-item">
+        <div class="stat-card blue">
           <small>Total Defects</small>
-          <h2 id="totalCount">--</h2>
+          <h2 id="totalCount">0</h2>
         </div>
-        <div class="stat-item" style="border-color: #f59e0b;">
+        <div class="stat-card orange">
           <small>Pending Review</small>
-          <h2 id="reviewCount">--</h2>
+          <h2 id="reviewCount">0</h2>
         </div>
-        <div class="stat-item" style="border-color: #10b981;">
+        <div class="stat-card green">
           <small>Resolved</small>
-          <h2 id="fixedCount">--</h2>
+          <h2 id="fixedCount">0</h2>
         </div>
       </div>
 
       <div class="card" id="bulkCard">
-        <h3 style="margin-top:0; font-size:12px; color:var(--brand)">BULK COPY-PASTE</h3>
-        <div style="display: flex; gap: 15px; margin-bottom: 20px;">
-          <select id="bProj" onchange="loadBTasks()" style="flex: 1; margin-bottom: 0;"></select>
-          <select id="bTask" style="flex: 1; margin-bottom: 0;"></select>
-          <select id="bAssign" style="flex: 1; margin-bottom: 0;"></select>
+        <div class="card-header">BULK COPY-PASTE</div>
+        <div class="bulk-inputs">
+          <select id="bProj" onchange="loadBTasks()"></select>
+          <select id="bTask"></select>
+          <select id="bAssign"></select>
         </div>
-        <textarea id="bPaste" rows="3" placeholder="Paste rows: Title | Target Date (YYYY-MM-DD)"></textarea>
-        <button onclick="submitBulk()" style="width: auto; padding: 10px 25px;">🚀 Process Batch List</button>
+        <textarea id="bPaste" rows="3" placeholder="Title | Target Date (YYYY-MM-DD)"></textarea>
+        <button class="btn-primary" style="width: auto;" onclick="submitBulk()">🚀 Process Batch</button>
       </div>
 
-      <div
-        style="padding:15px; border-bottom:1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
-        <span style="font-weight:800; font-size:12px; color:var(--brand)">LIVE DEFECT LISTING</span>
-        <select id="devProjFilter" onchange="loadBugs()"
-          style="width: auto; margin-bottom: 0; padding: 4px 8px; font-size: 11px;">
+      <div class="table-header">
+        <span>LIVE DEFECT LISTING</span>
+        <select id="devProjFilter" onchange="loadBugs()">
           <option value="All">All Projects</option>
         </select>
       </div>
 
-      <table>
-        <thead>
-          <tr>
-            <th style="width:40px; text-align:center">#</th>
-            <th>Defect Details</th>
-            <th>Assignee</th>
-            <th style="width:100px">Status</th>
-            <th>Started At</th>
-            <th>Target Fix</th>
-            <th>Work Done</th>
-            <th>History Logs</th>
-          </tr>
-        </thead>
-        <tbody id="bugList"></tbody>
-      </table>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Defect Details</th>
+              <th>Assignee</th>
+              <th>Status</th>
+              <th>Started</th>
+              <th>Target</th>
+              <th>Progress</th>
+              <th>Logs</th>
+            </tr>
+          </thead>
+          <tbody id="bugList"></tbody>
+        </table>
+      </div>
     </main>
   </div>
 
   <audio id="alertSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
   <script src="script.js"></script>
-
 </body>
 
 </html>
