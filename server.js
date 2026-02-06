@@ -57,4 +57,25 @@ app.post("/api/project", async (req, res) => { await Project.create(req.body); r
 app.get("/api/tasks/:project", async (req, res) => res.json(await Task.find({ project: req.params.project })));
 app.post("/api/task", async (req, res) => { await Task.create(req.body); res.json({ ok: 1 }); });
 
-app.listen(3000, () => console.log("🚀 Server running on 3000"));
+// --- LOGIN API ---
+app.post("/api/login", async (req, res) => {
+  try {
+    const { name, password, role } = req.body;
+
+    // In a real app, you would verify the password here.
+    // For now, we check if the user exists or just allow the entry.
+    if (!name) return res.status(400).json({ error: "Username required" });
+
+    res.json({
+      success: true,
+      user: name,
+      role: role || "Developer"
+    });
+  } catch (err) {
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
