@@ -31,9 +31,19 @@ async function loadBugs() {
         const res = await fetch(API + "/bugs");
         let bugs = await res.json();
 
+        // --- DASHBOARD STATS LOGIC ---
+        // These updates target the IDs in your new index.html cards
+        if (document.getElementById('totalCount'))
+            document.getElementById('totalCount').innerText = bugs.length;
+        if (document.getElementById('reviewCount'))
+            document.getElementById('reviewCount').innerText = bugs.filter(b => b.status === 'Review').length;
+        if (document.getElementById('fixedCount'))
+            document.getElementById('fixedCount').innerText = bugs.filter(b => b.status === 'Fixed').length;
+
+        // Permissions
         if (role === "Developer") bugs = bugs.filter(b => b.assignedTo === user);
 
-        // Update Project Filter
+        // Update Project Filter Dropdown
         const filterDrop = document.getElementById('devProjFilter');
         if (filterDrop) {
             const uniqueProjects = [...new Set(bugs.map(b => b.project))];
@@ -61,11 +71,14 @@ async function renderTable(bugs) {
         const hRes = await fetch(`${API}/history/${b._id}`);
         const logs = await hRes.json();
 
+        /* Find this inside the renderTable loop */
         const logHtml = logs.map(l => `
-            <div style="border-bottom:1px solid #334155; padding:2px 0; font-size:10px;">
-                <span style="color:var(--brand); font-weight:700;">${new Date(l.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>: ${l.action}
-            </div>
-        `).join('') || 'No logs';
+    <div style="border-bottom:1px solid #f1f5f9; padding:4px 0; font-size:11px;">
+        <span style="color:var(--brand); font-weight:700;">
+            ${new Date(l.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+        </span>: ${l.action}
+    </div>
+`).join('') || '<span style="color:#94a3b8">No activity yet</span>';
 
         body.innerHTML += `
         <tr>
