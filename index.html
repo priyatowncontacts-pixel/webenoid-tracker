@@ -145,6 +145,10 @@
         <h3>Directory</h3>
         <input id="newDev" placeholder="Name">
         <input id="newDevPass" type="password" placeholder="Password">
+        <select id="newDevRole">
+          <option value="Developer">Developer</option>
+          <option value="Tester">Tester</option>
+        </select>
         <button onclick="addDev()">Add Member</button>
         <hr>
         <h3>Context</h3>
@@ -241,9 +245,20 @@
     }
 
     async function addDev() {
-      const name = newDev.value; const password = newDevPass.value;
-      await fetch(API + "/team", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, password, role: "Developer" }) });
-      newDev.value = ""; newDevPass.value = ""; notify("Developer Added"); loadData();
+      const name = newDev.value;
+      const password = newDevPass.value;
+      const role = document.getElementById('newDevRole').value; // Get selected role
+
+      await fetch(API + "/team", {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, password, role }) // Send role to server
+      });
+
+      newDev.value = "";
+      newDevPass.value = "";
+      notify(`${role} Added to Team`);
+      loadData();
     }
 
     async function submitSingle() {
