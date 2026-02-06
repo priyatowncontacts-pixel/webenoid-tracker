@@ -185,22 +185,22 @@
 
     <main>
       <div class="card" id="bulkCard">
-        <h3 style="margin-top:0; font-size:12px; color:var(--brand)">BULK DEFECT ENTRY</h3>
-        <div style="display:grid; grid-template-columns: 1fr 1fr 2fr auto; gap: 15px; align-items: start;">
-          <div>
-            <label style="font-size:10px; font-weight:700">PROJECT & TASK</label>
-            <select id="bProj" onchange="loadBTasks()"></select>
-            <select id="bTask"></select>
-          </div>
-          <div>
-            <label style="font-size:10px; font-weight:700">SELECT ASSIGNEE</label>
-            <select id="bAssign" size="5" class="scroll-select"></select>
-          </div>
-          <div>
-            <label style="font-size:10px; font-weight:700">DEFECT TITLES (ONE PER LINE)</label>
-            <textarea id="bPaste" rows="5" placeholder="Enter one defect per line..."></textarea>
-          </div>
-          <button onclick="submitBulk()" style="height: 48px; margin-top:18px">🚀 Post Batch</button>
+        <h3 style="margin-top:0; font-size:12px; color:var(--brand)">BULK COPY-PASTE</h3>
+
+        <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+          <select id="bProj" onchange="loadBTasks()" style="flex: 1; margin-bottom: 0;"></select>
+          <select id="bTask" style="flex: 1; margin-bottom: 0;"></select>
+          <select id="bAssign" style="flex: 1; margin-bottom: 0;"></select>
+        </div>
+
+        <textarea id="bPaste" rows="3" placeholder="Paste rows: Title | Target Date (YYYY-MM-DD)"
+          style="margin-bottom: 20px; resize: vertical; min-height: 80px;"></textarea>
+
+        <div style="display: flex; justify-content: flex-start;">
+          <button onclick="submitBulk()"
+            style="width: auto; padding: 10px 25px; display: flex; align-items: center; gap: 8px;">
+            🚀 Process Batch List
+          </button>
         </div>
       </div>
 
@@ -302,14 +302,51 @@
     }
 
     async function submitBulk() {
-      const lines = bPaste.value.trim().split("\n");
-      const data = lines.map(l => ({
-        project: bProj.value, task: bTask.value, title: l.trim(),
-        assignedTo: bAssign.value, status: "Queue", completion: 0,
-        startedAt: new Date().toISOString().slice(0, 16)
-      })).filter(x => x.title);
-      await fetch(API + "/bugs", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-      bPaste.value = ""; loadBugs(); notify("Batch Created Successfully");
+      // 1. Get the lines from the textarea and clean up whitespace
+      const lines = document.getElementById('bPaste').value.trim().split("\n");
+
+      // 2. Map each line to a bug object
+      const data = lines.map(l => {
+        // Splits the line at the "|" symbol
+        const parts = l.split("|");
+
+        return {
+          project: document.getElementById('bProj').value, // From first dropdown
+          task: document.getElementById('bTask').value,       // From second dropdown
+          assignedTo: document.getElementById('bAssign').value, // From third dropdown
+          title: parts[0] ? parts[0].trim() : "",           // Text before "|"
+          targetDate: parts[1] ? parts[1].trim() : "",      // Text after "|" (YYYY-MM-DD)
+          status: "Queue",                                  // Default status
+          completion: 0,                                    // Default progress
+          startedAt: new Date().toISOString().slice(0, 16)  // Sets current timestamp
+        };
+      }).filter(x => x.title); // Only process rows that have at least a title
+
+      // 3. Prevent submission if no valid data is found
+      if (data.length === 0) {
+        notify("Please enter at least one defect title.");
+        return;
+      }
+
+      // 4. POST the batch to your live API
+      try {
+        const res = await fetch(API + "/bugs", {
+          method: "POST",
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        if (res.ok) {
+          document.getElementById('bPaste').value = ""; // Clear the textarea
+          loadBugs(); // Refresh the table
+          notify(`Successfully logged ${data.length} defects!`); // Show success popup
+        } else {
+          notify("Server error: Could not save batch.");
+        }
+      } catch (err) {
+        console.error("Submission failed:", err);
+        notify("Network error: Check your connection.");
+      }
     }
 
     // --- DATA LOADERS ---
