@@ -238,6 +238,12 @@
     }
     document.getElementById('userLabel').innerText = `${user} (${role})`;
 
+    function notify(msg) {
+      const n = document.getElementById('notify');
+      n.innerText = msg; n.style.display = "block";
+      setTimeout(() => n.style.display = "none", 3000);
+    }
+
     async function loadBugs() {
       const res = await fetch(API + "/bugs");
       let bugs = await res.json();
@@ -246,6 +252,9 @@
       const body = document.getElementById('bugList');
       body.innerHTML = "";
       bugs.forEach((b, i) => {
+        // Fix: Clean the timestamp for HTML input compliance
+        const startTime = b.startedAt ? b.startedAt.slice(0, 16) : '';
+
         body.innerHTML += `
         <tr>
             <td style="text-align:center">${i + 1}</td>
@@ -259,7 +268,7 @@
                 </select>
             </td>
             <td style="font-size:11px">
-                S: <input type="datetime-local" value="${b.startedAt || ''}" onchange="patch('${b._id}','startedAt',this.value)" style="border:none; background:transparent; width:130px"><br>
+                S: <input type="datetime-local" value="${startTime}" onchange="patch('${b._id}','startedAt',this.value)" style="border:none; background:transparent; width:130px"><br>
                 T: <input type="date" value="${b.targetDate || ''}" onchange="patch('${b._id}','targetDate',this.value)" style="border:none; background:transparent; width:130px">
             </td>
             <td>
@@ -300,21 +309,33 @@
         startedAt: new Date().toISOString().slice(0, 16)
       })).filter(x => x.title);
       await fetch(API + "/bugs", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-      bPaste.value = ""; loadBugs();
+      bPaste.value = ""; loadBugs(); notify("Batch Created Successfully");
     }
 
     // --- DATA LOADERS ---
     let teamList = JSON.parse(localStorage.getItem("team_list")) || ["Assignee"];
     function addDev() {
       const name = document.getElementById('newDev').value.trim();
-      if (name) { teamList.push(name); localStorage.setItem("team_list", JSON.stringify(teamList)); updateDrops(); }
+      if (name) {
+        teamList.push(name);
+        localStorage.setItem("team_list", JSON.stringify(teamList));
+        updateDrops();
+        document.getElementById('newDev').value = "";
+        notify("Developer Added to Directory");
+      }
     }
     function updateDrops() {
       const s = document.getElementById('bAssign');
       s.innerHTML = ""; teamList.forEach(t => s.innerHTML += `<option value="${t}">${t}</option>`);
     }
-    async function addProj() { await fetch(API + "/project", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: newProj.value }) }); newProj.value = ""; loadData(); }
-    async function addTask() { await fetch(API + "/task", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ project: selProj.value, name: newTask.value }) }); newTask.value = ""; loadData(); }
+    async function addProj() {
+      await fetch(API + "/project", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: newProj.value }) });
+      newProj.value = ""; loadData(); notify("New Project Created");
+    }
+    async function addTask() {
+      await fetch(API + "/task", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ project: selProj.value, name: newTask.value }) });
+      newTask.value = ""; loadData(); notify("Task Linked to Project");
+    }
     async function loadData() {
       const p = await (await fetch(API + "/projects")).json();
       [selProj, bProj].forEach(s => { s.innerHTML = ""; p.forEach(x => s.innerHTML += `<option value="${x.name}">${x.name}</option>`); });
