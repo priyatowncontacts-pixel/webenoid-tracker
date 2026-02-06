@@ -191,7 +191,9 @@ async function loadBTasks() {
     }
 }
 
+// Ensure this is NOT inside another function
 function logout() {
+    console.log("Logging out...");
     localStorage.clear();
     window.location.href = "login.html";
 }
