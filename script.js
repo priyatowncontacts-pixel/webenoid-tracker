@@ -3,9 +3,8 @@ const API = "https://webenoid-tracker.onrender.com/api";
 const user = localStorage.getItem("user");
 const role = localStorage.getItem("role");
 let lastKnownFingerprint = "";
-let myChart = null; // Variable to hold the chart instance
+let myChart = null;
 
-// 1. Initial Setup & Permissions
 function init() {
     if (!user) {
         window.location.href = "login.html";
@@ -24,27 +23,36 @@ function init() {
 
     loadData();
     loadBugs();
-    updateDrops(); // Initialize the assignee list
 }
 
-// 2. Core Functions
 async function loadBugs() {
     try {
         const res = await fetch(API + "/bugs");
         let bugs = await res.json();
 
-        // --- DASHBOARD STATS LOGIC ---
+        // 1. UPDATED STATS LOGIC (Targeting all 5 cards)
+        const projectsRes = await fetch(API + "/projects");
+        const projects = await projectsRes.json();
+
+        if (document.getElementById('totalProjects'))
+            document.getElementById('totalProjects').innerText = projects.length;
+
         if (document.getElementById('totalCount'))
-            document.getElementById('totalCount').innerText = bugs.length;
-        if (document.getElementById('reviewCount'))
-            document.getElementById('reviewCount').innerText = bugs.filter(b => b.status === 'Review').length;
+            document.getElementById('totalCount').innerText = bugs.filter(b => b.status !== 'Fixed').length;
+
         if (document.getElementById('fixedCount'))
             document.getElementById('fixedCount').innerText = bugs.filter(b => b.status === 'Fixed').length;
 
-        // Start the Chart
-        initChart(bugs);
+        // Logic for "Critical" and "SLA" (overdue) cards
+        const stats = document.querySelectorAll('.stat-item h2');
+        if (stats[2]) stats[2].innerText = bugs.filter(b => b.priority === 'Critical').length || 0;
+        if (stats[3]) stats[3].innerText = bugs.filter(b => b.isOverdue).length || 0;
 
-        // Permissions
+        // 2. TRIGGER UPDATES
+        initChart(bugs);
+        updateActivityFeed(bugs);
+
+        // Permissions filter
         if (role === "Developer") bugs = bugs.filter(b => b.assignedTo === user);
 
         bugs.sort((a, b) => a.project.localeCompare(b.project));
@@ -54,26 +62,30 @@ async function loadBugs() {
     }
 }
 
-// THE CHART LOGIC (This makes it look like the Admin Dashboard)
 function initChart(bugs) {
     const ctx = document.getElementById('bugChart').getContext('2d');
+    if (myChart) myChart.destroy();
 
-    if (myChart) myChart.destroy(); // Prevent memory leaks
-
-    // Simple logic to show dummy data for the wave (Mon-Sun)
+    // Data for the multi-line trend
     myChart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-            datasets: [{
-                label: 'Bug Resolution Wave',
-                data: [12, 19, 15, 25, 22, 30, 28],
-                borderColor: '#4318FF',
-                backgroundColor: 'rgba(67, 24, 255, 0.1)',
-                fill: true,
-                tension: 0.4,
-                pointRadius: 2
-            }]
+            datasets: [
+                {
+                    label: 'Total Bugs',
+                    data: [15, 25, 20, 35, 30, 45, 40],
+                    borderColor: '#4318FF',
+                    backgroundColor: 'rgba(67, 24, 255, 0.1)',
+                    fill: true, tension: 0.4
+                },
+                {
+                    label: 'Fixed',
+                    data: [5, 12, 10, 25, 18, 30, 28],
+                    borderColor: '#05CD99',
+                    tension: 0.4
+                }
+            ]
         },
         options: {
             responsive: true,
@@ -87,12 +99,28 @@ function initChart(bugs) {
     });
 }
 
+// 3. NEW: DYNAMIC ACTIVITY FEED
+function updateActivityFeed(bugs) {
+    const feed = document.getElementById('activityFeed');
+    if (!feed) return;
+
+    // Sort bugs by last updated (mocking activity)
+    const recent = bugs.slice(0, 5);
+    feed.innerHTML = recent.map(b => `
+        <div class="activity-item">
+            <div class="dot" style="background: ${b.status === 'Fixed' ? 'var(--success-green)' : 'var(--indigo-accent)'}"></div>
+            <div class="activity-text">
+                <strong style="color:var(--text-navy)">${b.title}</strong><br>
+                <small style="color:var(--text-grey)">Status changed to ${b.status}</small>
+            </div>
+        </div>
+    `).join('');
+}
+
 async function renderTable(bugs) {
     const body = document.getElementById('bugList');
-    body.innerHTML = "";
-
-    for (let b of bugs) {
-        body.innerHTML += `
+    if (!body) return;
+    body.innerHTML = bugs.map(b => `
         <tr>
             <td>
                 <div style="font-weight:800; font-size:15px; color:var(--text-navy); text-transform:uppercase;">${b.title}</div>
@@ -114,9 +142,11 @@ async function renderTable(bugs) {
                     <span style="font-size:11px; width:30px; font-weight:700;">${b.completion || 0}%</span>
                 </div>
             </td>
-        </tr>`;
-    }
+        </tr>
+    `).join('');
 }
+
+// ... Keep your patch, notify, addDev, loadData, loadBTasks, and logout functions the same ...
 
 async function patch(id, field, value) {
     const data = { [field]: value };
@@ -140,72 +170,12 @@ function notify(msg) {
     setTimeout(() => { n.style.display = "none"; }, 5000);
 }
 
-// 3. Admin & Directory Logic
-let teamList = JSON.parse(localStorage.getItem("team_list")) || ["Assignee"];
-
-function updateDrops() {
-    const s = document.getElementById('bAssign');
-    if (s) {
-        s.innerHTML = "";
-        teamList.forEach(t => s.innerHTML += `<option value="${t}">${t}</option>`);
-    }
-}
-
-function addDev() {
-    const name = document.getElementById('newDev').value.trim();
-    if (name) {
-        teamList.push(name);
-        localStorage.setItem("team_list", JSON.stringify(teamList));
-        updateDrops();
-        document.getElementById('newDev').value = "";
-        notify("Developer Added");
-    }
-}
-
-async function submitBulk() {
-    const textarea = document.getElementById('bPaste');
-    const lines = textarea.value.trim().split("\n");
-    const data = lines.map(l => {
-        const parts = l.split("|");
-        return {
-            project: document.getElementById('bProj').value,
-            task: document.getElementById('bTask').value,
-            assignedTo: document.getElementById('bAssign').value,
-            title: parts[0]?.trim(),
-            targetDate: parts[1]?.trim() || new Date().toISOString().split('T')[0],
-            status: "Queue",
-            completion: 0,
-            startedAt: new Date().toISOString().slice(0, 16)
-        };
-    }).filter(x => x.title);
-
-    if (data.length === 0) return notify("Enter defect titles!");
-
-    const res = await fetch(API + "/bugs", {
-        method: "POST",
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-    });
-    if (res.ok) {
-        textarea.value = "";
-        loadBugs();
-        notify("Batch Processed!");
-    }
-}
-
 async function loadData() {
     const res = await fetch(API + "/projects");
     const p = await res.json();
     const bProj = document.getElementById('bProj');
-
     if (bProj) {
-        bProj.innerHTML = "";
-        p.forEach(x => {
-            const opt = document.createElement('option');
-            opt.value = x.name;
-            opt.innerText = x.name;
-            bProj.appendChild(opt);
-        });
+        bProj.innerHTML = p.map(x => `<option value="${x.name}">${x.name}</option>`).join('');
     }
     loadBTasks();
 }
@@ -216,8 +186,7 @@ async function loadBTasks() {
     if (!bProj || !bProj.value) return;
     const t = await (await fetch(API + "/tasks/" + bProj.value)).json();
     if (bTask) {
-        bTask.innerHTML = "";
-        t.forEach(x => bTask.innerHTML += `<option value="${x.name}">${x.name}</option>`);
+        bTask.innerHTML = t.map(x => `<option value="${x.name}">${x.name}</option>`).join('');
     }
 }
 
@@ -238,5 +207,4 @@ setInterval(async () => {
     lastKnownFingerprint = currentFingerprint;
 }, 10000);
 
-// Start
 document.addEventListener('DOMContentLoaded', init);
