@@ -37,16 +37,26 @@ nav {
   letter-spacing: -1px;
 }
 
-/* 2. Professional 3-Column Grid */
+/* Default layout for EVERYONE (Developer and Tester) */
 .wrapper {
+  display: block;
+  /* Stacks everything vertically or full width */
+  padding: 20px;
+}
+
+/* 3-Column Layout ONLY for the Admin */
+.Admin-view .wrapper {
   display: grid;
   grid-template-columns: 300px 1fr 300px;
-  /* Sidebar | Main | Right Panel */
   gap: 24px;
-  /* Increased gap for a cleaner look */
-  padding: 0 20px 20px;
-  flex: 1;
-  overflow: hidden;
+}
+
+/* Hide sidebars for Developers and Testers */
+.Developer-view aside,
+.Developer-view section,
+.Tester-view aside,
+.Tester-view section {
+  display: none !important;
 }
 
 /* 3. The Glass Cards */

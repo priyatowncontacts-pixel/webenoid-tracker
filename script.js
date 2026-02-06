@@ -10,19 +10,20 @@ function init() {
         window.location.href = "login.html";
         return;
     }
+    document.body.classList.add(role + "-view");
+}
+if (role === "Developer") {
+    const mgmt = document.getElementById('mgmtAside');
+    const bulk = document.getElementById('bulkCard');
+    if (mgmt) mgmt.style.display = "none";
+    if (bulk) bulk.style.display = "none";
+}
 
-    if (role === "Developer") {
-        const mgmt = document.getElementById('mgmtAside');
-        const bulk = document.getElementById('bulkCard');
-        if (mgmt) mgmt.style.display = "none";
-        if (bulk) bulk.style.display = "none";
-    }
+const label = document.getElementById('userLabel');
+if (label) label.innerText = `${user} (${role})`;
 
-    const label = document.getElementById('userLabel');
-    if (label) label.innerText = `${user} (${role})`;
-
-    loadData();
-    loadBugs();
+loadData();
+loadBugs();
 }
 
 async function loadBugs() {

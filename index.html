@@ -25,107 +25,107 @@
     </div>
   </nav>
 
-  <div class="wrapper" style="grid-template-columns: 300px 1fr 300px;">
+  <div id="mainWrapper" class="wrapper"></div>
 
-    <aside class="glass-card" style="height: fit-content;">
-      <h3 style="font-size: 18px; margin-bottom: 20px; color: var(--text-navy);">Live Activity Feed</h3>
-      <div id="activityFeed" class="timeline">
-        <div class="activity-item">
-          <div class="dot" style="background: var(--brand-purple);"></div>
-          <div class="activity-text">
-            <strong>Login button failing</strong><br>
-            <small>Reopened by Emily Clark</small>
-          </div>
-        </div>
-        <div class="activity-item">
-          <div class="dot" style="background: var(--success-green);"></div>
-          <div class="activity-text">
-            <strong>UI Misalignment</strong><br>
-            <small>Fixed by Alex Johnson</small>
-          </div>
+  <aside class="glass-card" style="height: fit-content;">
+    <h3 style="font-size: 18px; margin-bottom: 20px; color: var(--text-navy);">Live Activity Feed</h3>
+    <div id="activityFeed" class="timeline">
+      <div class="activity-item">
+        <div class="dot" style="background: var(--brand-purple);"></div>
+        <div class="activity-text">
+          <strong>Login button failing</strong><br>
+          <small>Reopened by Emily Clark</small>
         </div>
       </div>
-    </aside>
-
-    <main style="overflow-y: auto;">
-      <div class="stats-grid" style="grid-template-columns: repeat(5, 1fr); margin-bottom: 20px;">
-        <div class="stat-item glass-card">
-          <div class="stat-icon" style="background: #E9EDF7; color: #4318FF;">📁</div>
-          <div><small>Projects</small>
-            <h2 id="totalProjects">16</h2>
-          </div>
-        </div>
-        <div class="stat-item glass-card">
-          <div class="stat-icon" style="background: #E6FAF5; color: #05CD99;">🐞</div>
-          <div><small>Open</small>
-            <h2 id="totalCount">0</h2>
-          </div>
-        </div>
-        <div class="stat-item glass-card">
-          <div class="stat-icon" style="background: #FFF5F5; color: #EE5D50;">🔥</div>
-          <div><small>Critical</small>
-            <h2>29</h2>
-          </div>
-        </div>
-        <div class="stat-item glass-card">
-          <div class="stat-icon" style="background: #FFF9E9; color: #FFB800;">⏰</div>
-          <div><small>SLA</small>
-            <h2>62</h2>
-          </div>
-        </div>
-        <div class="stat-item glass-card">
-          <div class="stat-icon" style="background: #E6FAF5; color: #05CD99;">✅</div>
-          <div><small>Closed</small>
-            <h2 id="fixedCount">0</h2>
-          </div>
+      <div class="activity-item">
+        <div class="dot" style="background: var(--success-green);"></div>
+        <div class="activity-text">
+          <strong>UI Misalignment</strong><br>
+          <small>Fixed by Alex Johnson</small>
         </div>
       </div>
+    </div>
+  </aside>
 
-      <div class="glass-card" style="margin-bottom: 24px;">
-        <h3 class="card-header">Bug Trends</h3>
-        <div style="height: 250px;">
-          <canvas id="bugChart"></canvas>
+  <main style="overflow-y: auto;">
+    <div class="stats-grid" style="grid-template-columns: repeat(5, 1fr); margin-bottom: 20px;">
+      <div class="stat-item glass-card">
+        <div class="stat-icon" style="background: #E9EDF7; color: #4318FF;">📁</div>
+        <div><small>Projects</small>
+          <h2 id="totalProjects">16</h2>
         </div>
       </div>
-
-      <div class="glass-card">
-        <div class="card-header">Live Defect Listing</div>
-        <table>
-          <thead>
-            <tr>
-              <th>Defect Details</th>
-              <th>Assignee</th>
-              <th>Status</th>
-              <th>Progress</th>
-            </tr>
-          </thead>
-          <tbody id="bugList"></tbody>
-        </table>
-      </div>
-    </main>
-
-    <section>
-      <div class="glass-card" style="margin-bottom: 20px;">
-        <h3 class="card-header">Top Testers</h3>
-        <div class="tester-row">
-          <img src="https://i.pravatar.cc/40?img=1" class="avatar">
-          <div style="flex:1"><strong>Emily Clark</strong><br><small>Lead QA</small></div>
-          <span class="count">37</span>
-        </div>
-        <div class="tester-row">
-          <img src="https://i.pravatar.cc/40?img=2" class="avatar">
-          <div style="flex:1"><strong>Daniel Kim</strong><br><small>Developer</small></div>
-          <span class="count">29</span>
+      <div class="stat-item glass-card">
+        <div class="stat-icon" style="background: #E6FAF5; color: #05CD99;">🐞</div>
+        <div><small>Open</small>
+          <h2 id="totalCount">0</h2>
         </div>
       </div>
-
-      <div class="glass-card" id="bulkCard">
-        <h3 class="card-header">🚀 Bulk Tools</h3>
-        <select id="bProj" onchange="loadBTasks()"></select>
-        <textarea id="bPaste" rows="4" style="margin-top:10px" placeholder="Title | Date"></textarea>
-        <button class="btn-primary" onclick="submitBulk()">Process List</button>
+      <div class="stat-item glass-card">
+        <div class="stat-icon" style="background: #FFF5F5; color: #EE5D50;">🔥</div>
+        <div><small>Critical</small>
+          <h2>29</h2>
+        </div>
       </div>
-    </section>
+      <div class="stat-item glass-card">
+        <div class="stat-icon" style="background: #FFF9E9; color: #FFB800;">⏰</div>
+        <div><small>SLA</small>
+          <h2>62</h2>
+        </div>
+      </div>
+      <div class="stat-item glass-card">
+        <div class="stat-icon" style="background: #E6FAF5; color: #05CD99;">✅</div>
+        <div><small>Closed</small>
+          <h2 id="fixedCount">0</h2>
+        </div>
+      </div>
+    </div>
+
+    <div class="glass-card" style="margin-bottom: 24px;">
+      <h3 class="card-header">Bug Trends</h3>
+      <div style="height: 250px;">
+        <canvas id="bugChart"></canvas>
+      </div>
+    </div>
+
+    <div class="glass-card">
+      <div class="card-header">Live Defect Listing</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Defect Details</th>
+            <th>Assignee</th>
+            <th>Status</th>
+            <th>Progress</th>
+          </tr>
+        </thead>
+        <tbody id="bugList"></tbody>
+      </table>
+    </div>
+  </main>
+
+  <section>
+    <div class="glass-card" style="margin-bottom: 20px;">
+      <h3 class="card-header">Top Testers</h3>
+      <div class="tester-row">
+        <img src="https://i.pravatar.cc/40?img=1" class="avatar">
+        <div style="flex:1"><strong>Emily Clark</strong><br><small>Lead QA</small></div>
+        <span class="count">37</span>
+      </div>
+      <div class="tester-row">
+        <img src="https://i.pravatar.cc/40?img=2" class="avatar">
+        <div style="flex:1"><strong>Daniel Kim</strong><br><small>Developer</small></div>
+        <span class="count">29</span>
+      </div>
+    </div>
+
+    <div class="glass-card" id="bulkCard">
+      <h3 class="card-header">🚀 Bulk Tools</h3>
+      <select id="bProj" onchange="loadBTasks()"></select>
+      <textarea id="bPaste" rows="4" style="margin-top:10px" placeholder="Title | Date"></textarea>
+      <button class="btn-primary" onclick="submitBulk()">Process List</button>
+    </div>
+  </section>
   </div>
 
   <audio id="alertSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
