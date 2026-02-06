@@ -1,549 +1,78 @@
-  <!DOCTYPE html>
-  <html lang="en">
-
-  <head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
     <meta charset="UTF-8">
     <title>Webenoid Bug Tracker</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap"
-      rel="stylesheet">
-    <style>
-      :root {
-        --brand: #2563eb;
-        --bg: #f8fafc;
-        --panel: #ffffff;
-        --border: #e2e8f0;
-        --text-light: #64748b;
-      }
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
 
-      body {
-        font-family: 'Plus Jakarta Sans', sans-serif;
-        background: var(--bg);
-        margin: 0;
-        display: flex;
-        flex-direction: column;
-        height: 100vh;
-        overflow: hidden;
-      }
+    <div id="notify"></div>
+    
+    <nav>
+        <div style="font-weight:800; color:var(--brand); font-size:20px;">WEBENOID TRACKER</div>
+        <div style="display:flex; align-items:center; gap:20px;">
+            <span id="userLabel" style="font-size:13px; font-weight:600; color:var(--text-light)"></span>
+            <button onclick="logout()" style="width:auto; background:#fee2e2; color:#ef4444; padding:6px 12px; font-size:12px;">Logout</button>
+        </div>
+    </nav>
 
-      nav {
-        height: 60px;
-        background: var(--panel);
-        border-bottom: 1px solid var(--border);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0 32px;
-        flex-shrink: 0;
-      }
+    <div class="wrapper">
+        <aside id="mgmtAside">
+            <h3>Directory</h3>
+            <input id="newDev" placeholder="Add New Developer">
+            <button onclick="addDev()" style="background: #0f172a; margin-bottom: 20px;">Add Member</button>
 
-      aside {
-        width: 300px;
-        background: var(--panel);
-        border-right: 1px solid var(--border);
-        padding: 24px;
-        overflow-y: auto;
-      }
+            <h3>Context Management</h3>
+            <input id="newProj" placeholder="Project Name">
+            <button onclick="addProj()">Create Project</button>
+            <select id="selProj" onchange="loadTasks()" style="margin-top:10px"></select>
+            <input id="newTask" placeholder="Task Name">
+            <button onclick="addTask()">Link Task</button>
+        </aside>
 
+        <main>
+            <div class="card" id="bulkCard">
+                <h3 style="margin-top:0; font-size:12px; color:var(--brand)">BULK COPY-PASTE</h3>
+                <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+                    <select id="bProj" onchange="loadBTasks()" style="flex: 1; margin-bottom: 0;"></select>
+                    <select id="bTask" style="flex: 1; margin-bottom: 0;"></select>
+                    <select id="bAssign" style="flex: 1; margin-bottom: 0;"></select>
+                </div>
+                <textarea id="bPaste" rows="3" placeholder="Paste rows: Title | Target Date (YYYY-MM-DD)"></textarea>
+                <button onclick="submitBulk()" style="width: auto; padding: 10px 25px;">🚀 Process Batch List</button>
+            </div>
 
+            <div style="padding:15px; border-bottom:1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-weight:800; font-size:12px; color:var(--brand)">LIVE DEFECT LISTING</span>
+                <select id="devProjFilter" onchange="loadBugs()" style="width: auto; margin-bottom: 0; padding: 4px 8px; font-size: 11px;">
+                    <option value="All">All Projects</option>
+                </select>
+            </div>
 
-      main {
-        flex: 1;
-        padding: 24px;
-        overflow-y: auto;
-      }
-
-      /* PASTE THE NEW CODE HERE */
-      .wrapper {
-        display: flex;
-        flex: 1;
-        height: calc(100vh - 60px);
-        overflow: hidden;
-      }
-
-      .card {
-        background: white;
-        border-radius: 12px;
-        border: 1px solid var(--border);
-        padding: 20px;
-        margin-bottom: 24px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-      }
-
-      input,
-      select,
-      textarea {
-        width: 100%;
-        padding: 10px;
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        margin-bottom: 10px;
-        box-sizing: border-box;
-        font-family: inherit;
-        font-size: 13px;
-      }
-
-      .scroll-select {
-        height: 100px;
-        overflow-y: auto;
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        background: white;
-      }
-
-      button {
-        width: 100%;
-        background: var(--brand);
-        color: white;
-        border: none;
-        padding: 12px;
-        border-radius: 8px;
-        font-weight: 600;
-        cursor: pointer;
-      }
-
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        min-width: 1000px;
-      }
-
-      th,
-      td {
-        text-align: left;
-        padding: 12px;
-        border-bottom: 1px solid var(--border);
-        font-size: 13px;
-      }
-
-      .Queue {
-        background: #e0e7ff;
-        color: #3730a3;
-        padding: 4px 8px;
-        border-radius: 6px;
-        font-weight: 700;
-        border: none;
-        font-size: 11px;
-      }
-
-      .Review {
-        background: #ffedd5;
-        color: #9a3412;
-        padding: 4px 8px;
-        border-radius: 6px;
-        font-weight: 700;
-        border: none;
-        font-size: 11px;
-      }
-
-      .Fixed {
-        background: #dcfce7;
-        color: #166534;
-        padding: 4px 8px;
-        border-radius: 6px;
-        font-weight: 700;
-        border: none;
-        font-size: 11px;
-      }
-
-      #notify {
-        position: fixed;
-        top: 20px;
-        /* Moved to top for better visibility */
-        right: 20px;
-        background: #1e293b;
-        /* Sleek dark blue */
-        color: white;
-        padding: 16px 24px;
-        border-radius: 12px;
-        display: none;
-        z-index: 9999;
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
-        border-left: 5px solid var(--brand);
-        font-size: 14px;
-        font-weight: 600;
-        max-width: 350px;
-      }
-    </style>
-  </head>
-
-  <div id="notify"></div>
-  <nav>
-    <div style="font-weight:800; color:var(--brand); font-size:20px;">WEBENOID TRACKER</div>
-    <div style="display:flex; align-items:center; gap:20px;">
-      <span id="userLabel" style="font-size:13px; font-weight:600; color:var(--text-light)"></span>
-      <button onclick="logout()"
-        style="width:auto; background:#fee2e2; color:#ef4444; padding:6px 12px; font-size:12px;">Logout</button>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width:40px; text-align:center">#</th>
+                        <th>Defect Details</th>
+                        <th>Assignee</th>
+                        <th style="width:100px">Status</th>
+                        <th>Started At</th>
+                        <th>Target Fix</th>
+                        <th>Work Done</th>
+                        <th>History Logs</th>
+                    </tr>
+                </thead>
+                <tbody id="bugList"></tbody>
+            </table>
+        </main>
     </div>
-  </nav>
 
-  <div class="wrapper">
-    <aside id="mgmtAside">
-      <h3>Directory</h3>
-      <input id="newDev" placeholder="Add New Developer">
-      <button onclick="addDev()" style="background: #0f172a; margin-bottom: 20px;">Add Member</button>
+    <audio id="alertSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
 
-      <h3>Context Management</h3>
-      <input id="newProj" placeholder="Project Name">
-      <button onclick="addProj()">Create Project</button>
-      <select id="selProj" onchange="loadTasks()" style="margin-top:10px"></select>
-      <input id="newTask" placeholder="Task Name">
-      <button onclick="addTask()">Link Task</button>
-    </aside>
+    <script src="script.js"></script>
 
-    <main>
-      <div class="card" id="bulkCard">
-        <h3 style="margin-top:0; font-size:12px; color:var(--brand)">BULK COPY-PASTE</h3>
-
-        <div style="display: flex; gap: 15px; margin-bottom: 20px;">
-          <select id="bProj" onchange="loadBTasks()" style="flex: 1; margin-bottom: 0;"></select>
-          <select id="bTask" style="flex: 1; margin-bottom: 0;"></select>
-          <select id="bAssign" style="flex: 1; margin-bottom: 0;"></select>
-        </div>
-
-        <textarea id="bPaste" rows="3" placeholder="Paste rows: Title | Target Date (YYYY-MM-DD)"
-          style="margin-bottom: 20px; resize: vertical; min-height: 80px;"></textarea>
-
-        <div style="display: flex; justify-content: flex-start;">
-          <button onclick="submitBulk()"
-            style="width: auto; padding: 10px 25px; display: flex; align-items: center; gap: 8px;">
-            🚀 Process Batch List
-          </button>
-        </div>
-      </div>
-
-      <div
-        style="padding:15px; border-bottom:1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
-        <span style="font-weight:800; font-size:12px; color:var(--brand)">LIVE DEFECT LISTING</span>
-        <select id="devProjFilter" onchange="loadBugs()"
-          style="width: auto; margin-bottom: 0; padding: 4px 8px; font-size: 11px;">
-          <option value="All">All Projects</option>
-        </select>
-      </div>
-
-      <table>
-        <thead>
-          <tr>
-            <th style="width:40px; text-align:center">#</th>
-            <th>Defect Details</th>
-            <th>Assignee</th>
-            <th style="width:100px">Status</th>
-            <th>Started At</th>
-            <th>Target Fix</th>
-            <th>Work Done</th>
-            <th>History Logs</th>
-          </tr>
-        </thead>
-        <tbody id="bugList"></tbody>
-      </table>
-    </main>
-  </div><audio id="alertSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"
-    preload="auto"></audio>
-
-  <script>
-    const API = "https://webenoid-tracker.onrender.com/api";
-    const user = localStorage.getItem("user");
-    const role = localStorage.getItem("role");
-
-    // Permissions
-    if (role === "Developer") {
-      document.getElementById('mgmtAside').style.display = "none";
-      document.getElementById('bulkCard').style.display = "none";
-    }
-    document.getElementById('userLabel').innerText = `${user} (${role})`;
-
-    function notify(msg) {
-      const n = document.getElementById('notify');
-      n.innerText = msg;
-      n.style.display = "block";
-
-      // Trigger the sound every time a notification is called
-      playSound();
-
-      // Hide it after 5 seconds (slightly longer so people can read the details)
-      setTimeout(() => {
-        n.style.display = "none";
-      }, 5000);
-    }
-
-    function playSound() {
-      const sound = document.getElementById('alertSound');
-      if (sound) {
-        sound.currentTime = 0; // Reset sound to start if it's already playing
-        sound.play().catch(e => console.log("Sound will play after your first click on the page."));
-      }
-    }
-
-    async function loadBugs() {
-      const res = await fetch(API + "/bugs");
-      let bugs = await res.json();
-
-      // 1. Filter by role
-      if (role === "Developer") bugs = bugs.filter(b => b.assignedTo === user);
-
-      // 2. Handle Project Filter Dropdown
-      const filterDrop = document.getElementById('devProjFilter');
-      if (filterDrop) {
-        const uniqueProjects = [...new Set(bugs.map(b => b.project))];
-        const currentVal = filterDrop.value;
-        filterDrop.innerHTML = '<option value="All">All Projects</option>';
-        uniqueProjects.forEach(p => {
-          filterDrop.innerHTML += `<option value="${p}" ${p === currentVal ? 'selected' : ''}>${p}</option>`;
-        });
-
-        if (filterDrop.value !== "All") {
-          bugs = bugs.filter(b => b.project === filterDrop.value);
-        }
-      }
-
-      // 3. Sort by project
-      bugs.sort((a, b) => a.project.localeCompare(b.project));
-
-      const body = document.getElementById('bugList');
-      body.innerHTML = "";
-
-      // 4. Using for...of loop for async history fetching
-      for (let [i, b] of bugs.entries()) {
-        // Standardize ISO timestamp for HTML input
-        const startTime = b.startedAt ? b.startedAt.slice(0, 16) : '';
-
-        // Fetch logs for this specific bug
-        const hRes = await fetch(`${API}/history/${b._id}`);
-        const logs = await hRes.json();
-
-        const logHtml = logs.map(l => `
-          <div style="border-bottom:1px solid #f1f5f9; padding:2px 0; font-size:10px;">
-            <span style="color:var(--brand); font-weight:700;">${new Date(l.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>: ${l.action}
-          </div>
-        `).join('') || '<span style="color:var(--text-light); font-size:10px;">No logs</span>';
-
-        // 5. Append the Row
-        body.innerHTML += `
-        <tr>
-          <td style="text-align:center">${i + 1}</td>
-          <td><strong>${b.title}</strong><br><small style="color:var(--brand); font-weight:700;">${b.project}</small></td>
-          <td><strong>${b.assignedTo}</strong></td>
-          <td>
-            <select class="${b.status}" onchange="patch('${b._id}','status',this.value)">
-              <option ${b.status == 'Queue' ? 'selected' : ''} value="Queue">Queue</option>
-              <option ${b.status == 'Review' ? 'selected' : ''} value="Review">Review</option>
-              <option ${b.status == 'Fixed' ? 'selected' : ''} value="Fixed">Fixed</option>
-            </select>
-          </td>
-          <td><input type="datetime-local" class="grid-input" value="${startTime}" onchange="patch('${b._id}', 'startedAt', this.value)"></td>
-          <td><input type="date" class="grid-input" value="${b.targetDate || ''}" onchange="patch('${b._id}','targetDate',this.value)"></td>
-          <td>
-            <div class="progress-container">
-              <input type="range" min="0" max="100" value="${b.completion || 0}" 
-                oninput="document.getElementById('p-${b._id}').innerText=this.value+'%'"
-                onchange="patch('${b._id}','completion',this.value)">
-              <span id="p-${b._id}" style="font-weight:700; font-size:11px">${b.completion || 0}%</span>
-            </div>
-          </td>
-          <td>
-            <div style="max-height: 70px; overflow-y: auto; width: 180px; background: #f8fafc; padding: 5px; border-radius: 4px; border: 1px solid var(--border);">
-              ${logHtml}
-            </div>
-          </td>
-        </tr>`;
-      }
-    }
-
-    async function patch(id, field, value) {
-      const data = { [field]: value };
-
-      if (field === 'completion' && Number(value) === 100) {
-        data.status = "Review";
-      }
-
-      try {
-        await fetch(`${API}/bug/${id}`, {
-          method: "PUT",
-          headers: {
-            'Content-Type': 'application/json',
-            'user-name': user
-          },
-          body: JSON.stringify(data)
-        });
-
-        // This line is the "secret sauce" that tells your browser 
-        // "I made this change, don't play the alarm for me."
-        const res = await fetch(API + "/bugs");
-        const bugs = await res.json();
-        lastKnownFingerprint = JSON.stringify(bugs.map(b => b._id + b.status + b.completion));
-
-        loadBugs();
-      } catch (err) {
-        console.error("Patch failed:", err);
-      }
-    }
-
-    async function viewHistory(id) {
-      const res = await fetch(`${API}/history/${id}`);
-      const logs = await res.json();
-      alert(logs.map(l => `${new Date(l.timestamp).toLocaleTimeString()} - ${l.user}: ${l.action}`).join('\n') || "No history yet");
-    } // End of viewHistory
-
-    function logout() {
-      localStorage.clear();
-      window.location.href = "login.html";
-    } // End of logout
-    async function submitBulk() {
-      // 1. Get the lines from the textarea and clean up whitespace
-      const lines = document.getElementById('bPaste').value.trim().split("\n");
-
-      // 2. Map each line to a bug object
-      const data = lines.map(l => {
-        // Splits the line at the "|" symbol
-        const parts = l.split("|");
-
-        return {
-          project: document.getElementById('bProj').value, // From first dropdown
-          task: document.getElementById('bTask').value,       // From second dropdown
-          assignedTo: document.getElementById('bAssign').value, // From third dropdown
-          title: parts[0] ? parts[0].trim() : "",           // Text before "|"
-          targetDate: parts[1] ? parts[1].trim() : "",      // Text after "|" (YYYY-MM-DD)
-          status: "Queue",                                  // Default status
-          completion: 0,                                    // Default progress
-          startedAt: new Date().toISOString().slice(0, 16)  // Sets current timestamp
-        };
-      }).filter(x => x.title); // Only process rows that have at least a title
-
-      // 3. Prevent submission if no valid data is found
-      if (data.length === 0) {
-        notify("Please enter at least one defect title.");
-        return;
-      }
-
-      // 4. POST the batch to your live API
-      try {
-        const res = await fetch(API + "/bugs", {
-          method: "POST",
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
-        });
-
-        if (res.ok) {
-          document.getElementById('bPaste').value = ""; // Clear the textarea
-          loadBugs(); // Refresh the table
-          notify(`Successfully logged ${data.length} defects!`); // Show success popup
-        } else {
-          notify("Server error: Could not save batch.");
-        }
-      } catch (err) {
-        console.error("Submission failed:", err);
-        notify("Network error: Check your connection.");
-      }
-    }
-
-    // --- DATA LOADERS ---
-    // --- DATA LOADERS ---
-    let teamList = JSON.parse(localStorage.getItem("team_list")) || ["Assignee"];
-
-    function addDev() {
-      const name = document.getElementById('newDev').value.trim();
-      if (name) {
-        teamList.push(name);
-        localStorage.setItem("team_list", JSON.stringify(teamList));
-        updateDrops();
-        document.getElementById('newDev').value = "";
-        notify("Developer Added to Directory");
-      }
-    }
-
-    function updateDrops() {
-      const s = document.getElementById('bAssign');
-      if (s) {
-        s.innerHTML = "";
-        teamList.forEach(t => s.innerHTML += `<option value="${t}">${t}</option>`);
-      }
-    }
-
-    async function addProj() {
-      const name = document.getElementById('newProj').value;
-      await fetch(API + "/project", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: name }) });
-      document.getElementById('newProj').value = "";
-      loadData();
-      notify("New Project Created");
-    }
-
-    async function addTask() {
-      await fetch(API + "/task", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ project: selProj.value, name: newTask.value }) });
-      newTask.value = "";
-      loadData();
-      notify("Task Linked to Project");
-    }
-
-    // This handles the sidebar project dropdown error
-    async function loadTasks() {
-      console.log("Loading tasks for sidebar project:", selProj.value);
-      // Optional: If you add a sidebar task dropdown, update it here
-    }
-
-    async function loadData() {
-      const p = await (await fetch(API + "/projects")).json();
-      [selProj, bProj].forEach(s => {
-        if (s) {
-          s.innerHTML = "";
-          p.forEach(x => s.innerHTML += `<option value="${x.name}">${x.name}</option>`);
-        }
-      });
-      loadBTasks();
-    }
-
-    async function loadBTasks() {
-      if (!bProj.value) return;
-      const t = await (await fetch(API + "/tasks/" + bProj.value)).json();
-      bTask.innerHTML = "";
-      t.forEach(x => bTask.innerHTML += `<option value="${x.name}">${x.name}</option>`);
-    }
-
-    function logout() {
-      localStorage.clear();
-      window.location.href = "login.html";
-    }
-
-    // --- REAL-TIME NOTIFICATION ENGINE ---
-    let lastKnownFingerprint = "";
-
-    async function checkForUpdates() {
-      try {
-        const res = await fetch(API + "/bugs");
-        const bugs = await res.json();
-
-        // Create a unique 'fingerprint' of the current bug list
-        const currentFingerprint = JSON.stringify(bugs.map(b => b._id + b.status + b.completion));
-
-        // If the data changed and it's not the first time loading
-        if (lastKnownFingerprint !== "" && lastKnownFingerprint !== currentFingerprint) {
-
-          // Get details of the most recent change
-          const latestBug = bugs[0];
-          const hRes = await fetch(`${API}/history/${latestBug._id}`);
-          const logs = await hRes.json();
-          const lastLog = logs[0];
-
-          const msg = lastLog
-            ? `🔔 ${lastLog.user}: ${lastLog.action} (${latestBug.title})`
-            : "Defect list updated by another user 🔔";
-
-          notify(msg); // This triggers both the box and the sound
-          loadBugs();  // Refresh the table UI
-        }
-
-        lastKnownFingerprint = currentFingerprint;
-      } catch (err) {
-        console.error("Auto-sync error:", err);
-      }
-    }
-
-    // Check for updates every 10 seconds
-    setInterval(checkForUpdates, 10000);
-
-    // Initialize everything
-    loadData();
-    loadBugs();
-    updateDrops();
-  </script>
-  </body>
-
-  </html>
+</body>
+</html>
