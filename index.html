@@ -42,7 +42,6 @@
       overflow: hidden;
     }
 
-    /* SIDEBAR (Admin/Tester Only) */
     aside {
       width: 300px;
       background: var(--panel);
@@ -76,16 +75,15 @@
       margin-bottom: 10px;
       box-sizing: border-box;
       font-family: inherit;
+      font-size: 13px;
     }
 
-    /* SCROLLABLE DROPDOWN FIX */
     .scroll-select {
-      max-height: 150px;
+      height: 100px;
       overflow-y: auto;
       border: 1px solid var(--border);
       border-radius: 8px;
       background: white;
-      padding: 5px;
     }
 
     button {
@@ -113,7 +111,6 @@
       font-size: 13px;
     }
 
-    /* Status Colors */
     .Queue {
       background: #e0e7ff;
       color: #3730a3;
@@ -121,6 +118,7 @@
       border-radius: 6px;
       font-weight: 700;
       border: none;
+      font-size: 11px;
     }
 
     .Review {
@@ -130,6 +128,7 @@
       border-radius: 6px;
       font-weight: 700;
       border: none;
+      font-size: 11px;
     }
 
     .Fixed {
@@ -139,6 +138,7 @@
       border-radius: 6px;
       font-weight: 700;
       border: none;
+      font-size: 11px;
     }
 
     #notify {
@@ -170,56 +170,54 @@
   <div id="notify"></div>
 
   <div class="wrapper">
-    <aside id="managementSidebar">
+    <aside id="mgmtAside">
       <h3>Directory</h3>
-      <p style="font-size:11px; color:var(--text-light)">CREATE NEW ASSIGNEE</p>
-      <input id="newDev" placeholder="Full Name">
-      <input id="newDevPass" type="password" placeholder="Password">
-      <button onclick="addDev()" style="background:#0f172a">Add Member</button>
+      <input id="newDev" placeholder="Add New Developer">
+      <button onclick="addDev()" style="background: #0f172a; margin-bottom: 20px;">Add Member</button>
 
-      <hr style="margin:25px 0">
-
-      <h3>Context Setup</h3>
-      <input id="newProj" placeholder="New Project Name">
+      <h3>Context Management</h3>
+      <input id="newProj" placeholder="Project Name">
       <button onclick="addProj()">Create Project</button>
       <select id="selProj" onchange="loadTasks()" style="margin-top:10px"></select>
-      <input id="newTask" placeholder="Link Task Name">
+      <input id="newTask" placeholder="Task Name">
       <button onclick="addTask()">Link Task</button>
     </aside>
 
     <main>
-      <div class="card" id="bulkSection">
+      <div class="card" id="bulkCard">
         <h3 style="margin-top:0; font-size:12px; color:var(--brand)">BULK DEFECT ENTRY</h3>
         <div style="display:grid; grid-template-columns: 1fr 1fr 2fr auto; gap: 15px; align-items: start;">
           <div>
-            <label style="font-size:11px; font-weight:700">PROJECT & TASK</label>
+            <label style="font-size:10px; font-weight:700">PROJECT & TASK</label>
             <select id="bProj" onchange="loadBTasks()"></select>
             <select id="bTask"></select>
           </div>
           <div>
-            <label style="font-size:11px; font-weight:700">SELECT ASSIGNEE</label>
+            <label style="font-size:10px; font-weight:700">SELECT ASSIGNEE</label>
             <select id="bAssign" size="5" class="scroll-select"></select>
           </div>
           <div>
-            <label style="font-size:11px; font-weight:700">DEFECT TITLES (NEW LINE PER BUG)</label>
+            <label style="font-size:10px; font-weight:700">DEFECT TITLES (ONE PER LINE)</label>
             <textarea id="bPaste" rows="5" placeholder="Enter one defect per line..."></textarea>
           </div>
-          <button onclick="submitBulk()" style="height: 50px; margin-top:20px">🚀 Post Batch</button>
+          <button onclick="submitBulk()" style="height: 48px; margin-top:18px">🚀 Post Batch</button>
         </div>
       </div>
 
       <div class="card" style="padding:0; overflow-x:auto">
-        <div style="padding:15px; border-bottom:1px solid var(--border); font-weight:800; font-size:14px">LIVE DEFECT
-          LIST</div>
+        <div
+          style="padding:15px; border-bottom:1px solid var(--border); font-weight:800; font-size:12px; color:var(--brand)">
+          LIVE DEFECT LISTING</div>
         <table>
           <thead>
             <tr>
+              <th style="width:40px; text-align:center">#</th>
               <th>Defect Details</th>
               <th>Assignee</th>
-              <th>Status</th>
-              <th>Timeline</th>
-              <th>Work Progress</th>
-              <th>Action</th>
+              <th style="width:100px">Status</th>
+              <th>Dates</th>
+              <th>Work Done</th>
+              <th>Logs</th>
             </tr>
           </thead>
           <tbody id="bugList"></tbody>
@@ -229,88 +227,106 @@
   </div>
 
   <script>
-    const API = "/api";
-    const userName = localStorage.getItem("user");
-    const userRole = localStorage.getItem("role");
+    const API = "http://localhost:3000";
+    const user = localStorage.getItem("user");
+    const role = localStorage.getItem("role");
 
-    // UI Permissions Logic
-    if (userRole === "Developer") {
-      document.getElementById('managementSidebar').style.display = "none";
-      document.getElementById('bulkSection').style.display = "none";
+    // Permissions
+    if (role === "Developer") {
+      document.getElementById('mgmtAside').style.display = "none";
+      document.getElementById('bulkCard').style.display = "none";
     }
-
-    document.getElementById('userLabel').innerText = `${userName} (${userRole})`;
+    document.getElementById('userLabel').innerText = `${user} (${role})`;
 
     async function loadBugs() {
       const res = await fetch(API + "/bugs");
       let bugs = await res.json();
-      if (userRole === "Developer") bugs = bugs.filter(b => b.assignedTo === userName);
+      if (role === "Developer") bugs = bugs.filter(b => b.assignedTo === user);
 
       const body = document.getElementById('bugList');
       body.innerHTML = "";
-      bugs.forEach(b => {
+      bugs.forEach((b, i) => {
         body.innerHTML += `
-            <tr>
-                <td><strong>${b.title}</strong><br><small style="color:var(--text-light)">${b.project} / ${b.task}</small></td>
-                <td><strong>${b.assignedTo}</strong><br><small>By: ${b.createdBy}</small></td>
-                <td>
-                    <select class="${b.status}" onchange="patch('${b._id}','status',this.value)">
-                        <option ${b.status == 'Queue' ? 'selected' : ''}>Queue</option>
-                        <option ${b.status == 'Review' ? 'selected' : ''}>Review</option>
-                        <option ${b.status == 'Fixed' ? 'selected' : ''}>Fixed</option>
-                    </select>
-                </td>
-                <td style="font-size:11px">
-                    Start: <input type="datetime-local" value="${b.startedAt || ''}" onchange="patch('${b._id}','startedAt',this.value)" style="width:130px; border:none; background:transparent"><br>
-                    Target: <input type="date" value="${b.targetDate || ''}" onchange="patch('${b._id}','targetDate',this.value)" style="width:130px; border:none; background:transparent">
-                </td>
-                <td>
-                    <div style="display:flex; align-items:center; gap:8px">
-                        <input type="range" min="0" max="100" value="${b.completion || 0}" 
-                            oninput="document.getElementById('p-${b._id}').innerText=this.value+'%'"
-                            onchange="patch('${b._id}','completion',this.value)">
-                        <span id="p-${b._id}" style="font-weight:800; font-size:11px">${b.completion || 0}%</span>
-                    </div>
-                </td>
-                <td><button onclick="viewHistory('${b._id}')" style="background:#64748b; padding:4px 8px; font-size:10px; width:auto">LOGS</button></td>
-            </tr>`;
+        <tr>
+            <td style="text-align:center">${i + 1}</td>
+            <td><strong>${b.title}</strong><br><small style="color:var(--text-light)">${b.project} / ${b.task}</small></td>
+            <td><strong>${b.assignedTo}</strong></td>
+            <td>
+                <select class="${b.status}" onchange="patch('${b._id}','status',this.value)">
+                    <option ${b.status == 'Queue' ? 'selected' : ''}>Queue</option>
+                    <option ${b.status == 'Review' ? 'selected' : ''}>Review</option>
+                    <option ${b.status == 'Fixed' ? 'selected' : ''}>Fixed</option>
+                </select>
+            </td>
+            <td style="font-size:11px">
+                S: <input type="datetime-local" value="${b.startedAt || ''}" onchange="patch('${b._id}','startedAt',this.value)" style="border:none; background:transparent; width:130px"><br>
+                T: <input type="date" value="${b.targetDate || ''}" onchange="patch('${b._id}','targetDate',this.value)" style="border:none; background:transparent; width:130px">
+            </td>
+            <td>
+                <div style="display:flex; align-items:center; gap:8px">
+                    <input type="range" min="0" max="100" value="${b.completion || 0}" 
+                        oninput="document.getElementById('p-${b._id}').innerText=this.value+'%'"
+                        onchange="patch('${b._id}','completion',this.value)">
+                    <span id="p-${b._id}" style="font-weight:700; font-size:11px; width:30px">${b.completion || 0}%</span>
+                </div>
+            </td>
+            <td><button onclick="viewHistory('${b._id}')" style="background:#64748b; font-size:10px; padding:4px; width:auto">History</button></td>
+        </tr>`;
       });
     }
 
     async function patch(id, field, value) {
-      await fetch(`${API}/bug/${id}`, { method: "PUT", headers: { 'Content-Type': 'application/json', 'user-name': userName }, body: JSON.stringify({ [field]: value }) });
-      if (field === 'status' || value == 100) loadBugs();
+      const data = { [field]: value };
+      if (field === 'completion' && value == 100) data.status = "Review";
+      await fetch(`${API}/bug/${id}`, {
+        method: "PUT",
+        headers: { 'Content-Type': 'application/json', 'user-name': user },
+        body: JSON.stringify(data)
+      });
+      if (field === 'status' || data.status) loadBugs();
     }
 
-    async function addDev() {
-      const name = newDev.value; const password = newDevPass.value;
-      await fetch(API + "/team", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, password, role: "Developer" }) });
-      newDev.value = ""; newDevPass.value = ""; loadData(); notify("New Assignee Created!");
+    async function viewHistory(id) {
+      const res = await fetch(`${API}/history/${id}`);
+      const logs = await res.json();
+      alert(logs.map(l => `${new Date(l.timestamp).toLocaleTimeString()} - ${l.user}: ${l.action}`).join('\n') || "No history yet");
     }
 
     async function submitBulk() {
-      const lines = bPaste.value.split('\n').filter(l => l.trim());
-      const data = lines.map(line => ({ project: bProj.value, task: bTask.value, title: line.trim(), assignedTo: bAssign.value, createdBy: userName, startedAt: new Date().toISOString().slice(0, 16) }));
+      const lines = bPaste.value.trim().split("\n");
+      const data = lines.map(l => ({
+        project: bProj.value, task: bTask.value, title: l.trim(),
+        assignedTo: bAssign.value, status: "Queue", completion: 0,
+        startedAt: new Date().toISOString().slice(0, 16)
+      })).filter(x => x.title);
       await fetch(API + "/bugs", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-      bPaste.value = ""; notify("Batch Processed Successfully!"); loadBugs();
+      bPaste.value = ""; loadBugs();
     }
 
+    // --- DATA LOADERS ---
+    let teamList = JSON.parse(localStorage.getItem("team_list")) || ["Assignee"];
+    function addDev() {
+      const name = document.getElementById('newDev').value.trim();
+      if (name) { teamList.push(name); localStorage.setItem("team_list", JSON.stringify(teamList)); updateDrops(); }
+    }
+    function updateDrops() {
+      const s = document.getElementById('bAssign');
+      s.innerHTML = ""; teamList.forEach(t => s.innerHTML += `<option value="${t}">${t}</option>`);
+    }
+    async function addProj() { await fetch(API + "/project", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: newProj.value }) }); newProj.value = ""; loadData(); }
+    async function addTask() { await fetch(API + "/task", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ project: selProj.value, name: newTask.value }) }); newTask.value = ""; loadData(); }
     async function loadData() {
       const p = await (await fetch(API + "/projects")).json();
-      const t = await (await fetch(API + "/team")).json();
       [selProj, bProj].forEach(s => { s.innerHTML = ""; p.forEach(x => s.innerHTML += `<option value="${x.name}">${x.name}</option>`); });
-      bAssign.innerHTML = ""; t.forEach(x => bAssign.innerHTML += `<option value="${x.name}">${x.name}</option>`);
       loadBTasks();
     }
-
-    async function addProj() { await fetch(API + "/project", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: newProj.value }) }); newProj.value = ""; loadData(); notify("Project Created At Top"); }
-    async function addTask() { await fetch(API + "/task", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ project: selProj.value, name: newTask.value }) }); newTask.value = ""; notify("Task Linked!"); }
-    async function loadBTasks() { const t = await (await fetch(API + "/tasks/" + bProj.value)).json(); bTask.innerHTML = ""; t.forEach(x => bTask.innerHTML += `<option value="${x.name}">${x.name}</option>`); }
-    async function viewHistory(id) { const res = await fetch(`${API}/history/${id}`); const logs = await res.json(); alert(logs.map(l => `${new Date(l.timestamp).toLocaleTimeString()} - ${l.user}: ${l.action}`).join('\n') || "No history yet"); }
+    async function loadBTasks() {
+      const t = await (await fetch(API + "/tasks/" + bProj.value)).json();
+      bTask.innerHTML = ""; t.forEach(x => bTask.innerHTML += `<option value="${x.name}">${x.name}</option>`);
+    }
     function logout() { localStorage.clear(); window.location.href = "login.html"; }
-    function notify(m) { const n = document.getElementById('notify'); n.innerText = m; n.style.display = "block"; setTimeout(() => n.style.display = "none", 4000); }
 
-    loadData(); loadBugs();
+    loadData(); loadBugs(); updateDrops();
   </script>
 </body>
 
