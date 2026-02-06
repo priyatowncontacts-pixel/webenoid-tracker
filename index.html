@@ -254,30 +254,33 @@
       const res = await fetch(API + "/bugs");
       let bugs = await res.json();
 
-      // 1. Role-based filter
+      // 1. Filter by role
       if (role === "Developer") bugs = bugs.filter(b => b.assignedTo === user);
 
-      // 2. Populate the Project Dropdown Filter
+      // 2. Handle Project Filter Dropdown
       const filterDrop = document.getElementById('devProjFilter');
-      const uniqueProjects = [...new Set(bugs.map(b => b.project))];
-      const currentSelection = filterDrop.value;
+      if (filterDrop) {
+        const uniqueProjects = [...new Set(bugs.map(b => b.project))];
+        const currentVal = filterDrop.value;
+        filterDrop.innerHTML = '<option value="All">All Projects</option>';
+        uniqueProjects.forEach(p => {
+          filterDrop.innerHTML += `<option value="${p}" ${p === currentVal ? 'selected' : ''}>${p}</option>`;
+        });
 
-      filterDrop.innerHTML = '<option value="All">All Projects</option>';
-      uniqueProjects.forEach(p => {
-        filterDrop.innerHTML += `<option value="${p}" ${p === currentSelection ? 'selected' : ''}>${p}</option>`;
-      });
-
-      // 3. Apply Filter and Sort
-      if (filterDrop.value !== "All") {
-        bugs = bugs.filter(b => b.project === filterDrop.value);
+        if (filterDrop.value !== "All") {
+          bugs = bugs.filter(b => b.project === filterDrop.value);
+        }
       }
+
+      // 3. Sort by project
       bugs.sort((a, b) => a.project.localeCompare(b.project));
 
       const body = document.getElementById('bugList');
       body.innerHTML = "";
 
-      // 4. Build Table Rows with Embedded History
+      // 4. Using for...of loop for async history fetching
       for (let [i, b] of bugs.entries()) {
+        // Standardize ISO timestamp for HTML input
         const startTime = b.startedAt ? b.startedAt.slice(0, 16) : '';
 
         // Fetch logs for this specific bug
@@ -290,6 +293,7 @@
       </div>
     `).join('') || '<span style="color:var(--text-light); font-size:10px;">No logs</span>';
 
+        // 5. Append the Row
         body.innerHTML += `
     <tr>
       <td style="text-align:center">${i + 1}</td>
@@ -322,6 +326,8 @@
 
 
 
+
+
     async function patch(id, field, value) {
       const data = { [fieldName]: value };
 
@@ -337,102 +343,98 @@
         body: JSON.stringify(data)
       });
 
-      // Refresh the bugs list to update the "History Logs" column content
-      loadBugs();
-    }
-    if (field === 'status' || data.status) loadBugs();
 
 
-    async function viewHistory(id) {
-      const res = await fetch(`${API}/history/${id}`);
-      const logs = await res.json();
-      alert(logs.map(l => `${new Date(l.timestamp).toLocaleTimeString()} - ${l.user}: ${l.action}`).join('\n') || "No history yet");
-    }
-
-    async function submitBulk() {
-      // 1. Get the lines from the textarea and clean up whitespace
-      const lines = document.getElementById('bPaste').value.trim().split("\n");
-
-      // 2. Map each line to a bug object
-      const data = lines.map(l => {
-        // Splits the line at the "|" symbol
-        const parts = l.split("|");
-
-        return {
-          project: document.getElementById('bProj').value, // From first dropdown
-          task: document.getElementById('bTask').value,       // From second dropdown
-          assignedTo: document.getElementById('bAssign').value, // From third dropdown
-          title: parts[0] ? parts[0].trim() : "",           // Text before "|"
-          targetDate: parts[1] ? parts[1].trim() : "",      // Text after "|" (YYYY-MM-DD)
-          status: "Queue",                                  // Default status
-          completion: 0,                                    // Default progress
-          startedAt: new Date().toISOString().slice(0, 16)  // Sets current timestamp
-        };
-      }).filter(x => x.title); // Only process rows that have at least a title
-
-      // 3. Prevent submission if no valid data is found
-      if (data.length === 0) {
-        notify("Please enter at least one defect title.");
-        return;
+      async function viewHistory(id) {
+        const res = await fetch(`${API}/history/${id}`);
+        const logs = await res.json();
+        alert(logs.map(l => `${new Date(l.timestamp).toLocaleTimeString()} - ${l.user}: ${l.action}`).join('\n') || "No history yet");
       }
 
-      // 4. POST the batch to your live API
-      try {
-        const res = await fetch(API + "/bugs", {
-          method: "POST",
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
-        });
+      async function submitBulk() {
+        // 1. Get the lines from the textarea and clean up whitespace
+        const lines = document.getElementById('bPaste').value.trim().split("\n");
 
-        if (res.ok) {
-          document.getElementById('bPaste').value = ""; // Clear the textarea
-          loadBugs(); // Refresh the table
-          notify(`Successfully logged ${data.length} defects!`); // Show success popup
-        } else {
-          notify("Server error: Could not save batch.");
+        // 2. Map each line to a bug object
+        const data = lines.map(l => {
+          // Splits the line at the "|" symbol
+          const parts = l.split("|");
+
+          return {
+            project: document.getElementById('bProj').value, // From first dropdown
+            task: document.getElementById('bTask').value,       // From second dropdown
+            assignedTo: document.getElementById('bAssign').value, // From third dropdown
+            title: parts[0] ? parts[0].trim() : "",           // Text before "|"
+            targetDate: parts[1] ? parts[1].trim() : "",      // Text after "|" (YYYY-MM-DD)
+            status: "Queue",                                  // Default status
+            completion: 0,                                    // Default progress
+            startedAt: new Date().toISOString().slice(0, 16)  // Sets current timestamp
+          };
+        }).filter(x => x.title); // Only process rows that have at least a title
+
+        // 3. Prevent submission if no valid data is found
+        if (data.length === 0) {
+          notify("Please enter at least one defect title.");
+          return;
         }
-      } catch (err) {
-        console.error("Submission failed:", err);
-        notify("Network error: Check your connection.");
-      }
-    }
 
-    // --- DATA LOADERS ---
-    let teamList = JSON.parse(localStorage.getItem("team_list")) || ["Assignee"];
-    function addDev() {
-      const name = document.getElementById('newDev').value.trim();
-      if (name) {
-        teamList.push(name);
-        localStorage.setItem("team_list", JSON.stringify(teamList));
-        updateDrops();
-        document.getElementById('newDev').value = "";
-        notify("Developer Added to Directory");
-      }
-    }
-    function updateDrops() {
-      const s = document.getElementById('bAssign');
-      s.innerHTML = ""; teamList.forEach(t => s.innerHTML += `<option value="${t}">${t}</option>`);
-    }
-    async function addProj() {
-      await fetch(API + "/project", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: newProj.value }) });
-      newProj.value = ""; loadData(); notify("New Project Created");
-    }
-    async function addTask() {
-      await fetch(API + "/task", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ project: selProj.value, name: newTask.value }) });
-      newTask.value = ""; loadData(); notify("Task Linked to Project");
-    }
-    async function loadData() {
-      const p = await (await fetch(API + "/projects")).json();
-      [selProj, bProj].forEach(s => { s.innerHTML = ""; p.forEach(x => s.innerHTML += `<option value="${x.name}">${x.name}</option>`); });
-      loadBTasks();
-    }
-    async function loadBTasks() {
-      const t = await (await fetch(API + "/tasks/" + bProj.value)).json();
-      bTask.innerHTML = ""; t.forEach(x => bTask.innerHTML += `<option value="${x.name}">${x.name}</option>`);
-    }
-    function logout() { localStorage.clear(); window.location.href = "login.html"; }
+        // 4. POST the batch to your live API
+        try {
+          const res = await fetch(API + "/bugs", {
+            method: "POST",
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          });
 
-    loadData(); loadBugs(); updateDrops();
+          if (res.ok) {
+            document.getElementById('bPaste').value = ""; // Clear the textarea
+            loadBugs(); // Refresh the table
+            notify(`Successfully logged ${data.length} defects!`); // Show success popup
+          } else {
+            notify("Server error: Could not save batch.");
+          }
+        } catch (err) {
+          console.error("Submission failed:", err);
+          notify("Network error: Check your connection.");
+        }
+      }
+
+      // --- DATA LOADERS ---
+      let teamList = JSON.parse(localStorage.getItem("team_list")) || ["Assignee"];
+      function addDev() {
+        const name = document.getElementById('newDev').value.trim();
+        if (name) {
+          teamList.push(name);
+          localStorage.setItem("team_list", JSON.stringify(teamList));
+          updateDrops();
+          document.getElementById('newDev').value = "";
+          notify("Developer Added to Directory");
+        }
+      }
+      function updateDrops() {
+        const s = document.getElementById('bAssign');
+        s.innerHTML = ""; teamList.forEach(t => s.innerHTML += `<option value="${t}">${t}</option>`);
+      }
+      async function addProj() {
+        await fetch(API + "/project", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: newProj.value }) });
+        newProj.value = ""; loadData(); notify("New Project Created");
+      }
+      async function addTask() {
+        await fetch(API + "/task", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ project: selProj.value, name: newTask.value }) });
+        newTask.value = ""; loadData(); notify("Task Linked to Project");
+      }
+      async function loadData() {
+        const p = await (await fetch(API + "/projects")).json();
+        [selProj, bProj].forEach(s => { s.innerHTML = ""; p.forEach(x => s.innerHTML += `<option value="${x.name}">${x.name}</option>`); });
+        loadBTasks();
+      }
+      async function loadBTasks() {
+        const t = await (await fetch(API + "/tasks/" + bProj.value)).json();
+        bTask.innerHTML = ""; t.forEach(x => bTask.innerHTML += `<option value="${x.name}">${x.name}</option>`);
+      }
+      function logout() { localStorage.clear(); window.location.href = "login.html"; }
+
+      loadData(); loadBugs(); updateDrops();
   </script>
 </body>
 
