@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Webenoid Tracker</title>
+  <title>Webenoid Advanced Tracker</title>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap"
     rel="stylesheet">
   <style>
@@ -21,7 +21,6 @@
       display: flex;
       flex-direction: column;
       height: 100vh;
-      overflow: hidden;
     }
 
     nav {
@@ -32,6 +31,7 @@
       align-items: center;
       justify-content: space-between;
       padding: 0 32px;
+      flex-shrink: 0;
     }
 
     .wrapper {
@@ -41,10 +41,10 @@
     }
 
     aside {
-      width: 300px;
+      width: 280px;
       background: var(--panel);
       border-right: 1px solid var(--border);
-      padding: 24px;
+      padding: 20px;
       overflow-y: auto;
     }
 
@@ -60,6 +60,7 @@
       border: 1px solid var(--border);
       padding: 20px;
       margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
     }
 
     input,
@@ -70,6 +71,13 @@
       border: 1px solid var(--border);
       border-radius: 8px;
       margin-bottom: 10px;
+      box-sizing: border-box;
+    }
+
+    /* Scrollable Select */
+    select[size] {
+      height: 100px;
+      overflow-y: auto;
     }
 
     button {
@@ -86,7 +94,6 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      background: white;
     }
 
     th,
@@ -97,31 +104,26 @@
       font-size: 13px;
     }
 
-    .Queue {
-      background: #e0e7ff;
-      color: #3730a3;
-      padding: 4px;
-      border-radius: 4px;
-      font-weight: bold;
-    }
-
-    .Fixed {
-      background: #dcfce7;
-      color: #166534;
-      padding: 4px;
-      border-radius: 4px;
-      font-weight: bold;
-    }
-
     #notify {
       position: fixed;
-      top: 20px;
+      bottom: 20px;
       right: 20px;
       background: #0f172a;
       color: white;
-      padding: 12px 24px;
+      padding: 16px;
       border-radius: 8px;
       display: none;
+      z-index: 1000;
+      box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .badge {
+      background: #ef4444;
+      color: white;
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-size: 10px;
+      margin-left: 5px;
     }
   </style>
 </head>
@@ -129,11 +131,11 @@
 <body>
 
   <nav>
-    <div style="font-weight: 800; color: var(--brand);">WEBENOID</div>
+    <div style="font-weight: 800; color: var(--brand); font-size: 1.2rem;">WEBENOID <span id="noteBadge"></span></div>
     <div>
       <span id="userLabel" style="font-weight: 600; margin-right: 15px;"></span>
       <button onclick="logout()"
-        style="width: auto; background: none; color: red; border: 1px solid #fee2e2;">Logout</button>
+        style="width: auto; background: none; color: #ef4444; border: 1px solid #fee2e2; padding: 5px 15px;">Logout</button>
     </div>
   </nav>
 
@@ -141,49 +143,40 @@
 
   <div class="wrapper">
     <aside id="sidebarUI">
-      <div id="adminControls">
-        <h3>Directory</h3>
-        <input id="newDev" placeholder="Name">
-        <input id="newDevPass" type="password" placeholder="Password">
-        <select id="newDevRole">
-          <option value="Developer">Developer</option>
-          <option value="Tester">Tester</option>
-        </select>
-        <button onclick="addDev()">Add Member</button>
-        <hr>
-        <h3>Context</h3>
-        <input id="newProj" placeholder="Project Name">
-        <button onclick="addProj()">Create Project</button>
-        <select id="selProj" onchange="loadTasks()"></select>
-        <input id="newTask" placeholder="Task Name">
-        <button onclick="addTask()">Link Task</button>
-        <hr>
-        <h3>Quick Entry</h3>
-        <select id="qProj" onchange="loadQTasks()"></select>
-        <select id="qTask"></select>
-        <input id="qTitle" placeholder="Defect Title">
-        <select id="qAssign"></select>
-        <button onclick="submitSingle()">Create Bug</button>
-      </div>
-
-      <div id="devFilterUI" style="display:none;">
-        <h3>Project Filter</h3>
-        <select id="devProjFilter" onchange="loadBugs()">
-          <option value="All">All Projects</option>
-        </select>
-      </div>
+      <h3>Setup</h3>
+      <input id="newProj" placeholder="New Project Name">
+      <button onclick="addProj()">Create Project</button>
+      <hr>
+      <select id="selProj" onchange="loadTasks()"></select>
+      <input id="newTask" placeholder="Task Name">
+      <button onclick="addTask()">Link Task</button>
+      <hr>
+      <h3>Directory</h3>
+      <input id="newDev" placeholder="Name">
+      <input id="newDevPass" type="password" placeholder="Password">
+      <button onclick="addDev()">Add Member</button>
     </aside>
 
     <main>
+      <div class="card" id="bulkSection">
+        <h3 style="margin-top:0">Bulk Enter Defects</h3>
+        <div style="display:grid; grid-template-columns: 1fr 1fr 2fr auto; gap: 10px;">
+          <select id="bProj"></select>
+          <select id="bAssign" size="3"></select>
+          <textarea id="bPaste" placeholder="Defect Title | Format: Title per line" rows="3"></textarea>
+          <button onclick="submitBulk()" style="height: fit-content;">Post Bugs</button>
+        </div>
+      </div>
+
       <div class="card" style="padding:0; overflow-x:auto">
+        <div style="padding:15px; border-bottom:1px solid var(--border); font-weight:700">Live Defect Tracking</div>
         <table>
           <thead>
             <tr>
               <th>Defect</th>
               <th>Assignee</th>
-              <th>Reported By</th>
+              <th>Reported</th>
               <th>Status</th>
-              <th>Target Fix</th>
               <th>Progress</th>
             </tr>
           </thead>
@@ -201,23 +194,50 @@
     if (!localStorage.getItem("webenoid_session")) window.location.href = "login.html";
     document.getElementById('userLabel').innerText = `${userName} (${userRole})`;
 
-    if (userRole === "Developer") {
-      document.getElementById('adminControls').style.display = "none";
-      document.getElementById('devFilterUI').style.display = "block";
-    }
+    // Hide Sidebar for Developers
+    if (userRole === "Developer") document.getElementById('sidebarUI').style.display = "none";
 
     function logout() { localStorage.clear(); window.location.href = "login.html"; }
-    function notify(m) { const n = document.getElementById('notify'); n.innerText = m; n.style.display = "block"; setTimeout(() => n.style.display = "none", 3000); }
+
+    function showToast(m) {
+      const n = document.getElementById('notify');
+      n.innerText = m; n.style.display = "block";
+      setTimeout(() => n.style.display = "none", 4000);
+    }
+
+    async function checkNotifications() {
+      const res = await fetch(`${API}/notes/${userName}`);
+      const notes = await res.json();
+      if (notes.length > 0) {
+        showToast(`🔔 You have ${notes.length} new tasks!`);
+        document.getElementById('noteBadge').innerHTML = `<span class="badge">${notes.length}</span>`;
+        await fetch(`${API}/notes/read`, { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user: userName }) });
+      }
+    }
+
+    async function addProj() {
+      await fetch(API + "/project", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: newProj.value }) });
+      newProj.value = ""; showToast("Project Created Successfully!"); loadData();
+    }
+
+    async function addTask() {
+      await fetch(API + "/task", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ project: selProj.value, name: newTask.value }) });
+      newTask.value = ""; showToast("Task Linked!");
+    }
+
+    async function submitBulk() {
+      const lines = bPaste.value.split('\n').filter(l => l.trim());
+      const bugs = lines.map(line => ({
+        project: bProj.value, title: line.trim(), assignedTo: bAssign.value, createdBy: userName
+      }));
+      await fetch(API + "/bugs", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(bugs) });
+      bPaste.value = ""; showToast("Bulk Entry Successful!"); loadBugs();
+    }
 
     async function loadBugs() {
       const res = await fetch(API + "/bugs");
       let bugs = await res.json();
-
-      if (userRole === "Developer") {
-        bugs = bugs.filter(b => b.assignedTo === userName);
-        const proj = document.getElementById('devProjFilter').value;
-        if (proj !== "All") bugs = bugs.filter(b => b.project === proj);
-      }
+      if (userRole === "Developer") bugs = bugs.filter(b => b.assignedTo === userName);
 
       const body = document.getElementById('bugList');
       body.innerHTML = "";
@@ -226,14 +246,13 @@
             <tr>
                 <td><strong>${b.title}</strong><br><small>${b.project}</small></td>
                 <td>${b.assignedTo}</td>
-                <td style="font-style:italic; color:#64748b">${b.createdBy || 'System'}</td>
+                <td style="color:#64748b">${b.createdBy || 'System'}</td>
                 <td>
                     <select class="${b.status}" onchange="patch('${b._id}','status',this.value)">
                         <option ${b.status == 'Queue' ? 'selected' : ''}>Queue</option>
                         <option ${b.status == 'Fixed' ? 'selected' : ''}>Fixed</option>
                     </select>
                 </td>
-                <td><input type="date" value="${b.targetDate || ''}" onchange="patch('${b._id}','targetDate',this.value)" style="border:none"></td>
                 <td><input type="range" value="${b.completion || 0}" onchange="patch('${b._id}','completion',this.value)"> ${b.completion || 0}%</td>
             </tr>`;
       });
@@ -241,50 +260,26 @@
 
     async function patch(id, f, v) {
       await fetch(`${API}/bug/${id}`, { method: "PUT", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ [f]: v }) });
-      if (f === 'status') loadBugs();
-    }
-
-    async function addDev() {
-      const name = newDev.value;
-      const password = newDevPass.value;
-      const role = document.getElementById('newDevRole').value; // Get selected role
-
-      await fetch(API + "/team", {
-        method: "POST",
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, password, role }) // Send role to server
-      });
-
-      newDev.value = "";
-      newDevPass.value = "";
-      notify(`${role} Added to Team`);
-      loadData();
-    }
-
-    async function submitSingle() {
-      const data = [{ project: qProj.value, task: qTask.value, title: qTitle.value, assignedTo: qAssign.value, createdBy: userName }];
-      await fetch(API + "/bugs", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-      qTitle.value = ""; loadBugs(); notify("Bug Logged");
+      loadBugs(); // Syncs all dashboards
     }
 
     async function loadData() {
       const p = await (await fetch(API + "/projects")).json();
       const t = await (await fetch(API + "/team")).json();
-      [selProj, qProj, devProjFilter].forEach(s => {
-        if (!s) return;
-        if (s.id === "devProjFilter") s.innerHTML = '<option value="All">All Projects</option>';
-        else s.innerHTML = "";
+
+      [selProj, bProj].forEach(s => {
+        s.innerHTML = "";
         p.forEach(x => s.innerHTML += `<option value="${x.name}">${x.name}</option>`);
       });
-      qAssign.innerHTML = ""; t.forEach(x => qAssign.innerHTML += `<option value="${x.name}">${x.name}</option>`);
-      loadQTasks();
+
+      bAssign.innerHTML = "";
+      t.forEach(x => bAssign.innerHTML += `<option value="${x.name}">${x.name}</option>`);
     }
 
-    async function addProj() { await fetch(API + "/project", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: newProj.value }) }); newProj.value = ""; loadData(); }
-    async function addTask() { await fetch(API + "/task", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ project: selProj.value, name: newTask.value }) }); newTask.value = ""; }
-    async function loadQTasks() { const t = await (await fetch(API + "/tasks/" + qProj.value)).json(); qTask.innerHTML = ""; t.forEach(x => qTask.innerHTML += `<option value="${x.name}">${x.name}</option>`); }
+    // Auto-refresh data every 10 seconds to sync dashboards
+    setInterval(() => { loadBugs(); checkNotifications(); }, 10000);
 
-    loadData(); loadBugs();
+    loadData(); loadBugs(); checkNotifications();
   </script>
 </body>
 
