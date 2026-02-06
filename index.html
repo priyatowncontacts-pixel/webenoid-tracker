@@ -301,7 +301,7 @@
           <option ${b.status == 'Fixed' ? 'selected' : ''}>Fixed</option>
         </select>
       </td>
-      <td><input type="datetime-local" class="grid-input" value="${startTime}" onchange="patch('${b._id}','startedAt',this.value)"></td>
+      <td><input type="datetime-local" class="grid-input" value="${startTime}" onchange="patch('${b._id}', 'startedAt', this.value)"></td>
       <td><input type="date" class="grid-input" value="${b.targetDate || ''}" onchange="patch('${b._id}','targetDate',this.value)"></td>
       <td>
         <div class="progress-container">
@@ -323,7 +323,7 @@
 
 
     async function patch(id, field, value) {
-      const data = { [field]: value };
+      const data = { [fieldName]: value };
 
       // Auto-status update for completion
       if (field === 'completion' && value == 100) data.status = "Review";
