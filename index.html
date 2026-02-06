@@ -301,8 +301,9 @@
       <td><strong>${b.assignedTo}</strong></td>
       <td>
         <select class="${b.status}" onchange="patch('${b._id}','status',this.value)">
-          <option ${b.status == 'Queue' ? 'selected' : ''}>Queue</option>
-          <option ${b.status == 'Fixed' ? 'selected' : ''}>Fixed</option>
+          <option ${b.status == 'Queue' ? 'selected' : ''} value="Queue">Queue</option>
+          <option ${b.status == 'Review' ? 'selected' : ''} value="Review">Review</option>
+          <option ${b.status == 'Fixed' ? 'selected' : ''} value="Fixed">Fixed</option>
         </select>
       </td>
       <td><input type="datetime-local" class="grid-input" value="${startTime}" onchange="patch('${b._id}', 'startedAt', this.value)"></td>
@@ -324,14 +325,13 @@
       }
     }
 
-
-
-
-
     async function patch(id, field, value) {
       const data = { [field]: value };
 
-      if (field === 'completion' && value == 100) data.status = "Review";
+      // Use Number() to ensure "100" (string) matches 100 (number)
+      if (field === 'completion' && Number(value) === 100) {
+        data.status = "Review";
+      }
 
       try {
         await fetch(`${API}/bug/${id}`, {
@@ -342,11 +342,13 @@
           },
           body: JSON.stringify(data)
         });
+
+        // This reloads the table, which will now show the 'Review' status
         loadBugs();
       } catch (err) {
         console.error("Patch failed:", err);
       }
-    } // End of patch
+    }
 
     async function viewHistory(id) {
       const res = await fetch(`${API}/history/${id}`);
