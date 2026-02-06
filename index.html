@@ -36,12 +36,6 @@
       flex-shrink: 0;
     }
 
-    .wrapper {
-      display: flex;
-      flex: 1;
-      overflow: hidden;
-    }
-
     aside {
       width: 300px;
       background: var(--panel);
@@ -143,29 +137,41 @@
 
     #notify {
       position: fixed;
-      bottom: 20px;
+      top: 20px;
+      /* Moved to top for better visibility */
       right: 20px;
-      background: #0f172a;
+      background: #1e293b;
+      /* Sleek dark blue */
       color: white;
       padding: 16px 24px;
-      border-radius: 10px;
+      border-radius: 12px;
       display: none;
       z-index: 9999;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+      border-left: 5px solid var(--brand);
+      font-size: 14px;
+      font-weight: 600;
+      max-width: 350px;
     }
   </style>
 </head>
 
 <body>
+  <audio id="alertSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
 
   <nav>
-    <div style="font-weight: 800; color: var(--brand); font-size: 20px;">WEBENOID <span
-        style="color:#0f172a">TRACKER</span></div>
+    <div style="font-weight: 800; color: var(--brand); font-size: 20px;">
+      WEBENOID <span style="color:#0f172a">TRACKER</span>
+    </div>
     <div>
       <span id="userLabel" style="font-weight: 600; font-size: 13px; margin-right: 15px;"></span>
       <button onclick="logout()"
         style="width:auto; background:none; border:1px solid #fee2e2; color:#ef4444; padding:6px 12px;">Logout</button>
     </div>
   </nav>
+
+
+
 
   <div id="notify"></div>
 
@@ -246,8 +252,24 @@
 
     function notify(msg) {
       const n = document.getElementById('notify');
-      n.innerText = msg; n.style.display = "block";
-      setTimeout(() => n.style.display = "none", 3000);
+      n.innerText = msg;
+      n.style.display = "block";
+
+      // Trigger the sound every time a notification is called
+      playSound();
+
+      // Hide it after 5 seconds (slightly longer so people can read the details)
+      setTimeout(() => {
+        n.style.display = "none";
+      }, 5000);
+    }
+
+    function playSound() {
+      const sound = document.getElementById('alertSound');
+      if (sound) {
+        sound.currentTime = 0; // Reset sound to start if it's already playing
+        sound.play().catch(e => console.log("Sound will play after your first click on the page."));
+      }
     }
 
     async function loadBugs() {
@@ -288,47 +310,46 @@
         const logs = await hRes.json();
 
         const logHtml = logs.map(l => `
-      <div style="border-bottom:1px solid #f1f5f9; padding:2px 0; font-size:10px;">
-        <span style="color:var(--brand); font-weight:700;">${new Date(l.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>: ${l.action}
-      </div>
-    `).join('') || '<span style="color:var(--text-light); font-size:10px;">No logs</span>';
+        <div style="border-bottom:1px solid #f1f5f9; padding:2px 0; font-size:10px;">
+          <span style="color:var(--brand); font-weight:700;">${new Date(l.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>: ${l.action}
+        </div>
+      `).join('') || '<span style="color:var(--text-light); font-size:10px;">No logs</span>';
 
         // 5. Append the Row
         body.innerHTML += `
-    <tr>
-      <td style="text-align:center">${i + 1}</td>
-      <td><strong>${b.title}</strong><br><small style="color:var(--brand); font-weight:700;">${b.project}</small></td>
-      <td><strong>${b.assignedTo}</strong></td>
-      <td>
-        <select class="${b.status}" onchange="patch('${b._id}','status',this.value)">
-          <option ${b.status == 'Queue' ? 'selected' : ''} value="Queue">Queue</option>
-          <option ${b.status == 'Review' ? 'selected' : ''} value="Review">Review</option>
-          <option ${b.status == 'Fixed' ? 'selected' : ''} value="Fixed">Fixed</option>
-        </select>
-      </td>
-      <td><input type="datetime-local" class="grid-input" value="${startTime}" onchange="patch('${b._id}', 'startedAt', this.value)"></td>
-      <td><input type="date" class="grid-input" value="${b.targetDate || ''}" onchange="patch('${b._id}','targetDate',this.value)"></td>
-      <td>
-        <div class="progress-container">
-          <input type="range" min="0" max="100" value="${b.completion || 0}" 
-            oninput="document.getElementById('p-${b._id}').innerText=this.value+'%'"
-            onchange="patch('${b._id}','completion',this.value)">
-          <span id="p-${b._id}" style="font-weight:700; font-size:11px">${b.completion || 0}%</span>
-        </div>
-      </td>
-      <td>
-        <div style="max-height: 70px; overflow-y: auto; width: 180px; background: #f8fafc; padding: 5px; border-radius: 4px; border: 1px solid var(--border);">
-          ${logHtml}
-        </div>
-      </td>
-    </tr>`;
+      <tr>
+        <td style="text-align:center">${i + 1}</td>
+        <td><strong>${b.title}</strong><br><small style="color:var(--brand); font-weight:700;">${b.project}</small></td>
+        <td><strong>${b.assignedTo}</strong></td>
+        <td>
+          <select class="${b.status}" onchange="patch('${b._id}','status',this.value)">
+            <option ${b.status == 'Queue' ? 'selected' : ''} value="Queue">Queue</option>
+            <option ${b.status == 'Review' ? 'selected' : ''} value="Review">Review</option>
+            <option ${b.status == 'Fixed' ? 'selected' : ''} value="Fixed">Fixed</option>
+          </select>
+        </td>
+        <td><input type="datetime-local" class="grid-input" value="${startTime}" onchange="patch('${b._id}', 'startedAt', this.value)"></td>
+        <td><input type="date" class="grid-input" value="${b.targetDate || ''}" onchange="patch('${b._id}','targetDate',this.value)"></td>
+        <td>
+          <div class="progress-container">
+            <input type="range" min="0" max="100" value="${b.completion || 0}" 
+              oninput="document.getElementById('p-${b._id}').innerText=this.value+'%'"
+              onchange="patch('${b._id}','completion',this.value)">
+            <span id="p-${b._id}" style="font-weight:700; font-size:11px">${b.completion || 0}%</span>
+          </div>
+        </td>
+        <td>
+          <div style="max-height: 70px; overflow-y: auto; width: 180px; background: #f8fafc; padding: 5px; border-radius: 4px; border: 1px solid var(--border);">
+            ${logHtml}
+          </div>
+        </td>
+      </tr>`;
       }
     }
 
     async function patch(id, field, value) {
       const data = { [field]: value };
 
-      // Use Number() to ensure "100" (string) matches 100 (number)
       if (field === 'completion' && Number(value) === 100) {
         data.status = "Review";
       }
@@ -343,7 +364,12 @@
           body: JSON.stringify(data)
         });
 
-        // This reloads the table, which will now show the 'Review' status
+        // This line is the "secret sauce" that tells your browser 
+        // "I made this change, don't play the alarm for me."
+        const res = await fetch(API + "/bugs");
+        const bugs = await res.json();
+        lastKnownFingerprint = JSON.stringify(bugs.map(b => b._id + b.status + b.completion));
+
         loadBugs();
       } catch (err) {
         console.error("Patch failed:", err);
@@ -474,6 +500,43 @@
       localStorage.clear();
       window.location.href = "login.html";
     }
+
+    // --- REAL-TIME NOTIFICATION ENGINE ---
+    let lastKnownFingerprint = "";
+
+    async function checkForUpdates() {
+      try {
+        const res = await fetch(API + "/bugs");
+        const bugs = await res.json();
+
+        // Create a unique 'fingerprint' of the current bug list
+        const currentFingerprint = JSON.stringify(bugs.map(b => b._id + b.status + b.completion));
+
+        // If the data changed and it's not the first time loading
+        if (lastKnownFingerprint !== "" && lastKnownFingerprint !== currentFingerprint) {
+
+          // Get details of the most recent change
+          const latestBug = bugs[0];
+          const hRes = await fetch(`${API}/history/${latestBug._id}`);
+          const logs = await hRes.json();
+          const lastLog = logs[0];
+
+          const msg = lastLog
+            ? `🔔 ${lastLog.user}: ${lastLog.action} (${latestBug.title})`
+            : "Defect list updated by another user 🔔";
+
+          notify(msg); // This triggers both the box and the sound
+          loadBugs();  // Refresh the table UI
+        }
+
+        lastKnownFingerprint = currentFingerprint;
+      } catch (err) {
+        console.error("Auto-sync error:", err);
+      }
+    }
+
+    // Check for updates every 10 seconds
+    setInterval(checkForUpdates, 10000);
 
     // Initialize everything
     loadData();
