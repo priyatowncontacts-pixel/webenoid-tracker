@@ -65,11 +65,22 @@ nav {
   margin-top: 20px;
 }
 
-.activity-item {
-  position: relative;
-  padding-bottom: 30px;
+/* Polish for Activity Text */
+.activity-text {
   display: flex;
-  gap: 15px;
+  flex-direction: column;
+  justify-content: center;
+  line-height: 1.4;
+}
+
+.activity-text strong {
+  font-size: 14px;
+  color: var(--text-navy);
+}
+
+.activity-text small {
+  font-size: 11px;
+  color: var(--text-grey);
 }
 
 /* The vertical line connecting dots */
@@ -97,35 +108,33 @@ nav {
   box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-/* 4. Stat Summary Row */
+
+/* The horizontal container for your 5 cards */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  /* Changed from 3 to 5 */
-  gap: 15px;
+  gap: 18px;
   margin-bottom: 24px;
 }
 
-/* Smaller padding for the 5-column layout */
-.stat-item {
-  padding: 15px;
-}
-
-/* Optimized Stat Item */
+/* Unified Stat Item Styling */
 .stat-item {
   background: var(--card-white);
-  padding: 20px;
+  padding: 15px 20px;
   border-radius: 20px;
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   gap: 15px;
+  min-height: 85px;
+  /* Keeps all 5 cards perfectly level */
   box-shadow: var(--soft-shadow);
-  transition: transform 0.2s ease;
-  /* Bonus: Adds a nice hover feel */
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .stat-item:hover {
   transform: translateY(-5px);
+  box-shadow: 14px 20px 45px 6px rgba(112, 144, 176, 0.15);
 }
 
 .stat-icon {
@@ -247,4 +256,38 @@ tr:hover {
 .menu-link:hover:not(.active) {
   background: #F4F7FE;
   color: var(--text-navy);
+}
+
+/* SaaS Style Form Inputs */
+select,
+textarea,
+input[type="text"] {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid #E9EDF7;
+  background: #F4F7FE;
+  color: var(--text-navy);
+  font-family: inherit;
+  margin-bottom: 12px;
+  outline: none;
+}
+
+/* Primary Indigo Button */
+.btn-primary,
+button[onclick="submitBulk()"] {
+  background: var(--indigo-accent);
+  color: white;
+  border: none;
+  padding: 14px;
+  border-radius: 12px;
+  font-weight: 700;
+  width: 100%;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btn-primary:hover {
+  filter: brightness(1.1);
+  box-shadow: 0px 10px 20px rgba(67, 24, 255, 0.2);
 }
