@@ -29,7 +29,7 @@ const History = mongoose.model("History", {
 
 const Note = mongoose.model("Note", { to: String, msg: String, read: { type: Boolean, default: false } });
 
-// --- LOGIN API ---
+// --- APIS ---
 app.post("/api/login", async (req, res) => {
   const { name, password, role } = req.body;
   if (name === "Admin" && password === "Admin789" && role === "Admin") return res.json({ ok: 1, user: "Admin", role: "Admin" });
@@ -39,11 +39,10 @@ app.post("/api/login", async (req, res) => {
   else res.status(401).json({ err: "Invalid" });
 });
 
-// --- CORE APIS ---
 app.get("/api/projects", async (req, res) => res.json(await Project.find().sort({ createdAt: -1 })));
 app.post("/api/project", async (req, res) => { await Project.create(req.body); res.json({ ok: 1 }); });
-
 app.get("/api/bugs", async (req, res) => res.json(await Bug.find().sort({ createdAt: -1 })));
+
 app.post("/api/bugs", async (req, res) => {
   const bugs = await Bug.insertMany(req.body);
   for (let b of req.body) await Note.create({ to: b.assignedTo, msg: `New Bug: ${b.title}` });
@@ -54,14 +53,12 @@ app.put("/api/bug/:id", async (req, res) => {
   const { id } = req.params;
   const update = req.body;
   const user = req.headers['user-name'] || "System";
-
   if (update.completion == 100) {
     update.status = "Review";
     await Note.create({ to: "Webenoid", msg: `Task ready for Review: ${id}` });
   }
-
   await Bug.findByIdAndUpdate(id, update);
-  const action = update.completion !== undefined ? `Set progress to ${update.completion}%` : `Updated ${Object.keys(update)[0]}`;
+  const action = update.completion !== undefined ? `Progress: ${update.completion}%` : `Updated ${Object.keys(update)[0]}`;
   await History.create({ bugId: id, user, action });
   res.json({ ok: 1 });
 });
@@ -75,4 +72,4 @@ app.get("/api/tasks/:project", async (req, res) => res.json(await Task.find({ pr
 app.post("/api/task", async (req, res) => { await Task.create(req.body); res.json({ ok: 1 }); });
 
 app.get("*", (req, res) => res.sendFile(path.join(__dirname, "index.html")));
-app.listen(3000, () => console.log("🚀 Webenoid Engine Live on 3000"));
+app.listen(3000, () => console.log("🚀 Webenoid Engine Live"));
