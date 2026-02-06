@@ -3,6 +3,7 @@ const API = "https://webenoid-tracker.onrender.com/api";
 const user = localStorage.getItem("user");
 const role = localStorage.getItem("role");
 let lastKnownFingerprint = "";
+let myChart = null; // Variable to hold the chart instance
 
 // 1. Initial Setup & Permissions
 function init() {
@@ -23,6 +24,7 @@ function init() {
 
     loadData();
     loadBugs();
+    updateDrops(); // Initialize the assignee list
 }
 
 // 2. Core Functions
@@ -32,7 +34,6 @@ async function loadBugs() {
         let bugs = await res.json();
 
         // --- DASHBOARD STATS LOGIC ---
-        // These updates target the IDs in your new index.html cards
         if (document.getElementById('totalCount'))
             document.getElementById('totalCount').innerText = bugs.length;
         if (document.getElementById('reviewCount'))
@@ -40,20 +41,11 @@ async function loadBugs() {
         if (document.getElementById('fixedCount'))
             document.getElementById('fixedCount').innerText = bugs.filter(b => b.status === 'Fixed').length;
 
+        // Start the Chart
+        initChart(bugs);
+
         // Permissions
         if (role === "Developer") bugs = bugs.filter(b => b.assignedTo === user);
-
-        // Update Project Filter Dropdown
-        const filterDrop = document.getElementById('devProjFilter');
-        if (filterDrop) {
-            const uniqueProjects = [...new Set(bugs.map(b => b.project))];
-            const currentVal = filterDrop.value;
-            filterDrop.innerHTML = '<option value="All">All Projects</option>';
-            uniqueProjects.forEach(p => {
-                filterDrop.innerHTML += `<option value="${p}" ${p === currentVal ? 'selected' : ''}>${p}</option>`;
-            });
-            if (filterDrop.value !== "All") bugs = bugs.filter(b => b.project === filterDrop.value);
-        }
 
         bugs.sort((a, b) => a.project.localeCompare(b.project));
         renderTable(bugs);
@@ -62,29 +54,51 @@ async function loadBugs() {
     }
 }
 
+// THE CHART LOGIC (This makes it look like the Admin Dashboard)
+function initChart(bugs) {
+    const ctx = document.getElementById('bugChart').getContext('2d');
+
+    if (myChart) myChart.destroy(); // Prevent memory leaks
+
+    // Simple logic to show dummy data for the wave (Mon-Sun)
+    myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            datasets: [{
+                label: 'Bug Resolution Wave',
+                data: [12, 19, 15, 25, 22, 30, 28],
+                borderColor: '#4318FF',
+                backgroundColor: 'rgba(67, 24, 255, 0.1)',
+                fill: true,
+                tension: 0.4,
+                pointRadius: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { display: false },
+                x: { grid: { display: false }, ticks: { color: '#A3AED0', font: { size: 10 } } }
+            }
+        }
+    });
+}
+
 async function renderTable(bugs) {
     const body = document.getElementById('bugList');
     body.innerHTML = "";
 
-    for (let [i, b] of bugs.entries()) {
-        const startTime = b.startedAt ? b.startedAt.slice(0, 16) : '';
-        const hRes = await fetch(`${API}/history/${b._id}`);
-        const logs = await hRes.json();
-
-        /* Find this inside the renderTable loop */
-        const logHtml = logs.map(l => `
-    <div style="border-bottom:1px solid #f1f5f9; padding:4px 0; font-size:11px;">
-        <span style="color:var(--brand); font-weight:700;">
-            ${new Date(l.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-        </span>: ${l.action}
-    </div>
-`).join('') || '<span style="color:#94a3b8">No activity yet</span>';
-
+    for (let b of bugs) {
         body.innerHTML += `
         <tr>
-            <td>${i + 1}</td>
-            <td><strong>${b.title}</strong><br><small style="color:var(--brand)">${b.project}</small></td>
-            <td>${b.assignedTo}</td>
+            <td>
+                <div style="font-weight:800; font-size:15px; color:var(--text-navy); text-transform:uppercase;">${b.title}</div>
+                <div style="font-size:11px; color:var(--indigo-accent); font-weight:600;">${b.project}</div>
+            </td>
+            <td style="color:var(--text-grey); font-weight:600;">${b.assignedTo}</td>
             <td>
                 <select class="${b.status}" onchange="patch('${b._id}','status',this.value)">
                     <option ${b.status == 'Queue' ? 'selected' : ''} value="Queue">Queue</option>
@@ -92,20 +106,21 @@ async function renderTable(bugs) {
                     <option ${b.status == 'Fixed' ? 'selected' : ''} value="Fixed">Fixed</option>
                 </select>
             </td>
-            <td><input type="datetime-local" value="${startTime}" onchange="patch('${b._id}', 'startedAt', this.value)"></td>
-            <td><input type="date" value="${b.targetDate || ''}" onchange="patch('${b._id}','targetDate',this.value)"></td>
             <td>
-                <input type="range" min="0" max="100" value="${b.completion || 0}" onchange="patch('${b._id}','completion',this.value)">
-                <div style="font-size:10px; text-align:center">${b.completion || 0}%</div>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <div style="flex:1; height:6px; background:#f4f7fe; border-radius:10px; overflow:hidden;">
+                        <div style="width:${b.completion || 0}%; height:100%; background:var(--indigo-accent);"></div>
+                    </div>
+                    <span style="font-size:11px; width:30px; font-weight:700;">${b.completion || 0}%</span>
+                </div>
             </td>
-            <td><div style="max-height:60px; overflow-y:auto; font-size:10px;">${logHtml}</div></td>
         </tr>`;
     }
 }
 
 async function patch(id, field, value) {
     const data = { [field]: value };
-    if (field === 'completion' && Number(value) === 100) data.status = "Review";
+    if (field === 'status' && value === 'Fixed') data.completion = 100;
 
     await fetch(`${API}/bug/${id}`, {
         method: "PUT",
@@ -117,6 +132,7 @@ async function patch(id, field, value) {
 
 function notify(msg) {
     const n = document.getElementById('notify');
+    if (!n) return;
     n.innerText = msg;
     n.style.display = "block";
     const sound = document.getElementById('alertSound');
@@ -147,7 +163,8 @@ function addDev() {
 }
 
 async function submitBulk() {
-    const lines = document.getElementById('bPaste').value.trim().split("\n");
+    const textarea = document.getElementById('bPaste');
+    const lines = textarea.value.trim().split("\n");
     const data = lines.map(l => {
         const parts = l.split("|");
         return {
@@ -155,7 +172,7 @@ async function submitBulk() {
             task: document.getElementById('bTask').value,
             assignedTo: document.getElementById('bAssign').value,
             title: parts[0]?.trim(),
-            targetDate: parts[1]?.trim(),
+            targetDate: parts[1]?.trim() || new Date().toISOString().split('T')[0],
             status: "Queue",
             completion: 0,
             startedAt: new Date().toISOString().slice(0, 16)
@@ -170,29 +187,26 @@ async function submitBulk() {
         body: JSON.stringify(data)
     });
     if (res.ok) {
-        document.getElementById('bPaste').value = "";
+        textarea.value = "";
         loadBugs();
         notify("Batch Processed!");
     }
 }
 
 async function loadData() {
-    const p = await (await fetch(API + "/projects")).json();
-    // Define these inside the function so it knows what they are
-    const selProj = document.getElementById('selProj');
+    const res = await fetch(API + "/projects");
+    const p = await res.json();
     const bProj = document.getElementById('bProj');
 
-    [selProj, bProj].forEach(s => {
-        if (s) {
-            s.innerHTML = "";
-            p.forEach(x => {
-                const opt = document.createElement('option');
-                opt.value = x.name;
-                opt.innerText = x.name;
-                s.appendChild(opt);
-            });
-        }
-    });
+    if (bProj) {
+        bProj.innerHTML = "";
+        p.forEach(x => {
+            const opt = document.createElement('option');
+            opt.value = x.name;
+            opt.innerText = x.name;
+            bProj.appendChild(opt);
+        });
+    }
     loadBTasks();
 }
 
