@@ -249,6 +249,10 @@
       let bugs = await res.json();
       if (role === "Developer") bugs = bugs.filter(b => b.assignedTo === user);
 
+      // 2. ADD THE SORTING LINE HERE
+      // This groups all bugs from the same project together alphabetically
+      bugs.sort((a, b) => a.project.localeCompare(b.project));
+
       const body = document.getElementById('bugList');
       body.innerHTML = "";
       bugs.forEach((b, i) => {
@@ -258,7 +262,8 @@
         body.innerHTML += `
         <tr>
             <td style="text-align:center">${i + 1}</td>
-            <td><strong>${b.title}</strong><br><small style="color:var(--text-light)">${b.project} / ${b.task}</small></td>
+            // Change this line inside your loop:
+<td><strong>${b.title}</strong><br><small style="color:var(--brand); font-weight:700;">${b.project}</small> / <small>${b.task}</small></td>
             <td><strong>${b.assignedTo}</strong></td>
             <td>
                 <select class="${b.status}" onchange="patch('${b._id}','status',this.value)">
