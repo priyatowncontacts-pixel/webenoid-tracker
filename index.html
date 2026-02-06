@@ -39,61 +39,66 @@
     </aside>
 
     <main>
-      <div class="stats-grid">
-        <div class="stat-card blue">
-          <small>Total Defects</small>
-          <h2 id="totalCount">0</h2>
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="icon-box blue">📊</div>
+          <div>
+            <small>Total Defects</small>
+            <h2 id="totalCount">0</h2>
+          </div>
         </div>
-        <div class="stat-card orange">
-          <small>Pending Review</small>
-          <h2 id="reviewCount">0</h2>
+        <div class="stat-card">
+          <div class="icon-box orange">⚠️</div>
+          <div>
+            <small>Pending Review</small>
+            <h2 id="reviewCount">0</h2>
+          </div>
         </div>
-        <div class="stat-card green">
-          <small>Resolved</small>
-          <h2 id="fixedCount">0</h2>
+        <div class="stat-card">
+          <div class="icon-box green">✅</div>
+          <div>
+            <small>Resolved</small>
+            <h2 id="fixedCount">0</h2>
+          </div>
         </div>
       </div>
 
-      <div class="card" id="bulkCard">
-        <div class="card-header">BULK COPY-PASTE</div>
-        <div class="bulk-inputs">
-          <select id="bProj" onchange="loadBTasks()"></select>
-          <select id="bTask"></select>
-          <select id="bAssign"></select>
+      <div class="dashboard-grid">
+        <div class="card bulk-section">
+          <div class="card-header">🚀 Bulk Copy-Paste</div>
+          <div class="input-group">
+            <select id="bProj" onchange="loadBTasks()"></select>
+            <select id="bTask"></select>
+            <select id="bAssign"></select>
+          </div>
+          <textarea id="bPaste" placeholder="Title | YYYY-MM-DD"></textarea>
+          <button class="btn-main" onclick="submitBulk()">Process Batch</button>
         </div>
-        <textarea id="bPaste" rows="3" placeholder="Title | Target Date (YYYY-MM-DD)"></textarea>
-        <button class="btn-primary" style="width: auto;" onclick="submitBulk()">🚀 Process Batch</button>
-      </div>
 
-      <div class="table-header">
-        <span>LIVE DEFECT LISTING</span>
-        <select id="devProjFilter" onchange="loadBugs()">
-          <option value="All">All Projects</option>
-        </select>
-      </div>
-
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Defect Details</th>
-              <th>Assignee</th>
-              <th>Status</th>
-              <th>Started</th>
-              <th>Target</th>
-              <th>Progress</th>
-              <th>Logs</th>
-            </tr>
-          </thead>
-          <tbody id="bugList"></tbody>
-        </table>
+        <div class="card table-section">
+          <div class="card-header">
+            <span>Live Defect Listing</span>
+            <select id="devProjFilter" onchange="loadBugs()">
+              <option value="All">All Projects</option>
+            </select>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Defect Details</th>
+                <th>Assignee</th>
+                <th>Status</th>
+                <th>Target Fix</th>
+              </tr>
+            </thead>
+            <tbody id="bugList"></tbody>
+          </table>
+        </div>
       </div>
     </main>
-  </div>
-
-  <audio id="alertSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
-  <script src="script.js"></script>
+    <audio id="alertSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"
+      preload="auto"></audio>
+    <script src="script.js"></script>
 </body>
 
 </html>
