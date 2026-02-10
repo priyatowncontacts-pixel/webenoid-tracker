@@ -11,50 +11,50 @@ function init() {
         return;
     }
 
-    // Add the role class to the body for CSS isolation
-    document.body.classList.add(role + "-view");
+    // 1. Identify role for CSS (Keeps Old UI for Dev/Tester)
+    document.body.className = role + "-view";
 
-    // Fix: Move the label logic INSIDE init
     const label = document.getElementById('userLabel');
     if (label) label.innerText = `${user} (${role})`;
 
-    // Fix: Ensure Developer-specific element hiding is inside init or handled by CSS
+    // 2. RESTORE OLD FEATURES
+    // Show Project/Task creation only for Tester and Admin
+    const testerTools = document.getElementById('testerTools');
+    if (testerTools) {
+        testerTools.style.display = (role === "Tester" || role === "Admin") ? "block" : "none";
+    }
+
+    // Developer specific hiding
     if (role === "Developer") {
-        const mgmt = document.getElementById('mgmtAside');
         const bulk = document.getElementById('bulkCard');
-        if (mgmt) mgmt.style.display = "none";
         if (bulk) bulk.style.display = "none";
     }
 
     loadData();
     loadBugs();
-} // Function ends here properly now
+}
 
 async function loadBugs() {
     try {
         const res = await fetch(API + "/bugs");
         let bugs = await res.json();
 
+        // 3. DEVELOPER FILTER: Only see his defects
+        if (role === "Developer") {
+            bugs = bugs.filter(b => b.assignedTo === user);
+        }
+
+        // Update Stats (Global)
         const projectsRes = await fetch(API + "/projects");
         const projects = await projectsRes.json();
+        if (document.getElementById('totalProjects')) document.getElementById('totalProjects').innerText = projects.length;
+        if (document.getElementById('totalCount')) document.getElementById('totalCount').innerText = bugs.length;
 
-        if (document.getElementById('totalProjects'))
-            document.getElementById('totalProjects').innerText = projects.length;
-
-        if (document.getElementById('totalCount'))
-            document.getElementById('totalCount').innerText = bugs.filter(b => b.status !== 'Fixed').length;
-
-        if (document.getElementById('fixedCount'))
-            document.getElementById('fixedCount').innerText = bugs.filter(b => b.status === 'Fixed').length;
-
-        const stats = document.querySelectorAll('.stat-item h2');
-        if (stats[2]) stats[2].innerText = bugs.filter(b => b.priority === 'Critical').length || 0;
-        if (stats[3]) stats[3].innerText = bugs.filter(b => b.isOverdue).length || 0;
-
-        initChart(bugs);
-        updateActivityFeed(bugs);
-
-        if (role === "Developer") bugs = bugs.filter(b => b.assignedTo === user);
+        // Only run Admin-specific visual updates if Admin is logged in
+        if (role === "Admin") {
+            initChart(bugs);
+            updateActivityFeed(bugs);
+        }
 
         bugs.sort((a, b) => a.project.localeCompare(b.project));
         renderTable(bugs);
@@ -63,6 +63,12 @@ async function loadBugs() {
     }
 }
 
+// ... Keep your initChart, updateActivityFeed, renderTable, patch, notify, loadData, and loadBTasks ...
+
+function logout() {
+    localStorage.clear();
+    window.location.href = "login.html";
+}
 function initChart(bugs) {
     const chartEl = document.getElementById('bugChart');
     if (!chartEl) return;
