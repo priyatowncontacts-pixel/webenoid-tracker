@@ -10,28 +10,31 @@ function init() {
         window.location.href = "login.html";
         return;
     }
+
+    // Add the role class to the body for CSS isolation
     document.body.classList.add(role + "-view");
-}
-if (role === "Developer") {
-    const mgmt = document.getElementById('mgmtAside');
-    const bulk = document.getElementById('bulkCard');
-    if (mgmt) mgmt.style.display = "none";
-    if (bulk) bulk.style.display = "none";
-}
 
-const label = document.getElementById('userLabel');
-if (label) label.innerText = `${user} (${role})`;
+    // Fix: Move the label logic INSIDE init
+    const label = document.getElementById('userLabel');
+    if (label) label.innerText = `${user} (${role})`;
 
-loadData();
-loadBugs();
-}
+    // Fix: Ensure Developer-specific element hiding is inside init or handled by CSS
+    if (role === "Developer") {
+        const mgmt = document.getElementById('mgmtAside');
+        const bulk = document.getElementById('bulkCard');
+        if (mgmt) mgmt.style.display = "none";
+        if (bulk) bulk.style.display = "none";
+    }
+
+    loadData();
+    loadBugs();
+} // Function ends here properly now
 
 async function loadBugs() {
     try {
         const res = await fetch(API + "/bugs");
         let bugs = await res.json();
 
-        // 1. UPDATED STATS LOGIC (Targeting all 5 cards)
         const projectsRes = await fetch(API + "/projects");
         const projects = await projectsRes.json();
 
@@ -44,16 +47,13 @@ async function loadBugs() {
         if (document.getElementById('fixedCount'))
             document.getElementById('fixedCount').innerText = bugs.filter(b => b.status === 'Fixed').length;
 
-        // Logic for "Critical" and "SLA" (overdue) cards
         const stats = document.querySelectorAll('.stat-item h2');
         if (stats[2]) stats[2].innerText = bugs.filter(b => b.priority === 'Critical').length || 0;
         if (stats[3]) stats[3].innerText = bugs.filter(b => b.isOverdue).length || 0;
 
-        // 2. TRIGGER UPDATES
         initChart(bugs);
         updateActivityFeed(bugs);
 
-        // Permissions filter
         if (role === "Developer") bugs = bugs.filter(b => b.assignedTo === user);
 
         bugs.sort((a, b) => a.project.localeCompare(b.project));
@@ -64,10 +64,11 @@ async function loadBugs() {
 }
 
 function initChart(bugs) {
-    const ctx = document.getElementById('bugChart').getContext('2d');
+    const chartEl = document.getElementById('bugChart');
+    if (!chartEl) return;
+    const ctx = chartEl.getContext('2d');
     if (myChart) myChart.destroy();
 
-    // Data for the multi-line trend
     myChart = new Chart(ctx, {
         type: 'line',
         data: {
@@ -100,12 +101,10 @@ function initChart(bugs) {
     });
 }
 
-// 3. NEW: DYNAMIC ACTIVITY FEED
 function updateActivityFeed(bugs) {
     const feed = document.getElementById('activityFeed');
     if (!feed) return;
 
-    // Sort bugs by last updated (mocking activity)
     const recent = bugs.slice(0, 5);
     feed.innerHTML = recent.map(b => `
         <div class="activity-item">
@@ -146,8 +145,6 @@ async function renderTable(bugs) {
         </tr>
     `).join('');
 }
-
-// ... Keep your patch, notify, addDev, loadData, loadBTasks, and logout functions the same ...
 
 async function patch(id, field, value) {
     const data = { [field]: value };
@@ -191,14 +188,11 @@ async function loadBTasks() {
     }
 }
 
-// Ensure this is NOT inside another function
 function logout() {
-    console.log("Logging out...");
     localStorage.clear();
     window.location.href = "login.html";
 }
 
-// 4. Events
 setInterval(async () => {
     const res = await fetch(API + "/bugs");
     const bugs = await res.json();

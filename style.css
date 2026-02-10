@@ -301,3 +301,30 @@ button[onclick="submitBulk()"] {
   filter: brightness(1.1);
   box-shadow: 0px 10px 20px rgba(67, 24, 255, 0.2);
 }
+
+/* --- ROLE-BASED GUARDRAILS --- */
+
+/* 1. Reset everything to a simple layout by default (For Developer & Tester) */
+.wrapper {
+  display: block;
+  width: 100%;
+  padding: 20px;
+}
+
+/* 2. ONLY enable the 3-column grid for Admin */
+.Admin-view .wrapper {
+  display: grid;
+  grid-template-columns: 300px 1fr 300px;
+  gap: 24px;
+}
+
+/* 3. Hide the new Sidebars for Developer and Tester */
+body:not(.Admin-view) aside,
+body:not(.Admin-view) section {
+  display: none !important;
+}
+
+/* 4. Restore the simple Stats Grid for Developer/Tester */
+body:not(.Admin-view) .stats-grid {
+  grid-template-columns: repeat(3, 1fr);
+}
