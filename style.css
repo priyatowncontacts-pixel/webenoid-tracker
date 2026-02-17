@@ -311,6 +311,50 @@ button[onclick="submitBulk()"] {
   padding: 20px;
 }
 
+/* --- ROLE-BASED DASHBOARD LOGIC --- */
+
+/* Hide everything by default, then show based on role */
+.admin-only,
+.tester-only,
+.dev-only,
+.history-logs,
+.charts-section {
+  display: none !important;
+}
+
+/* ADMIN: Everything + Pie Chart + Search */
+body.Admin-view .admin-only,
+body.Admin-view .tester-only,
+body.Admin-view .dev-only,
+body.Admin-view .history-logs,
+body.Admin-view .charts-section {
+  display: block !important;
+}
+
+/* TESTER: Members, Projects, Tasks, Bulk, History */
+body.Tester-view .tester-only,
+body.Tester-view .dev-only,
+body.Tester-view .history-logs {
+  display: block !important;
+}
+
+/* DEVELOPER: Projects and History only */
+body.Developer-view .dev-only,
+body.Developer-view .history-logs {
+  display: block !important;
+}
+
+/* Adjust layout for Admin (3-column) vs Others (1-column) */
+body.Admin-view .wrapper {
+  display: grid !important;
+  grid-template-columns: 320px 1fr 300px;
+  gap: 24px;
+}
+
+body:not(.Admin-view) .wrapper {
+  display: block !important;
+}
+
 /* 2. ONLY enable the 3-column grid for Admin */
 .Admin-view .wrapper {
   display: grid;

@@ -35,31 +35,41 @@ function init() {
 }
 
 async function loadBugs() {
-    try {
-        const res = await fetch(API + "/bugs");
-        let bugs = await res.json();
+    const res = await fetch(API + "/bugs");
+    let bugs = await res.json();
 
-        // 3. DEVELOPER FILTER: Only see his defects
-        if (role === "Developer") {
-            bugs = bugs.filter(b => b.assignedTo === user);
-        }
+    const role = localStorage.getItem("role");
+    const user = localStorage.getItem("user");
 
-        // Update Stats (Global)
-        const projectsRes = await fetch(API + "/projects");
-        const projects = await projectsRes.json();
-        if (document.getElementById('totalProjects')) document.getElementById('totalProjects').innerText = projects.length;
-        if (document.getElementById('totalCount')) document.getElementById('totalCount').innerText = bugs.length;
+    // DATA FILTER: Developer only sees bugs assigned to them
+    if (role === "Developer") {
+        bugs = bugs.filter(b => b.assignedTo === user);
+    }
 
-        // Only run Admin-specific visual updates if Admin is logged in
-        if (role === "Admin") {
-            initChart(bugs);
-            updateActivityFeed(bugs);
-        }
+    const list = document.getElementById('bugList');
+    list.innerHTML = "";
 
-        bugs.sort((a, b) => a.project.localeCompare(b.project));
-        renderTable(bugs);
-    } catch (err) {
-        console.error("Load failed:", err);
+    bugs.forEach(b => {
+        list.innerHTML += `
+            <tr>
+                <td><strong>${b.title}</strong></td>
+                <td>${b.assignedTo}</td>
+                <td><span class="${b.status}">${b.status}</span></td>
+                <td>
+                    <input type="range" value="${b.completion || 0}" 
+                           onchange="patch('${b._id}','completion',this.value); logActivity('Progress updated for ${b.title}')">
+                </td>
+            </tr>`;
+    });
+}
+
+// Logic for Admin to search developers
+function filterByDev() {
+    const val = document.getElementById("devSearch").value.toUpperCase();
+    const rows = document.querySelector("#bugList").rows;
+    for (let row of rows) {
+        const name = row.cells[1].textContent.toUpperCase();
+        row.style.display = name.includes(val) ? "" : "none";
     }
 }
 
