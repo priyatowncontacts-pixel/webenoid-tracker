@@ -4,19 +4,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Webenoid Bug Tracker | Admin Dashboard</title>
-
+  <title>Webenoid Bug Tracker</title>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap"
     rel="stylesheet">
-
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
   <link rel="stylesheet" href="style.css">
 </head>
 
-<body>
-  <div id="notify"></div>
-
+<body onload="init()">
   <nav>
     <div class="logo">WEBENOID TRACKER</div>
     <div class="nav-right">
@@ -26,79 +21,56 @@
   </nav>
 
   <div id="mainWrapper" class="wrapper">
+    <aside class="glass-card" id="mgmtAside">
+      <h3 class="card-header">Live Activity Feed</h3>
 
-    <div id="testerTools" class="tester-tools" style="display:none; grid-column: 1 / -1;">
-      <div class="glass-card" style="margin-bottom:20px; padding:20px;">
-        <h3 style="margin-bottom:10px;">🚀 Create New Bug</h3>
-        <div style="display:flex; gap:10px;">
-          <select id="projSelect" onchange="loadBTasks()"
-            style="flex:1; padding:8px; border-radius:8px; border:1px solid #ddd;"></select>
-          <select id="taskSelect" style="flex:1; padding:8px; border-radius:8px; border:1px solid #ddd;"></select>
-          <input type="text" id="bugTitle" placeholder="Bug Title"
-            style="flex:2; padding:8px; border-radius:8px; border:1px solid #ddd;">
-          <button class="btn-primary" onclick="submitBug()">Add Bug</button>
-        </div>
+      <div class="dev-only" style="margin-bottom: 20px;">
+        <small>Filter by Project</small>
+        <select id="devProjFilter" onchange="loadBugs()"></select>
       </div>
-    </div>
 
-    <aside class="glass-card" id="mgmtAside" style="height: fit-content;">
-      <h3 style="font-size: 18px; margin-bottom: 20px; color: var(--text-navy);">Live Activity Feed</h3>
-      <div id="activityFeed" class="timeline">
-      </div>
+      <div id="activityFeed" class="timeline"></div>
     </aside>
 
-    <main style="overflow-y: auto;">
-
-      <div class="stats-grid" style="margin-bottom: 20px;">
-        <div class="stat-item glass-card">
-          <div class="stat-icon" style="background: #E9EDF7; color: #4318FF;">📁</div>
-          <div><small>Projects</small>
-            <h2 id="totalProjects">0</h2>
+    <main>
+      <div class="glass-card tester-only admin-only" style="margin-bottom: 24px;">
+        <h3 class="card-header">Management</h3>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+          <div>
+            <input type="text" id="newMember" placeholder="Member Name">
+            <button class="btn-primary" onclick="addMember()">Add Member</button>
+          </div>
+          <div>
+            <input type="text" id="newProject" placeholder="Project Name">
+            <button class="btn-primary" onclick="addProject()">Add Project</button>
           </div>
         </div>
-        <div class="stat-item glass-card">
-          <div class="stat-icon" style="background: #E6FAF5; color: #05CD99;">🐞</div>
-          <div><small>Open</small>
-            <h2 id="totalCount">0</h2>
-          </div>
-        </div>
-        <div class="stat-item glass-card">
-          <div class="stat-icon" style="background: #FFF5F5; color: #EE5D50;">🔥</div>
-          <div><small>Critical</small>
-            <h2>29</h2>
-          </div>
-        </div>
-        <div class="stat-item glass-card">
-          <div class="stat-icon" style="background: #FFF9E9; color: #FFB800;">⏰</div>
-          <div><small>SLA</small>
-            <h2>62</h2>
-          </div>
-        </div>
-        <div class="stat-item glass-card">
-          <div class="stat-icon" style="background: #E6FAF5; color: #05CD99;">✅</div>
-          <div><small>Closed</small>
-            <h2 id="fixedCount">0</h2>
-          </div>
+        <div class="admin-only" style="margin-top:15px;">
+          <select id="taskProjSelect" style="width:48%"></select>
+          <input type="text" id="newTask" placeholder="Task Name" style="width:48%">
+          <button class="btn-primary" onclick="addTask()">Link Task</button>
         </div>
       </div>
 
-      <div class="glass-card admin-only-ui" style="margin-bottom: 24px;">
-        <h3 class="card-header">Bug Trends</h3>
-        <div style="height: 250px;"><canvas id="bugChart"></canvas></div>
+      <div class="glass-card admin-only" style="margin-bottom: 24px;">
+        <h3 class="card-header">Admin Insights</h3>
+        <input type="text" id="devSearch" onkeyup="searchDev()" placeholder="🔍 Search Developer Name...">
+        <div style="height: 250px;"><canvas id="bugPieChart"></canvas></div>
       </div>
-      <div class="glass-card admin-only-ui charts-section" style="margin-bottom: 24px;">
-        <h3 class="card-header">Admin Analytics</h3>
-        <input type="text" id="devSearch" onkeyup="filterByDev()" placeholder="🔍 Search Developer by name..."
-          style="margin-bottom:15px; width:100%; border:1px solid #E9EDF7; padding:12px; border-radius:12px; background:#F4F7FE;">
-        <div style="height: 250px;"><canvas id="bugChart"></canvas></div>
+
+      <div class="glass-card tester-only admin-only" id="bulkCard" style="margin-bottom: 24px;">
+        <h3 class="card-header">🚀 Bulk Defect Table</h3>
+        <select id="bulkProjSelect"></select>
+        <textarea id="bulkPaste" rows="4" placeholder="Title | Date"></textarea>
+        <button class="btn-primary" onclick="submitBulk()">Process List</button>
       </div>
 
       <div class="glass-card">
-        <div class="card-header">Live Defect Listing</div>
+        <h3 class="card-header">Defect Listing</h3>
         <table>
           <thead>
             <tr>
-              <th>Defect Details</th>
+              <th>Bug</th>
               <th>Assignee</th>
               <th>Status</th>
               <th>Progress</th>
@@ -108,27 +80,8 @@
         </table>
       </div>
     </main>
-
-    <section id="adminExtras">
-      <div class="glass-card" style="margin-bottom: 20px;">
-        <h3 class="card-header">Top Testers</h3>
-        <div class="tester-row">
-          <img src="https://i.pravatar.cc/40?img=1" class="avatar">
-          <div style="flex:1"><strong>Emily Clark</strong><br><small>Lead QA</small></div>
-          <span class="count">37</span>
-        </div>
-      </div>
-
-      <div class="glass-card" id="bulkCard">
-        <h3 class="card-header">🚀 Bulk Tools</h3>
-        <select id="bProj" onchange="loadBTasks()"></select>
-        <textarea id="bPaste" rows="4" style="margin-top:10px; width:100%;" placeholder="Title | Date"></textarea>
-        <button class="btn-primary" style="width:100%; margin-top:10px;" onclick="submitBulk()">Process List</button>
-      </div>
-    </section>
-
-  </div> <audio id="alertSound" ...>
-    <script src="script.js"></script>
+  </div>
+  <script src="script.js"></script>
 </body>
 
 </html>

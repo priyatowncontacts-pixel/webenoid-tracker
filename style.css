@@ -6,7 +6,6 @@
   --indigo-accent: #4318FF;
   --success-green: #05CD99;
   --warning-amber: #FFB800;
-  /* This specific shadow creates the 'depth' in your reference image */
   --soft-shadow: 14px 17px 40px 4px rgba(112, 144, 176, 0.08);
 }
 
@@ -20,46 +19,31 @@ body {
   height: 100vh;
 }
 
-/* 1. Integrated Header */
+/* --- 1. CORE LAYOUT --- */
 nav {
   height: 70px;
   display: flex;
   justify-content: space-between;
   padding: 0 40px;
   align-items: center;
-  background: transparent;
 }
 
-.logo {
-  font-weight: 800;
-  font-size: 24px;
-  color: var(--text-navy);
-  letter-spacing: -1px;
-}
-
-/* Default layout for EVERYONE (Developer and Tester) */
 .wrapper {
   display: block;
-  /* Stacks everything vertically or full width */
+  width: 100%;
   padding: 20px;
+  box-sizing: border-box;
 }
 
-/* 3-Column Layout ONLY for the Admin */
-.Admin-view .wrapper {
-  display: grid;
-  grid-template-columns: 300px 1fr 300px;
+/* 3-Column Grid ONLY for Admin */
+body.Admin-view .wrapper {
+  display: grid !important;
+  grid-template-columns: 320px 1fr 300px;
   gap: 24px;
+  align-items: start;
 }
 
-/* Hide sidebars for Developers and Testers */
-.Developer-view aside,
-.Developer-view section,
-.Tester-view aside,
-.Tester-view section {
-  display: none !important;
-}
-
-/* 3. The Glass Cards */
+/* --- 2. COMPONENTS --- */
 .glass-card {
   background: var(--card-white);
   border-radius: 20px;
@@ -68,58 +52,7 @@ nav {
   border: none;
 }
 
-/* Vertical Timeline */
-.timeline {
-  position: relative;
-  padding-left: 10px;
-  margin-top: 20px;
-}
-
-/* Polish for Activity Text */
-.activity-text {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  line-height: 1.4;
-}
-
-.activity-text strong {
-  font-size: 14px;
-  color: var(--text-navy);
-}
-
-.activity-text small {
-  font-size: 11px;
-  color: var(--text-grey);
-}
-
-/* The vertical line connecting dots */
-.activity-item::before {
-  content: "";
-  position: absolute;
-  left: 6px;
-  top: 15px;
-  width: 2px;
-  height: 100%;
-  background: #E9EDF7;
-}
-
-.activity-item:last-child::before {
-  display: none;
-}
-
-.dot {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  border: 3px solid var(--card-white);
-  z-index: 1;
-  margin-top: 4px;
-  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-
-/* The horizontal container for your 5 cards */
+/* Stats Grid: 5 columns for Admin, 3 for others */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -127,74 +60,11 @@ nav {
   margin-bottom: 24px;
 }
 
-/* Unified Stat Item Styling */
-.stat-item {
-  background: var(--card-white);
-  padding: 15px 20px;
-  border-radius: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 15px;
-  min-height: 85px;
-  /* Keeps all 5 cards perfectly level */
-  box-shadow: var(--soft-shadow);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+body:not(.Admin-view) .stats-grid {
+  grid-template-columns: repeat(3, 1fr);
 }
 
-.stat-item:hover {
-  transform: translateY(-5px);
-  box-shadow: 14px 20px 45px 6px rgba(112, 144, 176, 0.15);
-}
-
-.stat-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: var(--bg-dashboard);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-}
-
-/* 5. Modern Table Styling */
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-th {
-  text-align: left;
-  color: var(--text-grey);
-  font-size: 12px;
-  text-transform: uppercase;
-  padding: 15px;
-  border-bottom: 1px solid #F4F7FE;
-}
-
-td {
-  padding: 18px 15px;
-  font-weight: 700;
-  border-bottom: 1px solid #F4F7FE;
-  font-size: 14px;
-}
-
-tr:hover {
-  background: #F9FAFF;
-}
-
-/* 6. Status Pills */
-.Queue,
-.Review,
-.Fixed {
-  padding: 6px 16px;
-  border-radius: 50px;
-  font-size: 12px;
-  font-weight: 700;
-  border: none;
-}
-
+/* Status Pills */
 .Queue {
   background: #E9EDF7;
   color: var(--text-navy);
@@ -210,192 +80,56 @@ tr:hover {
   color: var(--success-green);
 }
 
-/* Right Panel - Top Testers */
-.tester-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 20px;
+/* Timeline/Activity */
+.timeline {
+  position: relative;
+  padding-left: 10px;
+  margin-top: 20px;
 }
 
-.avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  object-fit: cover;
-  background: #eee;
+.activity-item::before {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 15px;
+  width: 2px;
+  height: 100%;
+  background: #E9EDF7;
 }
 
-.count {
-  margin-left: auto;
-  /* Pushes the number to the far right */
-  font-weight: 800;
-  color: var(--indigo-accent);
-  font-size: 16px;
-}
+/* --- 3. ROLE-BASED VISIBILITY --- */
 
-.tester-info strong {
-  display: block;
-  font-size: 14px;
-  color: var(--text-navy);
-}
-
-.tester-info small {
-  color: var(--text-grey);
-  font-size: 11px;
-}
-
-/* Sidebar Menu Links */
-.menu-link {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 15px;
-  text-decoration: none;
-  color: var(--text-grey);
-  font-weight: 600;
-  border-radius: 12px;
-  transition: 0.3s;
-}
-
-.menu-link.active {
-  background: var(--indigo-accent);
-  color: #fff;
-}
-
-.menu-link:hover:not(.active) {
-  background: #F4F7FE;
-  color: var(--text-navy);
-}
-
-/* SaaS Style Form Inputs */
-select,
-textarea,
-input[type="text"] {
-  width: 100%;
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px solid #E9EDF7;
-  background: #F4F7FE;
-  color: var(--text-navy);
-  font-family: inherit;
-  margin-bottom: 12px;
-  outline: none;
-}
-
-/* Primary Indigo Button */
-.btn-primary,
-button[onclick="submitBulk()"] {
-  background: var(--indigo-accent);
-  color: white;
-  border: none;
-  padding: 14px;
-  border-radius: 12px;
-  font-weight: 700;
-  width: 100%;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-.btn-primary:hover {
-  filter: brightness(1.1);
-  box-shadow: 0px 10px 20px rgba(67, 24, 255, 0.2);
-}
-
-/* --- ROLE-BASED GUARDRAILS --- */
-
-/* 1. Reset everything to a simple layout by default (For Developer & Tester) */
-.wrapper {
-  display: block;
-  width: 100%;
-  padding: 20px;
-}
-
-/* --- ROLE-BASED DASHBOARD LOGIC --- */
-
-/* Hide everything by default, then show based on role */
+/* Hide by default */
 .admin-only,
 .tester-only,
 .dev-only,
 .history-logs,
-.charts-section {
+.charts-section,
+aside,
+section {
   display: none !important;
 }
 
-/* ADMIN: Everything + Pie Chart + Search */
+/* Admin View */
 body.Admin-view .admin-only,
 body.Admin-view .tester-only,
 body.Admin-view .dev-only,
 body.Admin-view .history-logs,
-body.Admin-view .charts-section {
+body.Admin-view .charts-section,
+body.Admin-view aside,
+body.Admin-view section {
   display: block !important;
 }
 
-/* TESTER: Members, Projects, Tasks, Bulk, History */
+/* Tester View */
 body.Tester-view .tester-only,
 body.Tester-view .dev-only,
 body.Tester-view .history-logs {
   display: block !important;
 }
 
-/* DEVELOPER: Projects and History only */
+/* Developer View */
 body.Developer-view .dev-only,
 body.Developer-view .history-logs {
   display: block !important;
-}
-
-/* Adjust layout for Admin (3-column) vs Others (1-column) */
-body.Admin-view .wrapper {
-  display: grid !important;
-  grid-template-columns: 320px 1fr 300px;
-  gap: 24px;
-}
-
-body:not(.Admin-view) .wrapper {
-  display: block !important;
-}
-
-/* 2. ONLY enable the 3-column grid for Admin */
-.Admin-view .wrapper {
-  display: grid;
-  grid-template-columns: 300px 1fr 300px;
-  gap: 24px;
-}
-
-/* 3. Hide the new Sidebars for Developer and Tester */
-body:not(.Admin-view) aside,
-body:not(.Admin-view) section {
-  display: none !important;
-}
-
-/* 4. Restore the simple Stats Grid for Developer/Tester */
-body:not(.Admin-view) .stats-grid {
-  grid-template-columns: repeat(3, 1fr);
-}
-
-/* --- UI RESTORATION --- */
-
-/* 1. Default: Full Width for Tester & Developer */
-.wrapper {
-  display: block !important;
-  padding: 20px;
-}
-
-/* 2. Hide Admin-only features for others */
-body:not(.Admin-view) aside,
-body:not(.Admin-view) section#admin-extras {
-  display: none !important;
-}
-
-/* 3. Enable 3-Column ONLY for Admin */
-.Admin-view .wrapper {
-  display: grid !important;
-  grid-template-columns: 300px 1fr 300px;
-  gap: 24px;
-}
-
-/* 4. Ensure the old 'Tester Tools' are visible for Testers */
-.Tester-view .tester-tools {
-  display: block !important;
-  margin-bottom: 20px;
 }
